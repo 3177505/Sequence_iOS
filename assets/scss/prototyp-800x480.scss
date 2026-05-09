@@ -1,0 +1,17 @@
+@use 'vars' as *;
+
+.app--fixed-800x480 {
+  align-items: center;
+}
+
+.app--fixed-800x480 .grid {
+  flex: 0 0 auto;
+  width: 1600px;
+  height: 480px;
+}
+
+.app--fixed-800x480 .pane {
+  width: 800px;
+  height: 480px;
+}
+

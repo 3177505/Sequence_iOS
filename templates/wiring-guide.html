@@ -1,0 +1,212 @@
+  <h1>Zapojení pro Sequence</h1>
+  <p>Schéma níže je celkové zapojení kiosku: <strong>dvě obrazovky</strong> na <strong>HDMI</strong> z Raspberry Pi, <strong>napájení Pi</strong> z powerbanky, <strong>Nano</strong> přes USB k Pi a <strong>infračervený senzor sledování čáry</strong> (TCRT5000 / LM393) na digitální vstup Nana. U <strong>5″ HDMI TFT s kapacitním dotykem</strong> připoj vedle HDMI ještě <strong>USB dotyku</strong> do volného portu Pi (redukce dle konektorů z kitu). Pokud řešíte jen <strong>druhou (pravou) obrazovku</strong>, stačí jeden takový panel na <code>micro-HDMI 1</code>. Prohlížeč na Pi pouští stránku Sequence; sériový port z Nana spouští stejnou akci jako tlačítko Trigger.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zapojení Pi, dvě obrazovky, Nano, IR senzor">
+      <defs>
+        <filter id="sh" x="-15%" y="-15%" width="130%" height="130%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.22"/>
+        </filter>
+      </defs>
+      <rect width="1000" height="520" fill="#141414"/>
+      <text x="500" y="24" text-anchor="middle" fill="#666" font-size="11" font-family="system-ui,sans-serif">Pohled shora (nepřesně) · A–B obraz, E Nano, F IR senzor, G napájení</text>
+
+      <g font-family="system-ui,sans-serif" filter="url(#sh)">
+        <rect x="88" y="82" width="92" height="168" rx="8" fill="#252525" stroke="#444" stroke-width="2"/>
+        <rect x="103" y="96" width="62" height="108" rx="2" fill="#1c3a4a" stroke="#369" opacity="0.5"/>
+        <rect x="168" y="216" width="18" height="12" rx="1" fill="#333" stroke="#4c8cc9" stroke-width="1.5"/>
+        <text x="134" y="66" text-anchor="middle" fill="#eee" font-size="11" font-weight="600">Vlevo</text>
+        <text x="134" y="80" text-anchor="middle" fill="#999" font-size="8">5″ · HDMI</text>
+
+        <rect x="820" y="82" width="92" height="168" rx="8" fill="#252525" stroke="#444" stroke-width="2"/>
+        <rect x="835" y="96" width="62" height="108" rx="2" fill="#1c3a4a" stroke="#369" opacity="0.5"/>
+        <rect x="814" y="216" width="18" height="12" rx="1" fill="#333" stroke="#4c8cc9" stroke-width="1.5"/>
+        <text x="866" y="66" text-anchor="middle" fill="#eee" font-size="11" font-weight="600">Vpravo</text>
+        <text x="866" y="80" text-anchor="middle" fill="#999" font-size="8">5″ · HDMI</text>
+
+        <rect x="348" y="138" width="304" height="128" rx="10" fill="#2d2d35" stroke="#555" stroke-width="2"/>
+        <text x="500" y="124" text-anchor="middle" fill="#eee" font-size="13" font-weight="600">Raspberry Pi 4 / 5</text>
+        <text x="500" y="138" text-anchor="middle" fill="#888" font-size="8">prohlížeč + stránka Sequence</text>
+        <rect x="366" y="156" width="58" height="16" rx="2" fill="#1a2530" stroke="#4c8cc9"/>
+        <text x="395" y="168" text-anchor="middle" fill="#8cc" font-size="8">µHDMI 0</text>
+        <rect x="558" y="156" width="58" height="16" rx="2" fill="#1a2530" stroke="#4c8cc9"/>
+        <text x="587" y="168" text-anchor="middle" fill="#8cc" font-size="8">µHDMI 1</text>
+        <rect x="366" y="184" width="36" height="20" rx="2" fill="#1a2530" stroke="#c9a64c"/>
+        <text x="384" y="197" text-anchor="middle" fill="#db6" font-size="8">USB-C · napájení</text>
+        <rect x="568" y="182" width="56" height="44" rx="3" fill="#222" stroke="#555"/>
+        <text x="596" y="200" text-anchor="middle" fill="#888" font-size="8">USB-A</text>
+        <text x="596" y="214" text-anchor="middle" fill="#666" font-size="7">(Nano)</text>
+        <text x="500" y="248" text-anchor="middle" fill="#555" font-size="7">microSD · systém</text>
+
+        <rect x="248" y="300" width="76" height="48" rx="6" fill="#3a3530" stroke="#777" stroke-width="1.5"/>
+        <rect x="308" y="318" width="12" height="16" rx="1" fill="#444" stroke="#c9a64c"/>
+        <text x="286" y="318" text-anchor="middle" fill="#ddd" font-size="10" font-weight="600">Powerbanka</text>
+        <text x="286" y="332" text-anchor="middle" fill="#aaa" font-size="8">USB-A → USB-C k Pi</text>
+
+        <rect x="392" y="292" width="160" height="80" rx="8" fill="#1a2e22" stroke="#3d6" stroke-width="1.5"/>
+        <rect x="448" y="284" width="48" height="11" rx="2" fill="#333" stroke="#6bc94c"/>
+        <text x="472" y="312" text-anchor="middle" fill="#e8e8e8" font-size="10" font-weight="600">Nano</text>
+        <text x="472" y="326" text-anchor="middle" fill="#8c8" font-size="8">USB do Pi (E)</text>
+        <text x="472" y="340" text-anchor="middle" fill="#7a7" font-size="8">IR → 5V, GND, DO (F)</text>
+
+        <rect x="568" y="300" width="100" height="68" rx="8" fill="#2a2820" stroke="#a65" stroke-width="1.5"/>
+        <rect x="588" y="318" width="44" height="24" rx="3" fill="#3a3830" stroke="#666" stroke-width="1"/>
+        <circle cx="610" cy="330" r="6" fill="none" stroke="#888" stroke-width="1.2"/>
+        <circle cx="590" cy="336" r="3" fill="#c94c4c" stroke="#822"/>
+        <circle cx="630" cy="336" r="3" fill="#c94c4c" stroke="#822"/>
+        <text x="618" y="308" text-anchor="middle" fill="#ddd" font-size="9" font-weight="600">TCRT5000 · IR</text>
+      </g>
+
+      <g stroke-linecap="round" stroke-linejoin="round">
+        <g fill="none" stroke-width="3.2">
+          <path stroke="#c9a64c" d="M 324 326 L 366 326 L 366 194"/>
+          <path stroke="#4c8cc9" d="M 395 148 L 395 106 L 184 106 L 184 222 L 175 222"/>
+          <path stroke="#4c8cc9" d="M 587 148 L 587 106 L 816 106 L 816 222 L 823 222"/>
+          <path stroke="#6bc94c" d="M 604 204 L 604 278 L 472 278 L 472 292"/>
+          <path stroke="#c94c4c" d="M 584 336 L 548 324"/>
+          <path stroke="#c94c4c" d="M 636 336 L 548 342"/>
+        </g>
+        <g font-family="system-ui,sans-serif" font-size="7" fill="#eaa">
+          <text x="528" y="322">GND</text>
+          <text x="528" y="346">DO→D2</text>
+        </g>
+      </g>
+
+      <g font-family="system-ui,sans-serif" font-size="9">
+        <rect x="185" y="44" width="150" height="32" rx="4" fill="#0d0d0d" stroke="#4c8cc9" stroke-width="1"/>
+        <text x="260" y="58" text-anchor="middle" fill="#9cf" font-weight="600">A · HDMI vlevo</text>
+        <text x="260" y="70" text-anchor="middle" fill="#888" font-size="7">Pi µHDMI0 → obrazovka</text>
+        <rect x="663" y="44" width="150" height="32" rx="4" fill="#0d0d0d" stroke="#4c8cc9" stroke-width="1"/>
+        <text x="738" y="58" text-anchor="middle" fill="#9cf" font-weight="600">B · HDMI vpravo</text>
+        <text x="738" y="70" text-anchor="middle" fill="#888" font-size="7">Pi µHDMI1 → obrazovka</text>
+        <rect x="688" y="390" width="210" height="28" rx="4" fill="#0d0d0d" stroke="#6bc94c" stroke-width="1"/>
+        <text x="793" y="408" text-anchor="middle" fill="#9d9" font-weight="600">E · Nano ↔ Pi (USB data)</text>
+        <rect x="36" y="410" width="190" height="28" rx="4" fill="#0d0d0d" stroke="#c9a64c" stroke-width="1"/>
+        <text x="131" y="428" text-anchor="middle" fill="#eca" font-weight="600">G · Napájení Pi z powerbanky</text>
+        <rect x="360" y="438" width="280" height="32" rx="4" fill="#0d0d0d" stroke="#c94c4c" stroke-width="1"/>
+        <text x="500" y="452" text-anchor="middle" fill="#faa" font-weight="600">F · Tři vodiče Dupont ke Nano</text>
+        <text x="500" y="464" text-anchor="middle" fill="#c99" font-size="7">modul VCC→5V, GND, DO→pin · logika dle modulu (debounce)</text>
+      </g>
+    </svg>
+  </div>
+
+  <h2>Přehled propojení</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Označení</th>
+        <th>Zapojení</th>
+        <th>Funkce</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>A</strong></td>
+        <td>Z Pi <code>micro-HDMI 0</code> (s redukcí z kitu) na HDMI vstup <strong>levé</strong> obrazovky.</td>
+        <td>Obraz na levé obrazovce.</td>
+      </tr>
+      <tr>
+        <td><strong>B</strong></td>
+        <td>Z <code>micro-HDMI 1</code> na <strong>pravou</strong> obrazovku (např. 5″ 800×480 TFT HDMI).</td>
+        <td>Obraz na pravé obrazovce. Kapacitní dotyk: druhý kabel USB z displeje do Pi. Vyžaduje Pi se <strong>dvěma</strong> HDMI výstupy (např. model 4 nebo 5).</td>
+      </tr>
+      <tr>
+        <td><strong>E</strong></td>
+        <td>Nano přes USB (mini nebo USB-C podle desky) do <strong>USB-A</strong> na Pi.</td>
+        <td>Pi čte sériový port; v Chromium tlačítkem <em>Připojit senzor</em> v aplikaci Sequence.</td>
+      </tr>
+      <tr>
+        <td><strong>F</strong></td>
+        <td><strong>Jednokanálový</strong> modul s LM393: <code>VCC</code>→<code>5V</code>, <code>GND</code>, <code>DO</code>→pin (např. <code>D2</code>). <strong>Pětikanálový</strong> pás TCRT5000: společné <code>VCC</code>/<code>GND</code>, pro jeden trigger použij jeden výstupní pin kanálu (ostatní volné). Oba typy v košíku: pro začátek stačí <strong>LM393</strong>; 5kanál je náhrada nebo širší pásmo detekce.</td>
+        <td>Při přechodu signálu (detekce reflexe / čáry) po debounci odešli <code>Serial.println("1");</code> (baud <strong>115200</strong>), stejně jako u tlačítka.</td>
+      </tr>
+      <tr>
+        <td><strong>G</strong></td>
+        <td>Z powerbanky použij <strong>USB-A výstup</strong> do napájecího <code>USB-C</code> na Pi (<code>USB-A → USB-C</code> kabel).</td>
+        <td>Dostatečný proud (cca <strong>3 A @ 5 V</strong> pro Pi 4). Sestava: <strong>Vention USB 2.0 → USB-C 3&nbsp;A, 0,25&nbsp;m</strong> z USB-A powerbanky do napájecího USB-C na Pi — viz <a href="https://www.alza.cz/vention-usb-2-0-to-usb-c-3a-cable-0-25m-black-d7375137.htm" rel="noopener">Alza</a>. Pi bere <strong>5 V</strong>; powerbanka musí na tom výstupu zvládnout vysoký proud v 5&nbsp;V režimu.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Kontrola sestavy</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Položka</th>
+        <th>Stav</th>
+        <th>Poznámka</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Raspberry Pi 4 Model B (4 GB)</td>
+        <td>[x]</td>
+        <td>Vhodné pro dvě HDMI obrazovky.</td>
+      </tr>
+      <tr>
+        <td>microSD 32 GB</td>
+        <td>[x]</td>
+        <td>Pro systém a kiosk aplikaci stačí.</td>
+      </tr>
+      <tr>
+        <td>Pasivní chladič</td>
+        <td>[x]</td>
+        <td>Pro delší běh doporučeno.</td>
+      </tr>
+      <tr>
+        <td>Powerbanka</td>
+        <td>[x]</td>
+        <td>Použijte ji jako zdroj pro Pi.</td>
+      </tr>
+      <tr>
+        <td>5″ TFT 800×480, HDMI, kapacitní dotyk (Raspberry Pi)</td>
+        <td>[x]</td>
+        <td>Tvůj kus: obraz přes HDMI na <code>micro-HDMI 1</code>, dotyk přes USB do Pi.</td>
+      </tr>
+      <tr>
+        <td>Arduino Nano + USB kabel</td>
+        <td>[x]</td>
+        <td>Napojení Nano ↔ Pi přes USB.</td>
+      </tr>
+      <tr>
+        <td>Dupont vodiče (samice–samice)</td>
+        <td>[x]</td>
+        <td>Tři kusy pro IR modul: 5V, GND, DO.</td>
+      </tr>
+      <tr>
+        <td>microUSB → USB kabel</td>
+        <td>[x]</td>
+        <td>Vhodné pro Nano, ne pro napájení Pi 4.</td>
+      </tr>
+      <tr>
+        <td>Vention USB 2.0 → USB-C 3&nbsp;A, 0,25&nbsp;m (napájení Pi)</td>
+        <td>[x]</td>
+        <td>Z powerbanky (USB-A) do napájení Pi (USB-C). <a href="https://www.alza.cz/vention-usb-2-0-to-usb-c-3a-cable-0-25m-black-d7375137.htm" rel="noopener">Alza</a>.</td>
+      </tr>
+      <tr>
+        <td>IR senzor LM393 (1 kanál TCRT5000)</td>
+        <td>[x]</td>
+        <td>Základní varianta pro trigger — tři vodiče na Nano.</td>
+      </tr>
+      <tr>
+        <td>IR senzor 5 kanálů TCRT5000</td>
+        <td>[x]</td>
+        <td>Druhý modul v košíku: buď záloha, nebo použij jeden kanál z pásu; více pinů na Nano, pokud chceš logiku z více paprsků.</td>
+      </tr>
+      <tr>
+        <td>Rezistory Yageo MFR-25FTE52 1/4W 1% (220&nbsp;Ω, 330&nbsp;Ω, 1&nbsp;kΩ, 10&nbsp;kΩ)</td>
+        <td>[x]</td>
+        <td>Obecný sklad; hotové IR moduly je zpravidla nepotřebují. Nech na bastlení / LED / děliče.</td>
+      </tr>
+    </tbody>
+  </table>
+ 
+  <h2>Ovádání z aplikace</h2>
+  <ol>
+    <li><strong>Zapojení vstupu na Nano:</strong> IR modul na <code>5V</code>, <code>GND</code> a <code>DO</code> na digitální pin (např. <code>D2</code>). <code>pinMode</code> nastav podle výstupu modulu (často <code>INPUT</code> pokud LM393 táhne pin; případně <code>INPUT_PULLUP</code> pokud je výstup otevlený kolektor — ověř datasheet/modul).</li>
+    <li><strong>USB propojení Nano ↔ Raspberry Pi:</strong> Nano se připojí USB kabelem do portu <code>USB-A</code> na Pi. Tento kabel zároveň řeší datovou komunikaci i napájení Nano.</li>
+    <li><strong>Sériová komunikace:</strong> firmware při detekci hrany nebo překročení prahu na <code>DO</code> odešle po <code>Serial</code> jeden řádek (např. <code>Serial.println("1");</code>) s rychlostí <strong>115200</strong>. Krátký debounce nebo časová filtrace omezí dvojité spouštění.</li>
+    <li><strong>Povolení Web Serial v prohlížeči:</strong> v Chromium na Raspberry Pi se otevře aplikace Sequence (např. <code>localhost</code>) a přes tlačítko <strong>Připojit senzor (USB serial)</strong> se jednorázově vybere správný port s Nanem.</li>
+    <li><strong>Spouštění triggeru:</strong> každý neprázdný řádek přijatý ze sériového portu spustí stejnou trigger sekvenci jako tlačítko v UI. Pokud trigger už běží, další vstupy se ignorují do jeho dokončení.</li>
+    <li><strong>Kontrola funkce:</strong> přibliž reflexní plochu nebo čáru v dosahu senzoru a ověř, že aplikace přejde do trigger režimu na 15&nbsp;s a pak do baseline.</li>
+  </ol>

@@ -1,0 +1,103 @@
+  <div class="manufacturing-prose ztk">
+  <h1>ML toolkit — Stable Diffusion z <code>4_Research</code></h1>
+  <p class="ml-note"><strong>Výchozí cesta:</strong> trénink a generování přímo v repozitáři Sequence (DreamBooth LoRA přes <code>ml/launch_train.py</code> + <code>ml/generate.py</code>). <strong>LoRA:</strong> <code>ml/outputs/lora-…</code> · <strong>PNG z generování:</strong> <code>outputs/gen-lora-…</code> v kořeni repa. Druhá větev <strong>Z-Image (Ostris)</strong> dál exportuje do <code>%USERPROFILE%\ai-work\…</code> a běží v klonu <a href="https://github.com/ostris/ai-toolkit" rel="noopener">ai-toolkit</a>.</p>
+
+  <p>
+    <label for="ztk-seq">Cesta ke kořeni Sequence (složka kde je <code>ml/</code> a <code>public/</code>)</label>
+    <input id="ztk-seq" class="ztk__input" type="text" autocomplete="off" placeholder="např. C:\Users\...\Sequence" size="64">
+  </p>
+
+  <p class="ml-note">Režim průvodce:</p>
+  <div class="ztk__bar" role="group" aria-label="Režim ML">
+    <button type="button" class="ztk__tab" data-ztk-track="sd" aria-pressed="true" id="ztk-tr-sd">Stable Diffusion + LoRA (v repu)</button>
+    <button type="button" class="ztk__tab" data-ztk-track="ostris" aria-pressed="false" id="ztk-tr-ost">Z-Image (Ostris, externí)</button>
+  </div>
+
+  <p class="ml-note">Příkazy pro shell:</p>
+  <div class="ztk__bar" role="group" aria-label="Shell pro příkazy">
+    <button type="button" class="ztk__tab" data-ztk-shell="unix" aria-pressed="true" id="ztk-sh-unix">macOS / Linux (bash)</button>
+    <button type="button" class="ztk__tab" data-ztk-shell="win" aria-pressed="false" id="ztk-sh-win">Windows (PowerShell)</button>
+  </div>
+
+  <div class="ztk__bar" role="tablist" aria-label="Kroky průvodce">
+    <button type="button" class="ztk__tab" data-ztk-step="1" aria-pressed="true" id="ztk-t1">1 · Data</button>
+    <button type="button" class="ztk__tab" data-ztk-step="2" aria-pressed="false" id="ztk-t2">2 · …</button>
+    <button type="button" class="ztk__tab" data-ztk-step="3" aria-pressed="false" id="ztk-t3">3 · …</button>
+    <button type="button" class="ztk__tab" data-ztk-step="4" aria-pressed="false" id="ztk-t4">4 · …</button>
+    <button type="button" class="ztk__tab" data-ztk-step="5" aria-pressed="false" id="ztk-t5">5 · …</button>
+  </div>
+
+  <section class="ztk__panel" data-ztk-panel="1" id="ztk-p1" aria-labelledby="ztk-t1" role="tabpanel">
+    <div data-ztk-content="sd">
+      <p><a href="research.html">Research</a> = stejné jako <code>public/4_Research</code> na disku. Obrázky pro jedno téma dej do příslušné podsložky (např. <code>24_LaughingStock</code>). Trénink je čte odtud přes <code>research-folder-training.ps1</code> — žádný export do <code>ai-work</code> pro tuto větev.</p>
+      <p>Příklad cesty k tématu: <code id="ztk-p1-ex-sd">…</code></p>
+    </div>
+    <div data-ztk-content="ostris" hidden>
+      <p><a href="research.html">Research</a> = <code>public/4_Research</code>. U Ostris exportuješ kopie obrázků do ploché složky pod <code>%USERPROFILE%\ai-work\zimage_from_research\images</code> (viz krok 2).</p>
+      <p>Příklad cesty: <code id="ztk-p1-ex">…</code></p>
+    </div>
+  </section>
+
+  <section class="ztk__panel" data-ztk-panel="2" id="ztk-p2" hidden aria-labelledby="ztk-t2" role="tabpanel">
+    <div data-ztk-content="sd">
+      <p>Jednorázově: virtuální prostředí Pythonu v <code>ml/.venv</code> a závislosti z <code>ml/requirements.txt</code>. Na Windows stačí Python 3.10+ v PATH, případně <code>py -3.12</code>. Příkazy v bloku níže můžeš označit myší nebo zkopírovat tlačítkem.</p>
+      <div class="ztk__snippet-root" data-ztk-lines-step="2" data-ztk-lines-track="sd"></div>
+      <p><button type="button" class="ztk__copy" data-ztk-copy="2">Kopírovat vše (krok 2)</button></p>
+    </div>
+    <div data-ztk-content="ostris" hidden>
+      <p>Export obrázků do ploché složky (v tomto repu). Příkazy jsou v bloku níže — označ nebo <strong>Kopírovat vše</strong>.</p>
+      <p class="ml-note">Rychleji z PowerShellu v kořenu repa: <code>.\zimage-research.ps1</code> nebo <code>cd ml; .\zimage-research.ps1 -FolderKey 36_Motherlode</code>.</p>
+      <div class="ztk__snippet-root" data-ztk-lines-step="2" data-ztk-lines-track="ostris"></div>
+      <p><button type="button" class="ztk__copy" data-ztk-copy="2">Kopírovat vše (krok 2)</button></p>
+    </div>
+  </section>
+
+  <section class="ztk__panel" data-ztk-panel="3" id="ztk-p3" hidden aria-labelledby="ztk-t3" role="tabpanel">
+    <div data-ztk-content="sd">
+      <p>Z kořene Sequence spusť <code>research-folder-training.ps1</code> (wrapper je i v kořeni i v <code>ml/</code>). Skript zvolí téma (nebo ho zadej <code>-FolderKey</code>), natrénuje LoRA do <code>ml/outputs/lora-…</code> a vygeneruje obrázky do <code>outputs/gen-lora-…</code>.</p>
+      <div class="ztk__snippet-root" data-ztk-lines-step="3" data-ztk-lines-track="sd"></div>
+      <p><button type="button" class="ztk__copy" data-ztk-copy="3">Kopírovat vše (krok 3)</button></p>
+    </div>
+    <div data-ztk-content="ostris" hidden>
+      <p><code>ml/zimage_sidecar_captions.py</code> doplní chybějící <code>.txt</code> u exportu. Důležité popisky uprav ručně.</p>
+      <div class="ztk__snippet-root" data-ztk-lines-step="3" data-ztk-lines-track="ostris"></div>
+      <p><button type="button" class="ztk__copy" data-ztk-copy="3">Kopírovat vše (krok 3)</button></p>
+    </div>
+  </section>
+
+  <section class="ztk__panel" data-ztk-panel="4" id="ztk-p4" hidden aria-labelledby="ztk-t4" role="tabpanel">
+    <div data-ztk-content="sd">
+      <p><strong>Kam se to uloží:</strong> vahy LoRA v <code>ml/outputs/&lt;slug&gt;/</code> (např. <code>pytorch_lora_weights.safetensors</code>), generované PNG v <code>outputs/gen-&lt;stejný-slug&gt;/out_00.png</code> atd. Otevři složky v Průzkumníku níže (PowerShell).</p>
+      <div class="ztk__snippet-root" data-ztk-lines-step="4" data-ztk-lines-track="sd"></div>
+      <p><button type="button" class="ztk__copy" data-ztk-copy="4">Kopírovat vše (krok 4)</button></p>
+    </div>
+    <div data-ztk-content="ostris" hidden>
+      <p>Python 3.10+. <strong>YAML bez ručního lepení cest:</strong> z kořene repa <code>.\ostris-dataset-config.ps1 -ListTemplates</code> → šablona z <code>config/examples/</code> pro Z-Image → <code>.\ostris-dataset-config.ps1 -FolderKey 36_Motherlode -TemplateFile …</code> (zápis do <code>ai-work\ai-toolkit\config\sequence_ostris.yml</code>). <strong>NVIDIA:</strong> PyTorch cu124; při chybě ovladač GPU.</p>
+      <div class="ztk__snippet-root" data-ztk-lines-step="4" data-ztk-lines-track="ostris"></div>
+      <p><button type="button" class="ztk__copy" data-ztk-copy="4">Kopírovat vše (krok 4)</button></p>
+    </div>
+  </section>
+
+  <section class="ztk__panel" data-ztk-panel="5" id="ztk-p5" hidden aria-labelledby="ztk-t5" role="tabpanel">
+    <div data-ztk-content="sd">
+      <p>Volitelné přepínače: <code>-List</code> (seznam klíčů), <code>-SkipGenerate</code> (jen trénink), <code>-Base sd15</code>, <code>-MaxTrainSteps</code>, <code>-Resolution</code>, <code>-TrainSequential</code> (všechny složky s obrázky). Viz <a href="ml-cli-guide.html">ML příkazy</a> a <code>ml/research-folder-training.ps1</code>.</p>
+      <div class="ztk__snippet-root" data-ztk-lines-step="5" data-ztk-lines-track="sd"></div>
+      <p><button type="button" class="ztk__copy" data-ztk-copy="5">Kopírovat vše (krok 5)</button></p>
+    </div>
+    <div data-ztk-content="ostris" hidden>
+      <p>Po <code>ostris-dataset-config.ps1</code>: <code>python run.py config\sequence_ostris.yml</code> v klonu ai-toolkit, nebo <code>.\ostris-dataset-config.ps1 -Run</code> z repa. Pauza: <kbd>Ctrl</kbd>+<kbd>C</kbd> mimo zápis checkpointu.</p>
+      <div class="ztk__snippet-root" data-ztk-lines-step="5" data-ztk-lines-track="ostris"></div>
+      <p><button type="button" class="ztk__copy" data-ztk-copy="5">Kopírovat vše (krok 5)</button></p>
+    </div>
+  </section>
+
+  <div class="ml-explain" role="region" aria-label="Pouze režim Ostris: torchcodec na Mac Intel">
+    <p><strong>Z-Image / Ostris — chyba <code>torchcodec</code></strong> na macOS Intel: často chybí wheel; spolehlivější je Linux nebo NVIDIA. Apple Silicon a cloud GPU bývají v pohodě. Na Intel Macu lze dočasně vyškrtnout řádek <code>torchcodec</code> v <code>requirements_base.txt</code> v klonu Ostris (video moduly pak nemusí fungovat).</p>
+  </div>
+
+  <p>
+    <a href="https://huggingface.co/Tongyi-MAI" rel="noopener">Hugging Face · Tongyi-MAI</a>
+    ·
+    <a href="ml-manual.html#ml-manual-dve-cesty">ML příručka — srovnání SD+LoRA vs Z-Image</a>
+  </p>
+  </div>

@@ -1,0 +1,34 @@
+@use 'vars' as *;
+
+.model-screenshots__hero {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.model-screenshots__list {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 20px 48px;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: $bg-panel;
+    border: 1px solid $border-ui;
+    border-radius: 4px;
+    margin-top: 12px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+}

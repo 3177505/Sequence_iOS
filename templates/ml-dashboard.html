@@ -1,0 +1,124 @@
+  <div class="manufacturing-prose ml-dashboard">
+  <h1>ML průvodce (Windows + tlačítka)</h1>
+  <p class="ml-note">
+    Kompletní návod krok za krokem (včetně Linuxu / Macu, tréninku a generování):
+    <strong><a href="ml-manual.html">ML příručka</a></strong>.
+  </p>
+  <p class="ml-note">
+    Tato stránka je myšlená pro <strong>Windows</strong>: jednou otevřeš <strong>Terminál</strong> (PowerShell nebo
+    <code>cmd</code>), pustíš dev server, pak používáš tlačítka v prohlížeči. Tlačítka <strong>nespustí nic samy o sobě</strong> —
+    musí běžet <strong>Node</strong> na tvém PC (<code>npm run dev</code>), protože prohlížeč jen volá lokální API, které spouští
+    <code>ml\.venv\Scripts\python.exe</code> a skripty v <code>ml\</code>.
+  </p>
+
+  <div class="research-gallery ml-gradio-as-research" id="ml-gradio-research" aria-label="Gradio">
+    <section class="research-gallery__section">
+      <h2 class="research-gallery__title">Gradio</h2>
+      <table class="research-intro-table">
+        <tbody>
+          <tr>
+            <td class="research-intro-table__mark">*</td>
+            <td class="research-intro-table__text">Druhé rozhraní ke stejnému ML (trénink / generování v druhé kartě) — až pustíš <code>ml-gui</code>, otevři v prohlížeči
+              <a href="http://127.0.0.1:7860/" rel="noopener" target="_blank">http://127.0.0.1:7860/</a>
+              a postup v README ve <code>ml-gui</code>. Dva tréninky najednou nespouštěj.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <h2>Nejdřív v terminálu (Windows)</h2>
+  <ol class="ml-win-steps">
+    <li><strong>Node.js</strong> nainstalovaný (LTS). Ověř: <code>node -v</code> a <code>npm -v</code>.</li>
+    <li>Přejdi do kořene projektu Sequence (kde je <code>package.json</code>), např.:
+      <pre>cd C:\Users\TvojeJmeno\Dropbox\__AVU\_ACT\Sequence</pre>
+      (cestu uprav podle umístění u tebe — Dropbox, disk D:, …)
+    </li>
+    <li>Jednorázově: <code>npm install</code></li>
+    <li>Python venv pro ML (jednorázově, v podsložce <code>ml</code>):
+      <pre>cd ml
+py -3 -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+pip install "numpy>=1.26,&lt;2" diffusers==0.32.2 "huggingface-hub>=0.34.0,&lt;1.0"
+accelerate config
+cd ..</pre>
+    </li>
+    <li>Spusť dev server a <strong>nech okno otevřené</strong>:
+      <pre>npm run dev</pre>
+      Uvidíš něco jako <code>localhost:3000</code> — otevři v Edge / Chrome adresu
+      <strong>http://localhost:3000/ml-dashboard.html</strong>
+    </li>
+  </ol>
+  <p class="ml-note">
+    API pro tlačítka vypneš: v <code>cmd</code> před <code>npm run dev</code> dej
+    <code>set SEQUENCE_ML_API=0</code> — v PowerShellu:
+    <code>$env:SEQUENCE_ML_API="0"</code> ; <code>npm run dev</code>
+  </p>
+  <p class="ml-note">
+    <strong>Mac / Linux:</strong> stejné, jen aktivace venv je <code>source .venv/bin/activate</code> a cesta k Pythonu
+    <code>ml/.venv/bin/python3</code>. Stránka funguje stejně.
+  </p>
+
+  <section class="ml-step" id="ml-step-prep" aria-label="Krok 1">
+    <h2>1. Stav v prohlížeči</h2>
+    <p id="ml-st-venv" class="ml-run">…</p>
+    <p id="ml-st-lora" class="ml-run">…</p>
+    <p id="ml-st-run" class="ml-run">…</p>
+    <p id="ml-st-platform" class="ml-run" aria-label="platforma serveru"></p>
+    <p>
+      <button type="button" id="ml-refresh" data-ml-always="1">Obnovit stav</button>
+    </p>
+    <p class="ml-unlock-bez">
+      <label>
+        <input type="checkbox" id="ml-allow-no-lora" data-ml-always="1" />
+        Chci generovat bez trénované LoRA (pouze základový model) — odemkne krok 3 dřív
+      </label>
+    </p>
+  </section>
+
+  <section class="ml-step ml-step--locked" id="ml-step-train" aria-label="Krok 2">
+    <h2>2. Trénink LoRA</h2>
+    <p>Po spuštění běží na pozadí; log se připisuje. Na CPU bývá trénink velmi dlouhý — použij nízké kroky k testu.</p>
+    <p>
+      <label for="ml-max-steps">max kroků</label>
+      <input id="ml-max-steps" class="ml-input-num" type="number" min="10" max="5000" value="200" disabled>
+    </p>
+    <p>
+      <label><input id="ml-resume" type="checkbox" disabled> Pokračovat od posledního checkpointu</label>
+    </p>
+    <p>
+      <button type="button" id="ml-train-btn" disabled>Spustit trénink</button>
+    </p>
+    <p id="ml-train-msg" class="ml-run" aria-live="polite"></p>
+  </section>
+
+  <section class="ml-step ml-step--locked" id="ml-step-gen" aria-label="Krok 3">
+    <h2>3. Generování</h2>
+    <p>
+      Odemkne se po <strong>hotové LoRA</strong> v <code>ml/outputs/lora-run</code>, nebo když v kroku 1 zaškrtneš generování bez LoRA.
+    </p>
+    <p>
+      <label for="ml-prompt">Prompt</label><br>
+      <textarea id="ml-prompt" class="ml-textarea" rows="3" disabled>a sksseq photograph, research images, detailed</textarea>
+    </p>
+    <p>
+      <label for="ml-count">počet obrázků</label>
+      <input id="ml-count" class="ml-input-num" type="number" min="1" max="8" value="2" disabled>
+    </p>
+    <p>
+      <label><input id="ml-use-lora" type="checkbox" checked disabled> Použít LoRA ze složky lora-run</label>
+    </p>
+    <p>
+      <button type="button" id="ml-gen-btn" disabled>Generovat</button>
+    </p>
+    <p id="ml-gen-msg" class="ml-run" aria-live="polite"></p>
+  </section>
+
+  <h2>Log (trénink / okna z terminálu)</h2>
+  <pre class="ml-log" id="ml-log" aria-label="log"></pre>
+
+  <p>
+    <a href="ml-manual.html">ML příručka (textový návod)</a>
+  </p>
+  </div>

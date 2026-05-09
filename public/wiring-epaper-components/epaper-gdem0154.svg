@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 200" role="img" aria-label="E-paper 4-color modul">
+  <rect width="280" height="200" fill="#141414"/>
+  <text x="140" y="22" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="11">GDEM0154F51H ù 1,54 in ù 200x200</text>
+  <rect x="52" y="40" width="176" height="100" rx="6" fill="#252018" stroke="#a85" stroke-width="2"/>
+  <rect x="64" y="52" width="148" height="76" rx="2" fill="#f0ebe3" stroke="#333"/>
+  <rect x="76" y="64" width="14" height="14" fill="#1a1a1a"/>
+  <rect x="94" y="64" width="14" height="14" fill="#fff"/>
+  <rect x="112" y="64" width="14" height="14" fill="#c9a64c"/>
+  <rect x="130" y="64" width="14" height="14" fill="#c94c4c"/>
+  <text x="140" y="118" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="8">B / W / ûlut· / ?erven·</text>
+  <rect x="120" y="145" width="40" height="22" rx="2" fill="#3a3530" stroke="#665"/>
+  <text x="140" y="160" text-anchor="middle" fill="#aaa" font-family="system-ui,sans-serif" font-size="7">24pin FPC</text>
+  <text x="140" y="188" text-anchor="middle" fill="#555" font-family="system-ui,sans-serif" font-size="8">SPI ù 3,3 V ù CS DC RST BUSY</text>
+</svg>

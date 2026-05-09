@@ -1,0 +1,54 @@
+<main class="page concept" aria-label="Koncept projektu">
+  <h1 id="concept-title">Koncept</h1>
+
+  <div class="controls" aria-label="Editor konceptu">
+    <button type="button" id="concept-lang-cs" aria-pressed="true">CZ</button>
+    <button type="button" id="concept-lang-en" aria-pressed="false">EN</button>
+    <button type="button" id="concept-edit">Upravit</button>
+    <button type="button" id="concept-save" hidden>Uložit</button>
+    <button type="button" id="concept-cancel" hidden>Zrušit</button>
+    <span id="concept-status" aria-live="polite"></span>
+  </div>
+
+  <section aria-label="Koncept — render">
+    <div id="concept-summary"></div>
+    <hr>
+    <div id="concept-voices"></div>
+    <hr>
+    <div id="concept-axes"></div>
+    <hr>
+    <div id="concept-paradigms"></div>
+  </section>
+
+  <section id="concept-editor-wrap" hidden aria-label="Koncept — editor">
+    <label for="concept-field-title">Titulek</label>
+    <input id="concept-field-title" type="text" autocomplete="off">
+
+    <label for="concept-field-summary">Souhrn (1 odstavec · můžeš psát „quirky“ znaky)</label>
+    <textarea id="concept-field-summary" rows="10" spellcheck="false"></textarea>
+
+    <label for="concept-field-voices">Dvojhlas (odstavec)</label>
+    <textarea id="concept-field-voices" rows="8" spellcheck="false"></textarea>
+
+    <label for="concept-field-axes-intro">Vertikála · horizontála (krátký úvod)</label>
+    <textarea id="concept-field-axes-intro" rows="4" spellcheck="false"></textarea>
+
+    <div class="concept__grid2" aria-label="Osy editor">
+      <div class="concept__card">
+        <h3>Vertikála (1 položka na řádek)</h3>
+        <textarea id="concept-field-vertical" rows="8" spellcheck="false"></textarea>
+      </div>
+      <div class="concept__card">
+        <h3>Horizontála (1 položka na řádek)</h3>
+        <textarea id="concept-field-horizontal" rows="8" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <label for="concept-field-common">Více</label>
+    <textarea id="concept-field-common" rows="5" spellcheck="false"></textarea>
+
+    <label for="concept-field-paradigms">Paradigmata (1 pár na řádek · formát: levá strana ⟡ pravá strana)</label>
+    <textarea id="concept-field-paradigms" rows="10" spellcheck="false"></textarea>
+  </section>
+</main>
+

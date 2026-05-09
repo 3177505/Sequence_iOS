@@ -1,0 +1,410 @@
+@use 'vars' as *;
+
+.manufacturing-prose .ml-manual__lead {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: $text-muted;
+  max-width: 48rem;
+  margin: 0 0 1rem;
+}
+
+.manufacturing-prose .ml-manual__lead strong {
+  color: $text-ui;
+}
+
+.ml-manual__toc {
+  background: $bg-table-header;
+  border: 1px solid $border-ui;
+  padding: 0.9rem 1.1rem 1rem;
+  margin: 0 0 1.25rem;
+  font-size: 0.88rem;
+  color: $text-muted;
+  line-height: 1.55;
+}
+
+.ml-manual__toc h2 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  color: $text-ui;
+  font-weight: 600;
+}
+
+.ml-manual__toc ol {
+  margin: 0;
+  padding-left: 1.35rem;
+}
+
+.ml-manual__toc li {
+  margin: 0.25rem 0;
+}
+
+.ml-manual__toc a {
+  color: $col-folder1-b;
+}
+
+.ml-manual__toc a:hover,
+.ml-manual__toc a:focus-visible {
+  color: $text-ui;
+}
+
+.ml-guide-block {
+  border: 1px solid $border-ui;
+  padding: 1rem 1.15rem 1.1rem;
+  margin: 0 0 1rem;
+  line-height: 1.55;
+  color: $text-muted;
+  font-size: 0.9rem;
+}
+
+.ml-guide-block h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.02rem;
+  color: $text-ui;
+  font-weight: 600;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid $border-ui;
+}
+
+.ml-guide-block p {
+  margin: 0.5rem 0 0.65rem;
+}
+
+.ml-guide-block pre {
+  margin: 0.5rem 0 0.65rem;
+  font-size: 0.78rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: $bg-page;
+  border: 1px solid $border-ui;
+  padding: 0.5rem 0.6rem;
+  color: $text-ui;
+}
+
+.ml-guide-block--1 {
+  background: $ml-guide-block-1;
+}
+.ml-guide-block--2 {
+  background: $ml-guide-block-2;
+}
+.ml-guide-block--3 {
+  background: $ml-guide-block-3;
+}
+.ml-guide-block--4 {
+  background: $ml-guide-block-4;
+}
+.ml-guide-block--5 {
+  background: $ml-guide-block-5;
+}
+.ml-guide-block--6 {
+  background: $ml-guide-block-6;
+}
+.ml-guide-block--7 {
+  background: $ml-guide-block-7;
+}
+.ml-guide-block--8 {
+  background: $ml-guide-block-8;
+}
+
+.ml-guide-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 0.65rem 0 0.25rem;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .ml-guide-compare {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ml-guide-compare__col {
+  background: $ml-guide-compare;
+  border: 1px solid $border-ui;
+  padding: 0.7rem 0.85rem;
+  min-width: 0;
+}
+
+.ml-guide-compare__col h3 {
+  margin: 0 0 0.45rem;
+  font-size: 0.9rem;
+  color: $text-ui;
+  font-weight: 600;
+}
+
+.ml-guide-compare__col p {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+}
+
+.ml-guide-compare__label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: $text-muted;
+  margin-bottom: 0.2rem;
+}
+
+.ml-gradio-as-research.research-gallery {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0 0 0.25rem;
+}
+
+.ml-explain {
+  background: $bg-panel;
+  border: 1px solid $border-ui;
+  padding: 0.9rem 1.1rem;
+  margin: 0 0 1.1rem;
+  line-height: 1.55;
+  font-size: 0.92rem;
+  color: $text-muted;
+}
+
+.ml-explain strong {
+  color: $text-ui;
+}
+
+.ml-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 0.5rem 0 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .ml-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ml-2col__panel {
+  background: $bg-panel;
+  border: 1px solid $border-ui;
+  padding: 0.75rem 1rem;
+  min-width: 0;
+}
+
+.ml-2col__panel h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $text-ui;
+  border-bottom: 1px solid $border-ui;
+  padding-bottom: 0.35rem;
+}
+
+.ml-2col__panel pre {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: $text-muted;
+}
+
+.ml-2col__panel p {
+  margin: 0.4rem 0 0.6rem;
+  font-size: 0.88rem;
+  color: $text-muted;
+}
+
+.ml-note {
+  font-size: 0.86rem;
+  color: $text-muted;
+  margin: 0.4rem 0 0.8rem;
+}
+
+.ml-step {
+  margin: 0 0 1.5rem;
+  padding: 0 0 0.5rem;
+}
+
+.ml-step h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  border-left: 3px solid $col-folder1-b;
+  padding-left: 0.5rem;
+}
+
+.ml-step--locked {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.ml-step--locked a {
+  pointer-events: auto;
+}
+
+.ml-run {
+  font-size: 0.88rem;
+  color: $text-muted;
+  margin: 0.2rem 0;
+}
+
+.ml-log {
+  background: $bg-diagram;
+  border: 1px solid $border-ui;
+  color: $text-muted;
+  font: 0.75rem/1.4 ui-monospace, monospace;
+  max-height: 18rem;
+  overflow: auto;
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.65rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ml-unlock-bez {
+  color: $text-ui;
+}
+
+.ml-dashboard .ml-textarea {
+  width: 100%;
+  max-width: 42rem;
+  box-sizing: border-box;
+}
+
+.ml-dashboard .ml-input-num {
+  max-width: 5rem;
+}
+
+.ml-win-steps {
+  margin: 0.5rem 0 1rem;
+  padding-left: 1.35rem;
+  color: $text-muted;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.ml-win-steps li {
+  margin-bottom: 0.65rem;
+}
+
+.ml-win-steps pre {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  overflow-x: auto;
+}
+
+.ztk__input {
+  display: block;
+  width: 100%;
+  max-width: 44rem;
+  box-sizing: border-box;
+  margin: 0.25rem 0 0.75rem;
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  color: $text-ui;
+  background: $bg-panel;
+  border: 1px solid $border-ui;
+}
+
+.ztk__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.ztk__tab {
+  font: inherit;
+  cursor: pointer;
+  color: $text-ui;
+  background: $btn-bg;
+  border: 1px solid $border-ui;
+  padding: 0.35rem 0.6rem;
+}
+
+.ztk__tab[aria-pressed="true"] {
+  border-color: $col-folder1-b;
+}
+
+.ztk__tab:focus-visible {
+  outline: 2px solid $col-folder1-b;
+  outline-offset: 2px;
+}
+
+.ztk__panel[hidden] {
+  display: none;
+}
+
+.ztk__panel {
+  margin: 0 0 0.65rem;
+  padding: 0.75rem 1rem 0.85rem;
+  border: 1px solid $border-ui;
+}
+
+.ztk__panel[data-ztk-panel='1'] {
+  background: $ml-guide-block-1;
+  border-left: 4px solid $col-folder1-b;
+}
+
+.ztk__panel[data-ztk-panel='2'] {
+  background: $ml-guide-block-2;
+  border-left: 4px solid $col-folder1-c;
+}
+
+.ztk__panel[data-ztk-panel='3'] {
+  background: $ml-guide-block-3;
+  border-left: 4px solid $col-folder1-a;
+}
+
+.ztk__panel[data-ztk-panel='4'] {
+  background: $ml-guide-block-4;
+  border-left: 4px solid $col-folder2-b;
+}
+
+.ztk__panel[data-ztk-panel='5'] {
+  background: $ml-guide-block-5;
+  border-left: 4px solid $col-folder2-c;
+}
+
+.ztk__code {
+  background: $bg-diagram;
+  border: 1px solid $border-ui;
+  color: $text-muted;
+  font: 0.75rem/1.4 ui-monospace, monospace;
+  max-height: 14rem;
+  overflow: auto;
+  margin: 0.35rem 0 0;
+  padding: 0.5rem 0.65rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ztk__snippet-root {
+  margin: 0.35rem 0 0.65rem;
+}
+
+.ztk__code--snippet {
+  margin: 0;
+  max-height: min(60vh, 22rem);
+  user-select: text;
+}
+
+.ztk__code--snippet code {
+  font: inherit;
+  color: inherit;
+  white-space: pre;
+  display: block;
+  overflow-x: auto;
+}
+
+.ztk__copy {
+  font: inherit;
+  cursor: pointer;
+  color: $text-ui;
+  background: $btn-bg;
+  border: 1px solid $border-ui;
+  padding: 0.3rem 0.6rem;
+}
+
+.ztk__copy:focus-visible {
+  outline: 2px solid $col-folder1-b;
+  outline-offset: 2px;
+}

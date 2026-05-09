@@ -1,0 +1,66 @@
+{
+  "defaultLang": "cs",
+  "cs": {
+    "title": "Liberty bells",
+    "summary": "Potěšení se dnes stává infrastrukturou moci prorůstající do každodennosti; bavit se by nemělo vyvolávat způsoby provinilosti, nejúčinnější kontrola nepůsobí jako zákaz, spíš jako komfort, nabídka a pocit volby. V permanentním karnevalu je přítomný pocit svobody, skutečná svoboda je ale diskutabilní v případě pokud je svoboda přesně dávkovaná senzace a managovaná našimi mikro rozhodnutími, které udržují logiku opakování a odměny. Skrz snahu na realitu nahlížít jako fikci o paralelní realitě, je pochopení, že pravda leží přímo před divákem a právě proto je podezřele povědomá. \n\nVidea fungují jako depeše: krátké literární útržky příběhu, připomínající současné vyprávění narativu skrz reelka bez slibu úniku, které hazardují s časem jako mechanisms hracích automatů. Dávkující čas, afekt a pozornost tak, aby se zkušenost točila dokola ··· aby se dalo pokračovat; a podobně i Bachtinův karneval tu není jen osvobození, ale i bezpečný ventil, povolené vybočení, které řád udržuje. Dnešní karneval se tedy neděje jen jednou za rok: je monetizovaný a všudypřítomný, takže se rozmazává hranice mezi námezdní prací a zábavou, v mezičase pořád klikáme/skrolujeme dál, dopaminem,  zatímco zábava se zkazdodennostněla a znemožnila nám cítit rozdíl mezi prací a zábavou.",
+    "voices": "Binární pohled, contrastní paralely\n\nUnfracervene cidlo\n\n\nAmusing Ourselves to Death: Public Discourse in the Age of Show Business (Ubavit se k smrti: veřejná komunikace ve věku zábavy)\nBook by Neil Postman",
+    "axes": {
+      "intro": "Depeše… epizodičnost\n\nPotěšení jako infrastruktura… moc se nepozná podle přímého násilí, ale podle toho, že její hlas zní jako náš vnitřní hlas.",
+      "verticalTitle": "Vertikála (řád · nad-řízení · teleologie)",
+      "verticalItems": [
+        "Komfort = disciplína, potěšení jako mechanismus kontroly",
+        "Spása = produkt, příběh návratu",
+        "Ventil = stabilizace",
+        "->  suchý, distancovaný, akademický, popisující, karneval obecně, slovník fenomenů, odbornost, zábava jako kontrolní mechanismus"
+      ],
+      "horizontalTitle": "Horizontála (provoz · tělo · každodennost)",
+      "horizontalItems": [
+        "Tělo v potěšení = návyk, afekt",
+        "Identita = úkol, neustálý karneval, hraní rolí a nošení masek",
+        "Lolcow a scapegoat = smích a vina jako sociální lepidlo",
+        "-> vnitřní hlas, naivní, paranoidní, zlomyslný, mluví přímo na diváka, každodennost, tělo a mysl v prožitku"
+      ],
+      "commonTitle": "Společná půda",
+      "common": ""
+    },
+    "paradigmsTitle": "Paradigmata vedle sebe",
+    "paradigms": [
+      [
+        "Karneval",
+        "Pernetní karneval (masky)"
+      ],
+      [
+        "Lolcow",
+        "Scapegoat"
+      ],
+      [
+        "Smích jako osvobození",
+        "smích jako stabilizace, sbližování"
+      ],
+      [
+        "Systémový ventil",
+        "systémový (kontrola) motor"
+      ],
+      [
+        "Svoboda jako ideál",
+        "svoboda jako pocit rozdělovaný po částech"
+      ]
+    ]
+  },
+  "en": {
+    "title": "Liberty bells",
+    "summary": "Pleasure today becomes an infrastructure of power woven into everyday life; entertaining oneself shouldn’t produce feelings of guilt, and the most effective control doesn’t appear as a prohibition but rather as comfort, an offer, and a sense of choice. Within this permanent carnival a feeling of freedom is present, yet “real” freedom becomes debatable if freedom is only a precisely dosed sensation, managed through our micro‑decisions that sustain a logic of repetition and reward. By trying to view reality as a fiction of a parallel world, we arrive at the understanding that the truth lies directly in front of the viewer—and that is exactly why it feels suspiciously familiar.\n\nThe videos function as dispatches: short literary fragments of a story, echoing contemporary narration through Reels that offer no promise of escape, gambling with time like the mechanisms of slot machines. They dose time, affect, and attention so the experience keeps looping ··· so it can continue; and similarly, Bakhtin’s carnival here is not only liberation but also a safety valve—permitted deviation that ultimately preserves order. Today’s carnival, then, doesn’t happen only once a year: it is monetized and omnipresent, so the boundary between wage labor and entertainment blurs; in the in‑between we keep clicking/scrolling, driven by dopamine, while entertainment has become everyday routine and made it harder for us to feel the difference between work and fun.",
+    "voices": "Binary view, contrast parallels",
+    "axes": {
+      "intro": "",
+      "verticalTitle": "Vertical (order · meta-control · teleology)",
+      "verticalItems": [],
+      "horizontalTitle": "Horizontal (operations · body · everydayness)",
+      "horizontalItems": [],
+      "commonTitle": "Common ground",
+      "common": ""
+    },
+    "paradigmsTitle": "Paradigms side by side",
+    "paradigms": []
+  }
+}

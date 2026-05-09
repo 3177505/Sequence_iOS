@@ -1,0 +1,73 @@
+@use 'vars' as *;
+
+.concept {
+  padding: 24px 16px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.concept hr {
+  border: 0;
+  border-top: 1px solid $border-ui;
+  margin: 22px 0;
+}
+
+.concept .controls {
+  border-top: 0;
+  padding: 0 0 12px 0;
+}
+
+.concept__grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.concept__card {
+  border: 1px solid $border-ui;
+  background: $bg-panel;
+  padding: 14px 14px;
+}
+
+.concept__card h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.concept__table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid $border-ui;
+}
+
+.concept__table th,
+.concept__table td {
+  border: 1px solid $border-ui;
+  padding: 10px 12px;
+  vertical-align: top;
+}
+
+.concept__table thead th {
+  background: $bg-table-header;
+}
+
+.concept textarea,
+.concept input[type='text'] {
+  background: $bg-panel;
+  color: $text-ui;
+  border: 1px solid $border-ui;
+  font: inherit;
+  padding: 10px 12px;
+}
+
+.concept textarea {
+  width: 100%;
+}
+
+.concept label {
+  display: block;
+  margin: 12px 0 6px 0;
+  color: $text-muted;
+  font-size: 13px;
+}
+

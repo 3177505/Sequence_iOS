@@ -1,0 +1,816 @@
+{
+  "UkraineRussiaReport": {
+    "kind": "t3",
+    "data": {
+      "approved_at_utc": null,
+      "subreddit": "UkraineRussiaReport",
+      "selftext": "",
+      "author_fullname": "t2_molz7ydi",
+      "saved": false,
+      "mod_reason_title": null,
+      "gilded": 0,
+      "clicked": false,
+      "is_gallery": true,
+      "title": "UA POV: Trump says the U.S. wants to find out where the money Biden gave to Ukraine has gone. And that they’ll no longer spent a single cent on Ukraine - Times of Ukraine",
+      "link_flair_richtext": [
+        {
+          "e": "text",
+          "t": "Civilians &amp; politicians"
+        }
+      ],
+      "subreddit_name_prefixed": "r/UkraineRussiaReport",
+      "hidden": false,
+      "pwls": null,
+      "link_flair_css_class": "",
+      "downs": 0,
+      "thumbnail_height": 108,
+      "top_awarded_type": null,
+      "hide_score": true,
+      "media_metadata": {
+        "rh99zox7zmpg1": {
+          "status": "valid",
+          "e": "Image",
+          "m": "image/jpg",
+          "p": [
+            {
+              "y": 58,
+              "x": 108,
+              "u": "https://preview.redd.it/rh99zox7zmpg1.jpg?width=108&amp;crop=smart&amp;auto=webp&amp;s=827306d8f237eb7797830e89c75594e0cb767049"
+            },
+            {
+              "y": 117,
+              "x": 216,
+              "u": "https://preview.redd.it/rh99zox7zmpg1.jpg?width=216&amp;crop=smart&amp;auto=webp&amp;s=56675f02acad939166276288171a56493eb6affd"
+            },
+            {
+              "y": 173,
+              "x": 320,
+              "u": "https://preview.redd.it/rh99zox7zmpg1.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=fc327fc8d1880bee18565292d2b413747805d2cd"
+            },
+            {
+              "y": 346,
+              "x": 640,
+              "u": "https://preview.redd.it/rh99zox7zmpg1.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=ee560070d7bfe99ce8a2d5f8add7be6a8a943521"
+            },
+            {
+              "y": 520,
+              "x": 960,
+              "u": "https://preview.redd.it/rh99zox7zmpg1.jpg?width=960&amp;crop=smart&amp;auto=webp&amp;s=93a38d19191cacfd84bab7d3ce497f9dcc1629ad"
+            },
+            {
+              "y": 585,
+              "x": 1080,
+              "u": "https://preview.redd.it/rh99zox7zmpg1.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=4033d82829ca937c699673b8fa17376283933ef3"
+            }
+          ],
+          "s": {
+            "y": 634,
+            "x": 1170,
+            "u": "https://preview.redd.it/rh99zox7zmpg1.jpg?width=1170&amp;format=pjpg&amp;auto=webp&amp;s=e6cf2dfa10144a28e8fce3287f87154cf8e5d5a3"
+          },
+          "id": "rh99zox7zmpg1"
+        },
+        "cp5dmvx7zmpg1": {
+          "status": "valid",
+          "e": "Image",
+          "m": "image/jpg",
+          "p": [
+            {
+              "y": 83,
+              "x": 108,
+              "u": "https://preview.redd.it/cp5dmvx7zmpg1.jpg?width=108&amp;crop=smart&amp;auto=webp&amp;s=8fc8a059590e4e9a8a08a6e3aa9bcdce05e0b4ca"
+            },
+            {
+              "y": 167,
+              "x": 216,
+              "u": "https://preview.redd.it/cp5dmvx7zmpg1.jpg?width=216&amp;crop=smart&amp;auto=webp&amp;s=b60a7d5d23c9e9c38384247852c40236aeff9dcc"
+            },
+            {
+              "y": 248,
+              "x": 320,
+              "u": "https://preview.redd.it/cp5dmvx7zmpg1.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=956fc2cf30a2f2504ad32e01e373795c7e3fc090"
+            },
+            {
+              "y": 497,
+              "x": 640,
+              "u": "https://preview.redd.it/cp5dmvx7zmpg1.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=94e6217c9895e87ee3a81e772cc413c11a100754"
+            },
+            {
+              "y": 745,
+              "x": 960,
+              "u": "https://preview.redd.it/cp5dmvx7zmpg1.jpg?width=960&amp;crop=smart&amp;auto=webp&amp;s=50a49d309e69dd77a9cbddda0f0d536741a7fcf6"
+            },
+            {
+              "y": 839,
+              "x": 1080,
+              "u": "https://preview.redd.it/cp5dmvx7zmpg1.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=1bb3ecb3f5ebe737b77e2acf7f57a12d664bbfcf"
+            }
+          ],
+          "s": {
+            "y": 909,
+            "x": 1170,
+            "u": "https://preview.redd.it/cp5dmvx7zmpg1.jpg?width=1170&amp;format=pjpg&amp;auto=webp&amp;s=4f1a7d0a138b013a4a895707d88352040b90935f"
+          },
+          "id": "cp5dmvx7zmpg1"
+        }
+      },
+      "name": "t3_1rwcb83",
+      "quarantine": false,
+      "link_flair_text_color": "light",
+      "upvote_ratio": 1,
+      "author_flair_background_color": "#878a8c",
+      "ups": 3,
+      "domain": "reddit.com",
+      "media_embed": {},
+      "thumbnail_width": 140,
+      "author_flair_template_id": "4b94b3f8-a968-11ec-9f81-5a16b7c97e74",
+      "is_original_content": false,
+      "user_reports": [],
+      "secure_media": null,
+      "is_reddit_media_domain": false,
+      "is_meta": false,
+      "category": null,
+      "secure_media_embed": {},
+      "gallery_data": {
+        "items": [
+          {
+            "media_id": "cp5dmvx7zmpg1",
+            "id": 888710690
+          },
+          {
+            "media_id": "rh99zox7zmpg1",
+            "id": 888710691
+          }
+        ]
+      },
+      "link_flair_text": "Civilians &amp; politicians",
+      "can_mod_post": false,
+      "score": 3,
+      "approved_by": null,
+      "is_created_from_ads_ui": false,
+      "author_premium": false,
+      "thumbnail": "https://preview.redd.it/cp5dmvx7zmpg1.jpg?width=140&amp;height=108&amp;auto=webp&amp;s=eecac5d67448601a65341fda0de77412afbe0a62",
+      "edited": false,
+      "author_flair_css_class": null,
+      "author_flair_richtext": [
+        {
+          "e": "text",
+          "t": "No Flair"
+        }
+      ],
+      "gildings": {},
+      "content_categories": null,
+      "is_self": false,
+      "subreddit_type": "public",
+      "created": 1773766769,
+      "link_flair_type": "richtext",
+      "wls": null,
+      "removed_by_category": null,
+      "banned_by": null,
+      "author_flair_type": "richtext",
+      "total_awards_received": 0,
+      "allow_live_comments": false,
+      "selftext_html": null,
+      "likes": null,
+      "suggested_sort": "top",
+      "banned_at_utc": null,
+      "url_overridden_by_dest": "https://www.reddit.com/gallery/1rwcb83",
+      "view_count": null,
+      "archived": false,
+      "no_follow": false,
+      "is_crosspostable": false,
+      "pinned": false,
+      "over_18": false,
+      "all_awardings": [],
+      "awarders": [],
+      "media_only": false,
+      "link_flair_template_id": "376ef1c8-a7f5-11ec-a33f-12d4418a9209",
+      "can_gild": false,
+      "spoiler": false,
+      "locked": false,
+      "author_flair_text": "No Flair",
+      "treatment_tags": [],
+      "visited": false,
+      "removed_by": null,
+      "mod_note": null,
+      "distinguished": null,
+      "subreddit_id": "t5_613zyp",
+      "author_is_blocked": false,
+      "mod_reason_by": null,
+      "num_reports": null,
+      "removal_reason": null,
+      "link_flair_background_color": "#46d160",
+      "id": "1rwcb83",
+      "is_robot_indexable": true,
+      "report_reasons": null,
+      "author": "rowida_00",
+      "discussion_type": null,
+      "num_comments": 0,
+      "send_replies": true,
+      "contest_mode": false,
+      "mod_reports": [],
+      "author_patreon_flair": false,
+      "author_flair_text_color": "light",
+      "permalink": "/r/UkraineRussiaReport/comments/1rwcb83/ua_pov_trump_says_the_us_wants_to_find_out_where/",
+      "stickied": false,
+      "url": "https://www.reddit.com/gallery/1rwcb83",
+      "subreddit_subscribers": 119291,
+      "created_utc": 1773766769,
+      "num_crossposts": 0,
+      "media": null,
+      "is_video": false
+    }
+  },
+  "_lastUpdated": "2026-03-17T17:04:22.362Z",
+  "UkrainianConflict": {
+    "kind": "t3",
+    "data": {
+      "approved_at_utc": null,
+      "subreddit": "UkrainianConflict",
+      "selftext": "",
+      "author_fullname": "t2_iucilf51r",
+      "saved": false,
+      "mod_reason_title": null,
+      "gilded": 0,
+      "clicked": false,
+      "title": "Ukraine seeks immediate release &amp; access to 6 nationals arrested in India on terror conspiracy charges",
+      "link_flair_richtext": [],
+      "subreddit_name_prefixed": "r/UkrainianConflict",
+      "hidden": false,
+      "pwls": null,
+      "link_flair_css_class": null,
+      "downs": 0,
+      "thumbnail_height": 78,
+      "top_awarded_type": null,
+      "hide_score": true,
+      "name": "t3_1rwb946",
+      "quarantine": false,
+      "link_flair_text_color": "dark",
+      "upvote_ratio": 1,
+      "author_flair_background_color": null,
+      "subreddit_type": "public",
+      "ups": 5,
+      "total_awards_received": 0,
+      "media_embed": {},
+      "thumbnail_width": 140,
+      "author_flair_template_id": null,
+      "is_original_content": false,
+      "user_reports": [],
+      "secure_media": null,
+      "is_reddit_media_domain": false,
+      "is_meta": false,
+      "category": null,
+      "secure_media_embed": {},
+      "link_flair_text": null,
+      "can_mod_post": false,
+      "score": 5,
+      "approved_by": null,
+      "is_created_from_ads_ui": false,
+      "author_premium": false,
+      "thumbnail": "https://external-preview.redd.it/47nqrfRngYIR-Y3fgqhF0mPOfKuZVA6fu-Ykh-1uLGY.png?width=140&amp;height=78&amp;auto=webp&amp;s=ae5d35384d27afc020074c306e479866b841bdc6",
+      "edited": false,
+      "author_flair_css_class": null,
+      "author_flair_richtext": [],
+      "gildings": {},
+      "post_hint": "link",
+      "content_categories": null,
+      "is_self": false,
+      "mod_note": null,
+      "created": 1773764529,
+      "link_flair_type": "text",
+      "wls": null,
+      "removed_by_category": null,
+      "banned_by": null,
+      "author_flair_type": "text",
+      "domain": "theprint.in",
+      "allow_live_comments": false,
+      "selftext_html": null,
+      "likes": null,
+      "suggested_sort": "confidence",
+      "banned_at_utc": null,
+      "url_overridden_by_dest": "https://theprint.in/diplomacy/ukraine-lodges-formal-protest-with-india-over-detention-of-6-nationals-seeks-unimpeded-consular-access/2881597/",
+      "view_count": null,
+      "archived": false,
+      "no_follow": false,
+      "is_crosspostable": false,
+      "pinned": false,
+      "over_18": false,
+      "preview": {
+        "images": [
+          {
+            "source": {
+              "url": "https://external-preview.redd.it/47nqrfRngYIR-Y3fgqhF0mPOfKuZVA6fu-Ykh-1uLGY.png?auto=webp&amp;s=508e60f86e659305ebfe4adb4c5cb4f3f02e0875",
+              "width": 1200,
+              "height": 675
+            },
+            "resolutions": [
+              {
+                "url": "https://external-preview.redd.it/47nqrfRngYIR-Y3fgqhF0mPOfKuZVA6fu-Ykh-1uLGY.png?width=108&amp;crop=smart&amp;auto=webp&amp;s=ca6ce8db13cf1ec0302b8bc31c4c1ae35d657582",
+                "width": 108,
+                "height": 60
+              },
+              {
+                "url": "https://external-preview.redd.it/47nqrfRngYIR-Y3fgqhF0mPOfKuZVA6fu-Ykh-1uLGY.png?width=216&amp;crop=smart&amp;auto=webp&amp;s=580f21d2fbfb498189136dcb5aec8786f6b12fcd",
+                "width": 216,
+                "height": 121
+              },
+              {
+                "url": "https://external-preview.redd.it/47nqrfRngYIR-Y3fgqhF0mPOfKuZVA6fu-Ykh-1uLGY.png?width=320&amp;crop=smart&amp;auto=webp&amp;s=417649bba98dad6b0d65d456afc245a458222763",
+                "width": 320,
+                "height": 180
+              },
+              {
+                "url": "https://external-preview.redd.it/47nqrfRngYIR-Y3fgqhF0mPOfKuZVA6fu-Ykh-1uLGY.png?width=640&amp;crop=smart&amp;auto=webp&amp;s=b62f4f287bd1fe5fb34b0dd998fee9bd078d8313",
+                "width": 640,
+                "height": 360
+              },
+              {
+                "url": "https://external-preview.redd.it/47nqrfRngYIR-Y3fgqhF0mPOfKuZVA6fu-Ykh-1uLGY.png?width=960&amp;crop=smart&amp;auto=webp&amp;s=33b5bbe8572141ebaeed8d2545aaa58e0a189d4c",
+                "width": 960,
+                "height": 540
+              },
+              {
+                "url": "https://external-preview.redd.it/47nqrfRngYIR-Y3fgqhF0mPOfKuZVA6fu-Ykh-1uLGY.png?width=1080&amp;crop=smart&amp;auto=webp&amp;s=d77c1f66355b0b47cfb7cc402ca0b4496af769f9",
+                "width": 1080,
+                "height": 607
+              }
+            ],
+            "variants": {},
+            "id": "47nqrfRngYIR-Y3fgqhF0mPOfKuZVA6fu-Ykh-1uLGY"
+          }
+        ],
+        "enabled": false
+      },
+      "all_awardings": [],
+      "awarders": [],
+      "media_only": false,
+      "can_gild": false,
+      "spoiler": false,
+      "locked": false,
+      "author_flair_text": null,
+      "treatment_tags": [],
+      "visited": false,
+      "removed_by": null,
+      "num_reports": null,
+      "distinguished": null,
+      "subreddit_id": "t5_30hhs",
+      "author_is_blocked": false,
+      "mod_reason_by": null,
+      "removal_reason": null,
+      "link_flair_background_color": "",
+      "id": "1rwb946",
+      "is_robot_indexable": true,
+      "report_reasons": null,
+      "author": "Consistent-Figure820",
+      "discussion_type": null,
+      "num_comments": 1,
+      "send_replies": true,
+      "contest_mode": false,
+      "mod_reports": [],
+      "author_patreon_flair": false,
+      "author_flair_text_color": null,
+      "permalink": "/r/UkrainianConflict/comments/1rwb946/ukraine_seeks_immediate_release_access_to_6/",
+      "stickied": false,
+      "url": "https://theprint.in/diplomacy/ukraine-lodges-formal-protest-with-india-over-detention-of-6-nationals-seeks-unimpeded-consular-access/2881597/",
+      "subreddit_subscribers": 476220,
+      "created_utc": 1773764529,
+      "num_crossposts": 0,
+      "media": null,
+      "is_video": false,
+      "scraped_body": "HomeDiplomacyUkraine seeks immediate release & access to 6 nationals arrested in India... Diplomacy Ukraine seeks immediate release & access to 6 nationals arrested in India on terror conspiracy charges Six Ukrainians and one American citizen were detained by NIA last week, and have been booked under UAPA on the charge of conspiring to carry out terrorist attacks against India. Keshav Padmanabhan 17 March, 2026 06:04 pm IST FacebookTwitterWhatsAppLinkedin The arrested foreigners being taken away from the Patiala House Court after being produced before the NIA court, in New Delhi on Monday | ANI Video Grab Follow Us : Text Size: A- A+ New Delhi: Ukraine has lodged a formal protest with India over the detention of six of its nationals, calling for their release and “unimpeded consular access”. Six Ukrainian nationals and one American were detained by National Investigation Agency (NIA) Friday on the charge of conspiring to carry out terrorist attacks against India. “Contrary to established international practice, the Embassy of Ukraine in the Republic of India did not receive any official notification from the competent authorities of India regarding the detention of Ukrainian citizens. The Ukrainian side insists on the immediate provision of unimpeded consular access to the detainees,” the Press Service of the Ukrainian Ministry of Foreign Affairs said in a statement. The statement added: “The Ambassador of Ukraine to the Republic of India Dr. Oleksandr Polishchuk held a meeting with the Secretary (West) of the Ministry of External Affairs of India, Mr. Sibi George, during which he handed over an official note of protest demanding the immediate release of the Ukrainian citizens and access to them. In addition, the Embassy is maintaining contacts with other competent authorities of India in order to clarify all the circumstances and reasons for the detention.” Show Full Article The Ukrainian Ministry of Foreign Affairs in its statement said the case revolves around the unauthorised presence of its nationals in Mizoram, whereas a special permit is normally required for foreign nationals to travel there. The statement added that the case also involves the “alleged illegal crossing of the state border between India and Myanmar”. However, the seven foreign nationals were charged under Section 18 of the Unlawful Activities (Prevention) Act, 1967. According to persons aware of the matter, the foreign nationals entered Mizoram without the required special permit and allegedly travelled to Myanmar, where they met with members of ethnic groups that have interests that are “inimical” to India, as reported by ThePrint. Further, the foreign nationals are also accused by Indian authorities of having unmanned aerial vehicles (UAVs) delivered from Europe to Mizoram, before carrying them across the border into Myanmar. “As of now, there are no established facts proving the involvement of the said Ukrainian citizens in unlawful activities on the territory of India or Myanmar. At the same time, certain publications, including in some Indian and Russian media outlets, contain distorted interpretations of the available facts, are manipulative in nature, and put forward unfounded allegations,” the Ukrainian Ministry of Foreign Affairs said in its statement. The six Ukrainians have been provided with legal aid and a lawyer. Ukrainian embassy officials attended the court hearing Monday, but were not allowed to “communicate directly” with the detainees. All seven foreign nationals have been sent to NIA’s custody for eleven days, till 27 March. Kyiv added in its statement that “proper marking” of restricted areas requiring special permits for entrance is “often absent” and that this “creates a risk of unintentional violation of the established rules”. “We draw attention to the fact that there are certain restricted-access zones in India for foreign nationals, entry to which is possible only with special permits. At the same time, proper marking of such areas on the ground is often absent, which creates a risk of unintentional violation of the established rules,” it said. According to reports, three Ukrainian nationals each were detained at the Lucknow and New Delhi airports, while the American national was detained at Kolkata airport by the Bureau of Immigration. Investigations are continuing by the NIA. It is unclear when the seven nationals entered India and returned from Myanmar. The US embassy in India declined to comment on the sole American’s arrest, for the privacy of its citizens. (Edited by Gitanjali Das) Also Read: 10 months, 5 hearings: Official Secrets Act case against YouTuber Jyoti Malhotra still stuck at pre-trial Subscribe to our channels on YouTube, Telegram & WhatsApp Support Our Journalism India needs fair, non-hyphenated and questioning journalism, packed with on-ground reporting. ThePrint – with exceptional reporters, columnists and editors – is doing just that. Sustaining this needs support from wonderful reader…"
+    }
+  },
+  "CombatFootage": {
+    "kind": "t3",
+    "data": {
+      "approved_at_utc": null,
+      "subreddit": "CombatFootage",
+      "selftext": "I was looking at imagery of Gaza when I came across this. Certainly looks like an explosion. ",
+      "author_fullname": "t2_3bwyn2dh",
+      "saved": false,
+      "mod_reason_title": null,
+      "gilded": 0,
+      "clicked": false,
+      "is_gallery": true,
+      "title": "A warplane appears to fly over an explosion in Gaza. (Google Maps satellite imagery)",
+      "link_flair_richtext": [],
+      "subreddit_name_prefixed": "r/CombatFootage",
+      "hidden": false,
+      "pwls": null,
+      "link_flair_css_class": "",
+      "downs": 0,
+      "thumbnail_height": 105,
+      "top_awarded_type": null,
+      "hide_score": true,
+      "media_metadata": {
+        "3ho8968lxmpg1": {
+          "status": "valid",
+          "e": "Image",
+          "m": "image/jpg",
+          "p": [
+            {
+              "y": 81,
+              "x": 108,
+              "u": "https://preview.redd.it/3ho8968lxmpg1.jpg?width=108&amp;crop=smart&amp;auto=webp&amp;s=8d47cec5275edd9247eb926df5e8f0278cbcd9b2"
+            },
+            {
+              "y": 162,
+              "x": 216,
+              "u": "https://preview.redd.it/3ho8968lxmpg1.jpg?width=216&amp;crop=smart&amp;auto=webp&amp;s=57beaa48073453c0eb41864c2473eb8decf9c6a0"
+            },
+            {
+              "y": 240,
+              "x": 320,
+              "u": "https://preview.redd.it/3ho8968lxmpg1.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=92564fd18e45b00bba9cbf385615924626e72519"
+            },
+            {
+              "y": 480,
+              "x": 640,
+              "u": "https://preview.redd.it/3ho8968lxmpg1.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=95c19cfcc8c3f1db395642b7b917981331f5094c"
+            },
+            {
+              "y": 720,
+              "x": 960,
+              "u": "https://preview.redd.it/3ho8968lxmpg1.jpg?width=960&amp;crop=smart&amp;auto=webp&amp;s=7e870fa265ba2c4e54387a5e723c1b02466bb5e6"
+            },
+            {
+              "y": 810,
+              "x": 1080,
+              "u": "https://preview.redd.it/3ho8968lxmpg1.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=79bd29c9b1ea258dc2f62628bfa41d6836166627"
+            }
+          ],
+          "s": {
+            "y": 1576,
+            "x": 2100,
+            "u": "https://preview.redd.it/3ho8968lxmpg1.jpg?width=2100&amp;format=pjpg&amp;auto=webp&amp;s=0d58a5940670800ef6cc16558abffbdb5eb0598b"
+          },
+          "id": "3ho8968lxmpg1"
+        },
+        "8xuue58lxmpg1": {
+          "status": "valid",
+          "e": "Image",
+          "m": "image/jpg",
+          "p": [
+            {
+              "y": 81,
+              "x": 108,
+              "u": "https://preview.redd.it/8xuue58lxmpg1.jpg?width=108&amp;crop=smart&amp;auto=webp&amp;s=a337a4cb9c748e74e7e16eafde56b7a62303f6c2"
+            },
+            {
+              "y": 162,
+              "x": 216,
+              "u": "https://preview.redd.it/8xuue58lxmpg1.jpg?width=216&amp;crop=smart&amp;auto=webp&amp;s=e6fcc06a8d88c5c09f2f4a629b25eafc9575575e"
+            },
+            {
+              "y": 240,
+              "x": 320,
+              "u": "https://preview.redd.it/8xuue58lxmpg1.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=6b5b2949be4e5c5eb76c25615bb1db5327cf12ec"
+            },
+            {
+              "y": 480,
+              "x": 640,
+              "u": "https://preview.redd.it/8xuue58lxmpg1.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=08b87cab87db5e6ec7e9757ded87f593789f641d"
+            },
+            {
+              "y": 720,
+              "x": 960,
+              "u": "https://preview.redd.it/8xuue58lxmpg1.jpg?width=960&amp;crop=smart&amp;auto=webp&amp;s=9f5d5015d992243304dfaf61fccb0cf4133bccb5"
+            },
+            {
+              "y": 810,
+              "x": 1080,
+              "u": "https://preview.redd.it/8xuue58lxmpg1.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=58e5141b22fc7cecc854e3b01074ece9fa67b8c2"
+            }
+          ],
+          "s": {
+            "y": 3024,
+            "x": 4032,
+            "u": "https://preview.redd.it/8xuue58lxmpg1.jpg?width=4032&amp;format=pjpg&amp;auto=webp&amp;s=95dcc131e4c776b717453da064fc26d453be3227"
+          },
+          "id": "8xuue58lxmpg1"
+        },
+        "6sqh178lxmpg1": {
+          "status": "valid",
+          "e": "Image",
+          "m": "image/jpg",
+          "p": [
+            {
+              "y": 144,
+              "x": 108,
+              "u": "https://preview.redd.it/6sqh178lxmpg1.jpg?width=108&amp;crop=smart&amp;auto=webp&amp;s=fc78848b18eb43e968d0e75f4b63db5ffa121803"
+            },
+            {
+              "y": 288,
+              "x": 216,
+              "u": "https://preview.redd.it/6sqh178lxmpg1.jpg?width=216&amp;crop=smart&amp;auto=webp&amp;s=d2aaaf7b6cdcba57ab5f3885268e665c30ed3ff2"
+            },
+            {
+              "y": 426,
+              "x": 320,
+              "u": "https://preview.redd.it/6sqh178lxmpg1.jpg?width=320&amp;crop=smart&amp;auto=webp&amp;s=0a222218cf0e8c9f148073feed85732e98fd8a9a"
+            },
+            {
+              "y": 853,
+              "x": 640,
+              "u": "https://preview.redd.it/6sqh178lxmpg1.jpg?width=640&amp;crop=smart&amp;auto=webp&amp;s=0c14ea43afabea42745a69b53c26dceef1b861cd"
+            },
+            {
+              "y": 1280,
+              "x": 960,
+              "u": "https://preview.redd.it/6sqh178lxmpg1.jpg?width=960&amp;crop=smart&amp;auto=webp&amp;s=36c99d8b063c8d385511cfe6b411ec3d61f45c9a"
+            },
+            {
+              "y": 1440,
+              "x": 1080,
+              "u": "https://preview.redd.it/6sqh178lxmpg1.jpg?width=1080&amp;crop=smart&amp;auto=webp&amp;s=8d0bef609a8df8e8e9de182d8b4eb83e4125e09b"
+            }
+          ],
+          "s": {
+            "y": 4032,
+            "x": 3024,
+            "u": "https://preview.redd.it/6sqh178lxmpg1.jpg?width=3024&amp;format=pjpg&amp;auto=webp&amp;s=d353e473c25ebd65348c3028dace903e9ad1a229"
+          },
+          "id": "6sqh178lxmpg1"
+        }
+      },
+      "name": "t3_1rwc3we",
+      "quarantine": false,
+      "link_flair_text_color": "light",
+      "upvote_ratio": 0.67,
+      "author_flair_background_color": "",
+      "ups": 7,
+      "domain": "reddit.com",
+      "media_embed": {},
+      "thumbnail_width": 140,
+      "author_flair_template_id": null,
+      "is_original_content": false,
+      "user_reports": [],
+      "secure_media": null,
+      "is_reddit_media_domain": false,
+      "is_meta": false,
+      "category": null,
+      "secure_media_embed": {},
+      "gallery_data": {
+        "items": [
+          {
+            "media_id": "8xuue58lxmpg1",
+            "id": 888705343
+          },
+          {
+            "media_id": "6sqh178lxmpg1",
+            "id": 888705344
+          },
+          {
+            "media_id": "3ho8968lxmpg1",
+            "id": 888705345
+          }
+        ]
+      },
+      "link_flair_text": "Photo",
+      "can_mod_post": false,
+      "score": 7,
+      "approved_by": null,
+      "is_created_from_ads_ui": false,
+      "author_premium": false,
+      "thumbnail": "https://preview.redd.it/8xuue58lxmpg1.jpg?width=140&amp;height=105&amp;auto=webp&amp;s=2eae4cdc945f95620b76b3eb2a12dbbf9fa0d2dd",
+      "edited": false,
+      "author_flair_css_class": "agreed-user",
+      "author_flair_richtext": [],
+      "gildings": {},
+      "content_categories": null,
+      "is_self": false,
+      "subreddit_type": "public",
+      "created": 1773766336,
+      "link_flair_type": "text",
+      "wls": null,
+      "removed_by_category": null,
+      "banned_by": null,
+      "author_flair_type": "text",
+      "total_awards_received": 0,
+      "allow_live_comments": false,
+      "selftext_html": "&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;I was looking at imagery of Gaza when I came across this. Certainly looks like an explosion. &lt;/p&gt;\n&lt;/div&gt;&lt;!-- SC_ON --&gt;",
+      "likes": null,
+      "suggested_sort": null,
+      "banned_at_utc": null,
+      "url_overridden_by_dest": "https://www.reddit.com/gallery/1rwc3we",
+      "view_count": null,
+      "archived": false,
+      "no_follow": false,
+      "is_crosspostable": false,
+      "pinned": false,
+      "over_18": false,
+      "all_awardings": [],
+      "awarders": [],
+      "media_only": false,
+      "link_flair_template_id": "cb66aaf0-7585-11ea-9be7-0e7198bd4b09",
+      "can_gild": false,
+      "spoiler": false,
+      "locked": false,
+      "author_flair_text": "✔️",
+      "treatment_tags": [],
+      "visited": false,
+      "removed_by": null,
+      "mod_note": null,
+      "distinguished": null,
+      "subreddit_id": "t5_2v0c6",
+      "author_is_blocked": false,
+      "mod_reason_by": null,
+      "num_reports": null,
+      "removal_reason": null,
+      "link_flair_background_color": "#98925e",
+      "id": "1rwc3we",
+      "is_robot_indexable": true,
+      "report_reasons": null,
+      "author": "AnnPoltergeist",
+      "discussion_type": null,
+      "num_comments": 3,
+      "send_replies": true,
+      "contest_mode": false,
+      "mod_reports": [],
+      "author_patreon_flair": false,
+      "author_flair_text_color": "dark",
+      "permalink": "/r/CombatFootage/comments/1rwc3we/a_warplane_appears_to_fly_over_an_explosion_in/",
+      "stickied": false,
+      "url": "https://www.reddit.com/gallery/1rwc3we",
+      "subreddit_subscribers": 1918326,
+      "created_utc": 1773766336,
+      "num_crossposts": 0,
+      "media": null,
+      "is_video": false
+    }
+  },
+  "UkraineReddit": {
+    "kind": "t3",
+    "data": {
+      "approved_at_utc": null,
+      "subreddit": "ukraine",
+      "selftext": "",
+      "author_fullname": "t2_vi5u686s",
+      "saved": false,
+      "mod_reason_title": null,
+      "gilded": 0,
+      "clicked": false,
+      "title": "How Moscow Plans to Turn Occupied Ukrainian Territories Into a Settlement Hub by 2045",
+      "link_flair_richtext": [
+        {
+          "e": "text",
+          "t": "WAR CRIME"
+        }
+      ],
+      "subreddit_name_prefixed": "r/ukraine",
+      "hidden": false,
+      "pwls": null,
+      "link_flair_css_class": "",
+      "downs": 0,
+      "thumbnail_height": 73,
+      "top_awarded_type": null,
+      "hide_score": true,
+      "name": "t3_1rwc23x",
+      "quarantine": false,
+      "link_flair_text_color": "light",
+      "upvote_ratio": 1,
+      "author_flair_background_color": "#d50663",
+      "ups": 7,
+      "total_awards_received": 0,
+      "media_embed": {},
+      "thumbnail_width": 140,
+      "author_flair_template_id": "780e0958-b203-11ed-92c3-82c22247766e",
+      "is_original_content": false,
+      "user_reports": [],
+      "secure_media": null,
+      "is_reddit_media_domain": false,
+      "is_meta": false,
+      "category": null,
+      "secure_media_embed": {},
+      "link_flair_text": "WAR CRIME",
+      "can_mod_post": false,
+      "score": 7,
+      "approved_by": null,
+      "is_created_from_ads_ui": false,
+      "author_premium": false,
+      "thumbnail": "https://external-preview.redd.it/lmVN9q6iZ-DdY3rWyGyJC5iTbL6FjpZt6tPLyt1XB_0.png?width=140&amp;height=73&amp;auto=webp&amp;s=6f99d83b3fe74387429a40eeb768abb40bcfa0f3",
+      "edited": false,
+      "author_flair_css_class": "ukraine",
+      "author_flair_richtext": [
+        {
+          "a": ":FlagUA:",
+          "e": "emoji",
+          "u": "https://emoji.redditmedia.com/0sr271ddqll81_t5_2qqcn/FlagUA"
+        },
+        {
+          "e": "text",
+          "t": " Ukraine Media"
+        }
+      ],
+      "gildings": {},
+      "post_hint": "link",
+      "content_categories": null,
+      "is_self": false,
+      "subreddit_type": "public",
+      "created": 1773766232,
+      "link_flair_type": "richtext",
+      "wls": null,
+      "removed_by_category": null,
+      "banned_by": null,
+      "author_flair_type": "richtext",
+      "domain": "united24media.com",
+      "allow_live_comments": false,
+      "selftext_html": null,
+      "likes": null,
+      "suggested_sort": "confidence",
+      "banned_at_utc": null,
+      "url_overridden_by_dest": "https://united24media.com/latest-news/how-moscow-plans-to-turn-occupied-ukrainian-territories-into-a-how-moscow-plans-to-turn-occupied-ukrainian-territories-into-a-settlement-hub-by-2045-16965",
+      "view_count": null,
+      "archived": false,
+      "no_follow": false,
+      "is_crosspostable": false,
+      "pinned": false,
+      "over_18": false,
+      "preview": {
+        "images": [
+          {
+            "source": {
+              "url": "https://external-preview.redd.it/lmVN9q6iZ-DdY3rWyGyJC5iTbL6FjpZt6tPLyt1XB_0.png?auto=webp&amp;s=87f2ca5115350a7ae04eaab3af0eee25ec176f57",
+              "width": 1200,
+              "height": 630
+            },
+            "resolutions": [
+              {
+                "url": "https://external-preview.redd.it/lmVN9q6iZ-DdY3rWyGyJC5iTbL6FjpZt6tPLyt1XB_0.png?width=108&amp;crop=smart&amp;auto=webp&amp;s=5935c49c687bd9bf8fe8163355bbdb511b63dc0c",
+                "width": 108,
+                "height": 56
+              },
+              {
+                "url": "https://external-preview.redd.it/lmVN9q6iZ-DdY3rWyGyJC5iTbL6FjpZt6tPLyt1XB_0.png?width=216&amp;crop=smart&amp;auto=webp&amp;s=377c3d277a2890168151924c9f5c58bc652a0452",
+                "width": 216,
+                "height": 113
+              },
+              {
+                "url": "https://external-preview.redd.it/lmVN9q6iZ-DdY3rWyGyJC5iTbL6FjpZt6tPLyt1XB_0.png?width=320&amp;crop=smart&amp;auto=webp&amp;s=283a981b8bdea55f4c89bf4541f427881d45d076",
+                "width": 320,
+                "height": 168
+              },
+              {
+                "url": "https://external-preview.redd.it/lmVN9q6iZ-DdY3rWyGyJC5iTbL6FjpZt6tPLyt1XB_0.png?width=640&amp;crop=smart&amp;auto=webp&amp;s=683c0d42debaee467c5865d003871e40eeb3f238",
+                "width": 640,
+                "height": 336
+              },
+              {
+                "url": "https://external-preview.redd.it/lmVN9q6iZ-DdY3rWyGyJC5iTbL6FjpZt6tPLyt1XB_0.png?width=960&amp;crop=smart&amp;auto=webp&amp;s=0cde4610a7d1ed04509306c2631bc4f21a0285b1",
+                "width": 960,
+                "height": 504
+              },
+              {
+                "url": "https://external-preview.redd.it/lmVN9q6iZ-DdY3rWyGyJC5iTbL6FjpZt6tPLyt1XB_0.png?width=1080&amp;crop=smart&amp;auto=webp&amp;s=57d54adc84d04b12295e9171d4f7fa2b3218a875",
+                "width": 1080,
+                "height": 567
+              }
+            ],
+            "variants": {},
+            "id": "lmVN9q6iZ-DdY3rWyGyJC5iTbL6FjpZt6tPLyt1XB_0"
+          }
+        ],
+        "enabled": false
+      },
+      "all_awardings": [],
+      "awarders": [],
+      "media_only": false,
+      "link_flair_template_id": "11b48568-9cad-11ec-b66a-4afe2a621990",
+      "can_gild": false,
+      "spoiler": false,
+      "locked": false,
+      "author_flair_text": ":FlagUA: Ukraine Media",
+      "treatment_tags": [],
+      "visited": false,
+      "removed_by": null,
+      "mod_note": null,
+      "distinguished": null,
+      "subreddit_id": "t5_2qqcn",
+      "author_is_blocked": false,
+      "mod_reason_by": null,
+      "num_reports": null,
+      "removal_reason": null,
+      "link_flair_background_color": "#b8001f",
+      "id": "1rwc23x",
+      "is_robot_indexable": true,
+      "report_reasons": null,
+      "author": "UNITED24Media",
+      "discussion_type": null,
+      "num_comments": 2,
+      "send_replies": true,
+      "contest_mode": false,
+      "mod_reports": [],
+      "author_patreon_flair": false,
+      "author_flair_text_color": "light",
+      "permalink": "/r/ukraine/comments/1rwc23x/how_moscow_plans_to_turn_occupied_ukrainian/",
+      "stickied": false,
+      "url": "https://united24media.com/latest-news/how-moscow-plans-to-turn-occupied-ukrainian-territories-into-a-how-moscow-plans-to-turn-occupied-ukrainian-territories-into-a-settlement-hub-by-2045-16965",
+      "subreddit_subscribers": 938220,
+      "created_utc": 1773766232,
+      "num_crossposts": 0,
+      "media": null,
+      "is_video": false,
+      "scraped_body": "Russia plans to draw more than 113,000 people to occupied parts of Ukraine by 2045 under long-term development schemes for the temporarily occupied Donetsk, Luhansk, Zaporizhzhia, and Kherson regions, according to Ukrainska Pravda on March 17.The outlet, citing Russian business daily Vedomosti, reported that the plans were prepared by VEB.RF together with Russia’s Unified Institute of Spatial Planning. We bring you stories from the ground. Your support keeps our team in the field.DONATE NOWOf that total, 67,100 people are expected to come through the master plans, and another 46,700 through the territorial planning projects.The plans include large-scale construction and infrastructure projects meant to anchor that demographic shift. Vedomosti reported that the program envisions 9.8 million square meters of new housing under the master plans and another 3.31 million square meters through territorial planning projects.The plans also include, alongside 143 kindergartens, 24 schools, 117 outpatient clinics and field stations, more than 3,270 kilometers of roads, nearly 430 kilometers of rail lines, 19 stations, and the reconstruction of four airfields. Read moreCategoryWar in UkraineRussia Keeps Colonizing Occupied Ukrainian Territories. Its tool? Resettling Russians Sep 06, 2024 11:53 The same plans also call for industrial expansion, including 10 industrial parks, nine agro-industrial parks, two industrial parks of another category, four tech parks, eight machine-building enterprises, 15 construction-material plants, and six mining sites.To carry out the program, Russian authorities expect to involve 225,400 people in implementation and create about 36,300 new jobs by 2045.The projects were designed to improve living conditions for about 600,000 residents and raise the “investment attractiveness” of what Moscow calls its “reunified territories.”Mariupol endured a nearly three-month Russian siege in 2022, ending in mass destruction. Investigators documented grave war crimes across occupied territories, including the bombing of the city’s Drama Theatre.The UN verified 1,348 civilian deaths in Mariupol by mid-June 2022, but noted the real toll was likely far higher. Local and independent estimates put it above 10,000.Read moreCategoryWar in Ukraine\"An Unconventional Real Estate Market\" or How Russia Is Seizing Ukrainian Property in Occupied Territories Sep 04, 2024 10:21 The plans also place heavy emphasis on tourism, with Russian officials projecting tourist and excursion flows of up to 9.4 million people a year by 2044. Vedomosti reported that Moscow sees “high potential” in the occupied cities of Primorsk and Henichesk and is targeting sites including the Arabat Spit, the coast of the Zaporizhzhia region, Mariupol, Kyrylivka, and Skadovsk. The agenda includes more than 5,000 hotel units in priority areas and as many as 22,000 rooms across the occupied regions overall.The decision reinforces Moscow’s efforts to consolidate control over seized areas not only through military occupation, but also through housing, transport, industry, and tourism projects meant to reshape the regions for the long term.Read moreCategoryLatest newsRussian Officials Propose Exit Tax on Trips Abroad to Keep Tourists at Home Mar 16, 2026 17:06 The strategy is also reinforced by new legal tools aimed at redistributing property in the occupied regions.The earlier move formalized a practice already used across occupied Ukrainian territories, allowing occupation authorities to label homes and apartments “ownerless” and reassign them under a newly approved federal framework. The Center for Countering Disinformation reported that the expropriation campaign is expected to continue through 2030, tying the measure to what it described as the political deadline for Russian leader Vladimir Putin’s fifth term.The threat now extends beyond residents who fled the war, reaching people who still remain under occupation and could also lose property through fabricated claims of abandonment. Seized property is expected to be redistributed to Russian military personnel, security officers, officials, and public-sector workers brought into the occupied territories.On the Frontline of TruthOur reporters work on the frontlines to show what’s really happening in Ukraine. Your support helps them keep reporting.SUPPORT FRONTLINE REPORTS Latest news See all Author Ivan Khomenko Category Latest news France Is Building a 60-Strikes-a-Day Supercarrier—Here’s How Mar 17, 2026 18:36 Author Cyril Barabaltchouk Category Latest news EU Must Be Ready to Replace US in Ukraine Peace Talks, European Council President Says Mar 17, 2026 18:30 Author Dariia Mykhailenko Category Latest news Russian Ballerina Svetlana Zakharova Removed From Rome Gala After War in Ukraine Dispute Mar 17, 2026 18:08 Author Ivan Khomenko Category Latest news Moldova Hands Russia’s Ambassador Bottle of Polluted Dniester Water After Strike Mar 17, 2026 16:52"
+    }
+  }
+}

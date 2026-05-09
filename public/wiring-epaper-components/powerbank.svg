@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 140" role="img" aria-label="Powerbank">
+  <rect width="280" height="140" fill="#141414"/>
+  <text x="140" y="22" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="11">Powerbank ’ Pi (USB-A ’ USB-C)</text>
+  <rect x="56" y="44" width="168" height="56" rx="8" fill="#3a3530" stroke="#777" stroke-width="2"/>
+  <rect x="188" y="52" width="28" height="18" rx="3" fill="#333" stroke="#c9a64c"/>
+  <text x="202" y="64" text-anchor="middle" fill="#eca" font-family="system-ui,sans-serif" font-size="7">USBA</text>
+  <path fill="none" stroke="#c9a64c" stroke-width="3" stroke-linecap="round" d="M 216 62 L 248 62"/>
+  <rect x="248" y="52" width="12" height="20" rx="2" fill="#252525" stroke="#888"/>
+  <text x="140" y="128" text-anchor="middle" fill="#555" font-family="system-ui,sans-serif" font-size="8">Stejné napájení jako u wiring-guide kiosku</text>
+</svg>

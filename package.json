@@ -1,0 +1,17 @@
+{
+  "name": "sequence-dual-screen",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "build": "node scripts/build-static.mjs",
+    "build:public-tree": "node scripts/generate-public-tree-json.mjs",
+    "build:api-json": "node scripts/generate-api-static-json.mjs",
+    "build:public-tree:watch": "node --watch scripts/generate-public-tree-json.mjs",
+    "dev:serve": "node scripts/generate-public-tree-json.mjs && serve . -l 3000",
+    "scrape:reddit-videos": "node scripts/scrape-reddit-videos.mjs"
+  },
+  "devDependencies": {
+    "sass": "^1.77.0",
+    "serve": "^14.2.4"
+  }
+}

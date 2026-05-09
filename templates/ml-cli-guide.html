@@ -1,0 +1,81 @@
+  <article class="manufacturing-prose ml-manual">
+  <h1>ML — příkazy v PowerShellu</h1>
+
+  <p class="ml-manual__lead">
+    Stručný návod ke skriptu <code>ml/research-folder-training.ps1</code> (trénink LoRA po složkách) a ke generování obrázků přes <code>ml/generate.py</code>.
+    Vyžaduje venv v <code>ml/.venv</code> a NVIDIA GPU pro rozumný trénink (viz <a href="ml-manual.html">celá ML příručka</a>).
+  </p>
+
+  <nav class="ml-manual__toc" aria-label="Obsah stránky">
+    <h2>Navigace</h2>
+    <ol>
+      <li><a href="#ml-cli-train">Trénink — <code>research-folder-training.ps1</code></a></li>
+      <li><a href="#ml-cli-sdxl">Novější model (SDXL)</a></li>
+      <li><a href="#ml-cli-generate">Generování — <code>generate.py</code></a></li>
+      <li><a href="#ml-cli-zimage">Z-Image (Ostris) z terminálu</a> · <a href="zimage-toolkit.html">ML toolkit (kroky v prohlížeči)</a></li>
+      <li><a href="#ml-cli-more">Související stránky</a></li>
+    </ol>
+  </nav>
+
+  <section class="ml-guide-block" id="ml-cli-train" aria-labelledby="h-ml-cli-1">
+    <h2 id="h-ml-cli-1">1. Trénink (složky v <code>public/4_Research</code>)</h2>
+    <p>Otevři <strong>PowerShell</strong> (nové okno; stačí být ve venv aktivovaném v jiném okně jen pokud spouštíš Python ručně).</p>
+    <p><strong>Interaktivní menu</strong> — v kořeni <code>Sequence\</code> nebo v <code>ml\</code>. Číslo = řádek v seznamu; pro <code>4_Mannerist</code> napiš celý název.</p>
+    <pre><code>cd C:\Users\...\Desktop\Sequence
+.\research-folder-training.ps1</code></pre>
+    <p><strong>Jen vypsat složky</strong> (bez menu):</p>
+    <pre><code>.\research-folder-training.ps1 -List</code></pre>
+    <p><strong>Bez menu</strong> — zadáš klíč přímo:</p>
+    <pre><code>.\research-folder-training.ps1 -FolderKey 36_Motherlode</code></pre>
+    <p><strong>Výchozí nastavení kvality:</strong> <code>-Base sdxl</code>, <code>-MaxTrainSteps 2000</code>, <code>-LoraRank 16</code>, rozlišení u SDXL <strong>1024</strong> (když nezadáš <code>-Resolution</code>). Při <strong>nedostatku VRAM</strong> zkus třeba <code>-Base sd15 -Resolution 512 -MaxTrainSteps 1000 -LoraRank 8</code> nebo SDXL s <code>-Resolution 768</code>.</p>
+    <p>Volitelně: <code>-SkipGenerate</code> (jen váhy, bez PNG), <code>-TrainSequential</code>, parametry vzorků po tréninku: <code>-GenSteps</code> (0 = 32 u SDXL / 28 u SD1.5), <code>-GenGuidance</code> (0 = 7.0 / 7.5), <code>-GenNegative "…"</code> (prázdný řetězec = bez negativního promptu).</p>
+    <p>Skript nastaví proměnné jako <code>ml\launch_train.bat</code> (zdroj, <code>INSTANCE_PROMPT</code>, <code>ml/outputs/lora-…</code>) a po tréninku spustí generování, pokud nepředáš <code>-SkipGenerate</code>. <strong>PNG z generování:</strong> <code>outputs/gen-lora-…</code> v kořeni Sequence; vahy LoRA zůstávají v <code>ml/outputs/</code>.</p>
+  </section>
+
+  <section class="ml-guide-block" id="ml-cli-sdxl" aria-labelledby="h-ml-cli-sdxl">
+    <h2 id="h-ml-cli-sdxl">2. SDXL vs SD 1.5</h2>
+    <p>
+      <strong>Výchozí v <code>research-folder-training.ps1</code> je SDXL</strong> (<code>stabilityai/stable-diffusion-xl-base-1.0</code>) — většinou ostřejší a méně „retro“ než SD 1.5; chce víc VRAM. Trénink i generování musí být ve <strong>stejné</strong> rodině modelu.
+      <strong>LoRA z SD 1.5 nejde použít u SDXL</strong> (a naopak) — natrénovat znovu.
+    </p>
+    <p>SD 1.5 (starší, méně VRAM): <code>.\research-folder-training.ps1 -Base sd15 -FolderKey 36_Motherlode</code>. SDXL zůstává: <code>.\research-folder-training.ps1 -FolderKey 36_Motherlode</code>.</p>
+    <p>Bez uvedení <code>-Resolution</code> použije skript u SDXL <strong>1024</strong>; při chybě paměti GPU zkus <code>-Resolution 768</code> nebo <code>-TrainBatch 1</code>.</p>
+    <p>Generování ručně z kořene Sequence (SDXL 1024², ~32 kroků, CFG ~7; SD1.5 512², ~30 kroků):</p>
+    <pre><code>.\ml\.venv\Scripts\python.exe .\ml\generate.py --base sdxl --lora .\ml\outputs\lora-36-motherlode --prompt "a sksseq photograph, …" --out-dir .\outputs\gen-lora-36-motherlode --count 2 --width 1024 --height 1024</code></pre>
+    <p>Proměnná prostředí: <code>SEQUENCE_BASE_MODEL=sdxl</code> (stejné pro <code>launch_train.py</code> a výchozí v <code>generate.py</code>). Vlastní základ: <code>SEQUENCE_PRETRAINED=…</code> jen pokud víš, co děláš.</p>
+  </section>
+
+  <section class="ml-guide-block" id="ml-cli-generate" aria-labelledby="h-ml-cli-2">
+    <h2 id="h-ml-cli-2">3. Generování PNG</h2>
+    <p>Po tréninku, nebo když už máš LoRA v <code>ml/outputs/</code> (stejná <code>--base</code> jako při tréninku):</p>
+    <pre><code>cd C:\Users\...\Desktop\Sequence\ml
+.\.venv\Scripts\Activate.ps1
+python generate.py --base sdxl --lora outputs/lora-36-motherlode --prompt "a sksseq photograph, …" --out-dir ..\outputs\gen-test --count 4 --negative "blurry, low quality, deformed" --steps 32 --guidance 7.0</code></pre>
+    <p>Volitelně <code>--width</code> / <code>--height</code> (výchozí 1024 u SDXL, 512 u SD1.5). Prompt a token <code>sksseq</code> konzistentní s <code>INSTANCE_PROMPT</code> tréninku.</p>
+    <p><strong>Bez LoRA</strong> (jen základní model): vynech <code>--lora</code>. <code>--base sd15|sdxl</code> nebo <code>SEQUENCE_BASE_MODEL</code>.</p>
+    <p>Výstupní soubory jsou typicky <code>out_00.png</code>, … v cílové složce (<code>outputs/…</code> v kořeni repa je vhodné pro sdílení mimo <code>ml/</code>).</p>
+  </section>
+
+  <section class="ml-guide-block" id="ml-cli-zimage" aria-labelledby="h-ml-cli-z">
+    <h2 id="h-ml-cli-z">4. Z-Image (Ostris) z terminálu</h2>
+    <p>Oddělená větev od SD+LoRA: dataset připravíš z <code>4_Research</code>, u Ostris pak <code>run.py</code> v klonu <a href="https://github.com/ostris/ai-toolkit" rel="noopener">ai-toolkit</a> (viz <a href="zimage-toolkit.html">plná stránka s kroky</a>).</p>
+    <p>Z PowerShellu — buď v kořeni repa <code>Sequence\</code> (<code>.\zimage-research.ps1</code>), nebo v <code>ml\</code> (stejný název skriptu v podsložce):</p>
+    <pre><code>cd C:\Users\...\Desktop\Sequence
+.\zimage-research.ps1
+.\zimage-research.ps1 -FolderKey 36_Motherlode
+.\zimage-research.ps1 -List
+.\zimage-research.ps1 -ExportFullTree
+.\zimage-research.ps1 -FolderKey 12_Scapegoat -CaptionText "a sksseq research photo, your caption"</code></pre>
+    <p>Číslo v menu = <strong>řádek v seznamu</strong>, ne prefix ve jménu složky (chceš-li <code>4_Mannerist</code>, napiš celý název nebo správné číslo řádku).</p>
+    <p>Výstup: <code>%USERPROFILE%\ai-work\zimage_from_research\images\&lt;složka&gt;</code> (nebo <code>full_tree_export</code>). Skript spustí <code>collect_instance_images</code> a <code>zimage_sidecar_captions</code> jako ruční kroky 2–3 na stránce Z-Image. Ostris: bez ručních cest v YAML <code>.\ostris-dataset-config.ps1 -ListTemplates</code> → <code>.\ostris-dataset-config.ps1 -FolderKey 36_Motherlode -TemplateFile &lt;soubor z examples&gt;</code> (volitelně <code>-Run</code>); ukládá <code>ai-work\ai-toolkit\config\sequence_ostris.yml</code>. Opakovat běh: <code>.\ostris-dataset-config.ps1 -Run</code>.</p>
+  </section>
+
+  <section class="ml-guide-block" id="ml-cli-more" aria-labelledby="h-ml-cli-3">
+    <h2 id="h-ml-cli-3">5. Související stránky</h2>
+    <ul>
+      <li><a href="ml-manual.html">ML příručka</a> — kompletní kroky, data, vysvětlení</li>
+      <li><a href="ml-dashboard.html">ML tlačítka</a> — v prohlížeči (jen při <code>npm run dev</code>)</li>
+      <li><a href="research.html">Research</a> — galerie složek <code>4_Research</code></li>
+    </ul>
+  </section>
+  </article>

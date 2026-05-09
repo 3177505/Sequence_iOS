@@ -1,0 +1,360 @@
+  <h1>Zapojení 8× e-paper (SPI) + Raspberry Pi jako u kiosku</h1>
+  <!-- <p><strong>E-paper není druhý HDMI výstup.</strong> Obsah z webu se na panely nedostane přímo prohlížečem; na Pi běží navíc logika, která z aplikace vezme to, co chceš zobrazit (export obrázku, vlastní API, fronta snímků), převede to do bitmapy pro 4-barevný driver a po <code>SPI</code> ji pošle na jednotlivé moduly. HDMI obrazovky z původního návodu můžeš nechat jako „operátorský“ náhled; e-papery drží statický obraz mezi přepisy.</p>
+  <p>Doporučený fyzický panel pro všech osm kusů je v tabulce níže (<strong>jeden typ</strong> = jedna knihovna, stejné bufory). Signály: <code>SPI</code> + u každého kusu <code>CS</code>, <code>DC</code>, <code>RST</code>, <code>BUSY</code>, napájení <strong>3,3 V</strong>. Pořadí pinů na FPC ověř v datasheetu a na breakoutu.</p>
+
+  <h2>Trigger a prohlížeč</h2>
+  <p>Zapojení páky a Nana je stejné jako v <a href="wiring-guide.html">základním návodu</a>: USB z Nano do Pi, spínač na <code>GND</code> a zvolený digitální pin, ve firmware <code>INPUT_PULLUP</code> a po sepnutí řádek na sériový port (<strong>115200</strong> baud). V Chromium u Sequence použij <strong>Připojit senzor (USB serial)</strong>; každý neprázdný řádek spustí trigger stejně jako v kiosk módu. E-paper obsah aktualizuje zvláštní proces na Pi, který reaguje na stejnou aplikační událost nebo na sdílený stav (záleží na tvé implementaci).</p> -->
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 1000 695" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Raspberry Pi, volitelné HDMI, Nano, napájení a osm e-paper na SPI">
+      <defs>
+        <filter id="ep-sh" x="-12%" y="-12%" width="124%" height="124%">
+          <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-opacity="0.2"/>
+        </filter>
+      </defs>
+      <rect width="1000" height="695" fill="#141414"/>
+      <text x="500" y="20" text-anchor="middle" fill="#666" font-size="11" font-family="system-ui,sans-serif">Logické schéma · osm EPD na Pi většinou vyžaduje GPIO expandér nebo druhý řadič · HDMI volitelně</text>
+
+      <g font-family="system-ui,sans-serif" filter="url(#ep-sh)">
+        <rect x="68" y="135" width="86" height="102" rx="8" fill="#252525" stroke="#4c8cc9" stroke-width="1.5"/>
+        <rect x="82" y="148" width="58" height="74" rx="2" fill="#1c3a4a" stroke="#369" opacity="0.45"/>
+        <rect x="136" y="208" width="16" height="10" rx="1" fill="#333" stroke="#4c8cc9"/>
+        <text x="111" y="128" text-anchor="middle" fill="#9cf" font-size="9" font-weight="600">HDMI</text>
+        <text x="111" y="140" text-anchor="middle" fill="#777" font-size="7">volitelně · Sequence</text>
+
+        <rect x="846" y="135" width="86" height="102" rx="8" fill="#252525" stroke="#4c8cc9" stroke-width="1.5"/>
+        <rect x="860" y="148" width="58" height="74" rx="2" fill="#1c3a4a" stroke="#369" opacity="0.45"/>
+        <rect x="848" y="208" width="16" height="10" rx="1" fill="#333" stroke="#4c8cc9"/>
+        <text x="889" y="128" text-anchor="middle" fill="#9cf" font-size="9" font-weight="600">HDMI</text>
+        <text x="889" y="140" text-anchor="middle" fill="#777" font-size="7">volitelně</text>
+
+        <g id="panels-top">
+          <rect x="40" y="42" width="100" height="72" rx="6" fill="#252018" stroke="#a85" stroke-width="1.5"/>
+          <rect x="48" y="50" width="84" height="48" rx="2" fill="#f5f0e6" stroke="#333"/>
+          <rect x="56" y="58" width="10" height="10" fill="#1a1a1a"/><rect x="70" y="58" width="10" height="10" fill="#c9a64c"/><rect x="84" y="58" width="10" height="10" fill="#c94c4c"/>
+          <text x="90" y="112" text-anchor="middle" fill="#eee" font-size="10" font-weight="600">EPD 1</text>
+
+          <rect x="170" y="42" width="100" height="72" rx="6" fill="#252018" stroke="#a85" stroke-width="1.5"/>
+          <rect x="178" y="50" width="84" height="48" rx="2" fill="#f5f0e6" stroke="#333"/>
+          <rect x="186" y="58" width="10" height="10" fill="#1a1a1a"/><rect x="200" y="58" width="10" height="10" fill="#c9a64c"/><rect x="214" y="58" width="10" height="10" fill="#c94c4c"/>
+          <text x="220" y="112" text-anchor="middle" fill="#eee" font-size="10" font-weight="600">EPD 2</text>
+
+          <rect x="748" y="42" width="100" height="72" rx="6" fill="#252018" stroke="#a85" stroke-width="1.5"/>
+          <rect x="756" y="50" width="84" height="48" rx="2" fill="#f5f0e6" stroke="#333"/>
+          <rect x="764" y="58" width="10" height="10" fill="#1a1a1a"/><rect x="778" y="58" width="10" height="10" fill="#c9a64c"/><rect x="792" y="58" width="10" height="10" fill="#c94c4c"/>
+          <text x="798" y="112" text-anchor="middle" fill="#eee" font-size="10" font-weight="600">EPD 7</text>
+
+          <rect x="878" y="42" width="82" height="72" rx="6" fill="#252018" stroke="#a85" stroke-width="1.5"/>
+          <rect x="886" y="50" width="66" height="48" rx="2" fill="#f5f0e6" stroke="#333"/>
+          <rect x="894" y="58" width="10" height="10" fill="#1a1a1a"/><rect x="908" y="58" width="10" height="10" fill="#c9a64c"/><rect x="922" y="58" width="10" height="10" fill="#c94c4c"/>
+          <text x="919" y="112" text-anchor="middle" fill="#eee" font-size="10" font-weight="600">EPD 8</text>
+        </g>
+
+        <rect x="300" y="138" width="400" height="132" rx="10" fill="#2d2d35" stroke="#555" stroke-width="2"/>
+        <text x="500" y="162" text-anchor="middle" fill="#eee" font-size="13" font-weight="600">Raspberry Pi 4 / 5</text>
+        <text x="500" y="176" text-anchor="middle" fill="#888" font-size="8">Chromium + Sequence · daemon / skript → bitmapa → SPI</text>
+        <rect x="318" y="184" width="52" height="18" rx="2" fill="#1a2530" stroke="#4c8cc9"/>
+        <text x="344" y="196" text-anchor="middle" fill="#8cc" font-size="7">µHDMI 0</text>
+        <rect x="630" y="184" width="52" height="18" rx="2" fill="#1a2530" stroke="#4c8cc9"/>
+        <text x="656" y="196" text-anchor="middle" fill="#8cc" font-size="7">µHDMI 1</text>
+        <rect x="318" y="208" width="44" height="18" rx="2" fill="#1a2530" stroke="#c9a64c"/>
+        <text x="340" y="220" text-anchor="middle" fill="#db6" font-size="7">USB-C napájení</text>
+        <rect x="630" y="206" width="54" height="36" rx="3" fill="#222" stroke="#555"/>
+        <text x="657" y="224" text-anchor="middle" fill="#888" font-size="7">USB-A</text>
+        <text x="657" y="236" text-anchor="middle" fill="#6bc94c" font-size="7">Nano · trigger</text>
+        <rect x="386" y="182" width="228" height="64" rx="6" fill="#1e2430" stroke="#4c8cc9" stroke-width="1"/>
+        <text x="500" y="202" text-anchor="middle" fill="#9cf" font-size="9" font-weight="600">GPIO SPI: MOSI, SCK → všech 8 EPD</text>
+        <text x="500" y="218" text-anchor="middle" fill="#8ac" font-size="8">+ 3V3, GND · per panel CS, DC, RST, BUSY</text>
+        <text x="500" y="234" text-anchor="middle" fill="#9a9" font-size="7">GDEM0154F51H · 3,3 V logika</text>
+
+        <g id="panels-bot">
+          <rect x="40" y="538" width="100" height="72" rx="6" fill="#252018" stroke="#a85" stroke-width="1.5"/>
+          <rect x="48" y="546" width="84" height="48" rx="2" fill="#f5f0e6" stroke="#333"/>
+          <rect x="56" y="554" width="10" height="10" fill="#1a1a1a"/><rect x="70" y="554" width="10" height="10" fill="#c9a64c"/><rect x="84" y="554" width="10" height="10" fill="#c94c4c"/>
+          <text x="90" y="608" text-anchor="middle" fill="#eee" font-size="10" font-weight="600">EPD 3</text>
+
+          <rect x="170" y="538" width="100" height="72" rx="6" fill="#252018" stroke="#a85" stroke-width="1.5"/>
+          <rect x="178" y="546" width="84" height="48" rx="2" fill="#f5f0e6" stroke="#333"/>
+          <rect x="186" y="554" width="10" height="10" fill="#1a1a1a"/><rect x="200" y="554" width="10" height="10" fill="#c9a64c"/><rect x="214" y="554" width="10" height="10" fill="#c94c4c"/>
+          <text x="220" y="608" text-anchor="middle" fill="#eee" font-size="10" font-weight="600">EPD 4</text>
+
+          <rect x="748" y="538" width="100" height="72" rx="6" fill="#252018" stroke="#a85" stroke-width="1.5"/>
+          <rect x="756" y="546" width="84" height="48" rx="2" fill="#f5f0e6" stroke="#333"/>
+          <rect x="764" y="554" width="10" height="10" fill="#1a1a1a"/><rect x="778" y="554" width="10" height="10" fill="#c9a64c"/><rect x="792" y="554" width="10" height="10" fill="#c94c4c"/>
+          <text x="798" y="608" text-anchor="middle" fill="#eee" font-size="10" font-weight="600">EPD 5</text>
+
+          <rect x="878" y="538" width="82" height="72" rx="6" fill="#252018" stroke="#a85" stroke-width="1.5"/>
+          <rect x="886" y="546" width="66" height="48" rx="2" fill="#f5f0e6" stroke="#333"/>
+          <rect x="894" y="554" width="10" height="10" fill="#1a1a1a"/><rect x="908" y="554" width="10" height="10" fill="#c9a64c"/><rect x="922" y="554" width="10" height="10" fill="#c94c4c"/>
+          <text x="919" y="608" text-anchor="middle" fill="#eee" font-size="10" font-weight="600">EPD 6</text>
+        </g>
+
+        <rect x="248" y="592" width="80" height="46" rx="6" fill="#3a3530" stroke="#777"/>
+        <text x="288" y="612" text-anchor="middle" fill="#ddd" font-size="9" font-weight="600">Powerbank</text>
+        <text x="288" y="626" text-anchor="middle" fill="#aaa" font-size="7">→ USB-C Pi</text>
+
+        <rect x="410" y="584" width="132" height="62" rx="8" fill="#1a2e22" stroke="#3d6" stroke-width="1.5"/>
+        <text x="476" y="608" text-anchor="middle" fill="#e8e8e8" font-size="10" font-weight="600">Arduino Nano</text>
+        <text x="476" y="624" text-anchor="middle" fill="#8c8" font-size="7">USB · Web Serial</text>
+        <text x="476" y="636" text-anchor="middle" fill="#7a7" font-size="7">páka · GND + pin</text>
+
+        <rect x="580" y="590" width="92" height="56" rx="8" fill="#2a2820" stroke="#a65"/>
+        <path fill="none" stroke="#bbb" stroke-width="1.8" stroke-linecap="round" d="M 620 598 L 612 590"/>
+        <circle cx="600" cy="614" r="2.5" fill="#c94c4c"/><circle cx="632" cy="614" r="2.5" fill="#c94c4c"/>
+        <text x="626" y="586" text-anchor="middle" fill="#ddd" font-size="8" font-weight="600">Spínač</text>
+      </g>
+
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6">
+        <path stroke="#4c8cc9" d="M 344 190 L 190 190 L 154 190 L 154 135"/>
+        <path stroke="#4c8cc9" d="M 656 190 L 810 190 L 846 190 L 846 135"/>
+        <path stroke="#4c8cc9" d="M 360 250 L 360 290 L 90 290 L 90 114"/>
+        <path stroke="#4c8cc9" d="M 420 250 L 420 298 L 220 298 L 220 114"/>
+        <path stroke="#4c8cc9" d="M 500 246 L 500 360 L 500 450"/>
+        <path stroke="#4c8cc9" d="M 580 250 L 580 298 L 798 298 L 798 114"/>
+        <path stroke="#4c8cc9" d="M 640 250 L 640 290 L 919 290 L 919 114"/>
+        <path stroke="#4c8cc9" d="M 380 250 L 380 420 L 90 420 L 90 538"/>
+        <path stroke="#4c8cc9" d="M 460 250 L 460 430 L 220 430 L 220 538"/>
+        <path stroke="#4c8cc9" d="M 540 250 L 540 430 L 798 430 L 798 538"/>
+        <path stroke="#4c8cc9" d="M 620 250 L 620 420 L 919 420 L 919 538"/>
+        <path stroke="#c9a64c" d="M 288 608 L 288 562 L 340 236 L 340 226"/>
+        <path stroke="#6bc94c" d="M 476 584 L 476 268 L 630 268 L 630 242"/>
+        <path stroke="#c94c4c" d="M 592 614 L 540 614 L 468 620"/>
+        <path stroke="#c94c4c" d="M 632 614 L 670 614 L 670 620 L 542 628"/>
+      </g>
+
+      <g font-family="system-ui,sans-serif" font-size="8">
+        <rect x="20" y="318" width="128" height="40" rx="4" fill="#0d0d0d" stroke="#6bc94c"/>
+        <text x="84" y="334" text-anchor="middle" fill="#9d9" font-weight="600">CS DC RST BUSY</text>
+        <text x="84" y="348" text-anchor="middle" fill="#7a7" font-size="7">8× · často přes expandér</text>
+
+        <rect x="632" y="318" width="348" height="66" rx="4" fill="#0d0d0d" stroke="#4c8cc9"/>
+        <text x="806" y="338" text-anchor="middle" fill="#9cf" font-weight="600">Modrá · sdílený SPI (MOSI + SCLK)</text>
+        <text x="806" y="354" text-anchor="middle" fill="#888" font-size="7">Zlatá · napájení Pi · zelená · USB Nano · červená · Dupont ke spínači</text>
+        <text x="806" y="370" text-anchor="middle" fill="#888" font-size="7">Modré tenké · µHDMI k volitelným LCD (jako wiring-guide)</text>
+        <text x="806" y="384" text-anchor="middle" fill="#888" font-size="7">Šedý pás · GND hvězdicově · 30+ GPIO u 8× EPD zpravidla ne z jedné Pi samotné</text>
+      </g>
+    </svg>
+  </div>
+
+  <h2>Jde osm EPD jen z GPIO Raspberry Pi?</h2>
+  <p><strong>Koncepčně ano</strong> — jedna sběrnice <code>MOSI</code> + <code>SCK</code>, každý panel má svůj <code>CS</code>, <code>DC</code>, <code>RST</code> a vstup <code>BUSY</code>. <strong>Fyzicky z jedné desky Pi 4/5 bez dalších čipů ale často ne:</strong> započítáš řádově <strong>tři desítky GPIO funkcí</strong> (8× čtyři řádky na panel; u <code>CS</code> můžeš použít jen dva hardware <code>CE0</code>/<code>CE1</code>, zbytek jako „soft“ <code>CS</code> na běžných pinech). Po zapnutí <code>SPI0</code> (GPIO 7–11), často I²C, UART, pinech s významem při bootu a napájecích větvích už na 40kolíkovém headeru <strong>typicky nezbývá dost kombinací</strong> pro celou osmičku.</p>
+  <p><strong>Co dělají ostatní:</strong> <code>I²C</code> GPIO expandér na část <code>CS</code>/<code>DC</code>/<code>RST</code>, druhý malý MCU nebo druhý Pi na druhou čtveřici panelů, případně registry / multiplex (s vlastními kompromisy). <code>BUSY</code> se často vede raději přímo na vstupy Pi. Schéma výše je tedy <strong>logické zapojení</strong>, ne slib, že všechny signály vyjdou jen z jednoho SoC bez expandéru.</p>
+
+  <h2>Doporučený barevný panel (LaskaKit)</h2>
+  <p>Pro osm stejných kusů s barvou <em>černá / bílá / žlutá / červená</em> je jako kompromis velikosti, dostupnosti a zátěže při přepisu nejpraktičtější <strong>1,54″ 200×200</strong> — menší než 2,9″ varianty, bez zmatků s otočeným konektorem u některých 2,13″ modulů, jeden řadič <code>JD79660</code> pro celou sestavu.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Úhlopříčka</th>
+        <th>Rozlišení</th>
+        <th>Barva / řadič</th>
+        <th>Proč tento</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="https://www.laskakit.cz/good-display-gdem0154f51h-1-54--200x200-epaper-displej-4-barvy/">Good Display GDEM0154F51H</a></td>
+        <td>1,54"</td>
+        <td>200×200</td>
+        <td>B / W / žlutá / červená · JD79660</td>
+        <td>4-barevný SPI, kompaktní, vhodný pro 8× stejnou skladbu a jednu softwarovou větev na Pi.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Přehled součástek (grafika)</h2>
+  <p>Ilustrace ve složce <code>public/wiring-epaper-components/</code> — zjednodušené pohledy pro research, ne měřicí výkres.</p>
+  <div class="component-strip" aria-label="Součástky">
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Raspberry Pi">
+        <rect width="320" height="220" fill="#141414"/>
+        <text x="160" y="22" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="11">Raspberry Pi 4 / 5</text>
+        <rect x="40" y="38" width="240" height="150" rx="10" fill="#1e5c3a" stroke="#2a8f5c" stroke-width="2"/>
+        <rect x="130" y="70" width="60" height="50" rx="4" fill="#0d2818" stroke="#3d9" stroke-width="1" opacity="0.9"/>
+        <rect x="52" y="48" width="36" height="14" rx="2" fill="#252525" stroke="#4c8cc9"/>
+        <text x="70" y="58" text-anchor="middle" fill="#8cc" font-family="system-ui,sans-serif" font-size="7">µHDMI</text>
+        <rect x="96" y="48" width="36" height="14" rx="2" fill="#252525" stroke="#4c8cc9"/>
+        <text x="114" y="58" text-anchor="middle" fill="#8cc" font-family="system-ui,sans-serif" font-size="7">µHDMI</text>
+        <rect x="52" y="132" width="44" height="18" rx="3" fill="#252525" stroke="#c9a64c"/>
+        <text x="74" y="144" text-anchor="middle" fill="#eca" font-family="system-ui,sans-serif" font-size="7">USB-C</text>
+        <rect x="104" y="132" width="50" height="44" rx="4" fill="#222" stroke="#555"/>
+        <text x="129" y="152" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="7">USB</text>
+        <text x="129" y="166" text-anchor="middle" fill="#6b8" font-family="system-ui,sans-serif" font-size="7">Nano</text>
+        <rect x="168" y="130" width="100" height="40" rx="2" fill="#0f331f" stroke="#2a8f5c"/>
+        <text x="218" y="148" text-anchor="middle" fill="#9c9" font-family="system-ui,sans-serif" font-size="8">GPIO · SPI</text>
+        <text x="218" y="162" text-anchor="middle" fill="#7a7" font-family="system-ui,sans-serif" font-size="7">MOSI SCK + CS&amp;</text>
+        <text x="160" y="206" text-anchor="middle" fill="#555" font-family="system-ui,sans-serif" font-size="8">Chromium · Sequence · volitelné HDMI</text>
+      </svg>
+      <figcaption>Raspberry Pi</figcaption>
+    </figure>
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 200" role="img" aria-label="E-paper 4-color modul">
+        <rect width="280" height="200" fill="#141414"/>
+        <text x="140" y="22" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="11">GDEM0154F51H  1,54 in  200x200</text>
+        <rect x="52" y="40" width="176" height="100" rx="6" fill="#252018" stroke="#a85" stroke-width="2"/>
+        <rect x="64" y="52" width="148" height="76" rx="2" fill="#f0ebe3" stroke="#333"/>
+        <rect x="76" y="64" width="14" height="14" fill="#1a1a1a"/>
+        <rect x="94" y="64" width="14" height="14" fill="#fff"/>
+        <rect x="112" y="64" width="14" height="14" fill="#c9a64c"/>
+        <rect x="130" y="64" width="14" height="14" fill="#c94c4c"/>
+        <text x="140" y="118" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="8">B / W / lutá / ?ervená</text>
+        <rect x="120" y="145" width="40" height="22" rx="2" fill="#3a3530" stroke="#665"/>
+        <text x="140" y="160" text-anchor="middle" fill="#aaa" font-family="system-ui,sans-serif" font-size="7">24pin FPC</text>
+        <text x="140" y="188" text-anchor="middle" fill="#555" font-family="system-ui,sans-serif" font-size="8">SPI  3,3 V  CS DC RST BUSY</text>
+      </svg>
+      <figcaption>GDEM0154F51H</figcaption>
+    </figure>
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 120" role="img" aria-label="Arduino Nano">
+        <rect width="300" height="120" fill="#141414"/>
+        <text x="150" y="20" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="11">Arduino Nano · USB sériový trigger</text>
+        <rect x="70" y="36" width="160" height="56" rx="4" fill="#1a4d2e" stroke="#3d6" stroke-width="2"/>
+        <rect x="86" y="48" width="48" height="32" rx="2" fill="#222" stroke="#555"/>
+        <text x="110" y="67" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="7">MCU</text>
+        <rect x="196" y="44" width="22" height="16" rx="2" fill="#333" stroke="#6bc94c"/>
+        <text x="207" y="55" text-anchor="middle" fill="#ada" font-family="system-ui,sans-serif" font-size="6">USB</text>
+        <text x="150" y="108" text-anchor="middle" fill="#555" font-family="system-ui,sans-serif" font-size="8">115200 baud · Web Serial · páka na GND + pin</text>
+      </svg>
+      <figcaption>Nano · trigger</figcaption>
+    </figure>
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 180" role="img" aria-label="GPIO expandér">
+        <rect width="300" height="180" fill="#141414"/>
+        <text x="150" y="22" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="11">I²C GPIO expandér (napY. MCP23017&amp;)</text>
+        <rect x="90" y="48" width="120" height="72" rx="6" fill="#2a2845" stroke="#6b6bc9" stroke-width="2"/>
+        <rect x="110" y="64" width="80" height="40" rx="3" fill="#1a1830" stroke="#554"/>
+        <text x="150" y="88" text-anchor="middle" fill="#aac" font-family="system-ui,sans-serif" font-size="9">16-bit I/O</text>
+        <text x="58" y="100" fill="#9cf" font-family="system-ui,sans-serif" font-size="8">SDA</text>
+        <text x="58" y="116" fill="#9cf" font-family="system-ui,sans-serif" font-size="8">SCL</text>
+        <text x="230" y="92" fill="#9d9" font-family="system-ui,sans-serif" font-size="8">GPIO</text>
+        <text x="230" y="108" fill="#9d9" font-family="system-ui,sans-serif" font-size="8">’ CS</text>
+        <text x="230" y="124" fill="#9d9" font-family="system-ui,sans-serif" font-size="8">’ DC &amp;</text>
+        <text x="150" y="156" text-anchor="middle" fill="#555" font-family="system-ui,sans-serif" font-size="8">Pro 8× EPD vtainou nutné vedle pYímých GPIO Pi</text>
+      </svg>
+      <figcaption>GPIO expandér</figcaption>
+    </figure>
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 140" role="img" aria-label="Powerbank">
+        <rect width="280" height="140" fill="#141414"/>
+        <text x="140" y="22" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="11">Powerbank ’ Pi (USB-A ’ USB-C)</text>
+        <rect x="56" y="44" width="168" height="56" rx="8" fill="#3a3530" stroke="#777" stroke-width="2"/>
+        <rect x="188" y="52" width="28" height="18" rx="3" fill="#333" stroke="#c9a64c"/>
+        <text x="202" y="64" text-anchor="middle" fill="#eca" font-family="system-ui,sans-serif" font-size="7">USBA</text>
+        <path fill="none" stroke="#c9a64c" stroke-width="3" stroke-linecap="round" d="M 216 62 L 248 62"/>
+        <rect x="248" y="52" width="12" height="20" rx="2" fill="#252525" stroke="#888"/>
+        <text x="140" y="128" text-anchor="middle" fill="#555" font-family="system-ui,sans-serif" font-size="8">Stejné napájení jako u wiring-guide kiosku</text>
+      </svg>
+      <figcaption>Powerbank</figcaption>
+    </figure>
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" role="img" aria-label="HDMI obrazovka">
+        <rect width="240" height="200" fill="#141414"/>
+        <text x="120" y="22" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="11">Volitelný HDMI panel · Sequence</text>
+        <rect x="40" y="42" width="160" height="118" rx="8" fill="#252525" stroke="#4c8cc9" stroke-width="2"/>
+        <rect x="52" y="54" width="136" height="88" rx="2" fill="#1a3048" stroke="#369"/>
+        <text x="120" y="102" text-anchor="middle" fill="#6ac" font-family="system-ui,sans-serif" font-size="9">Chromium</text>
+        <rect x="112" y="166" width="16" height="10" rx="1" fill="#333" stroke="#4c8cc9"/>
+        <text x="120" y="188" text-anchor="middle" fill="#555" font-family="system-ui,sans-serif" font-size="8">µHDMI z Pi</text>
+      </svg>
+      <figcaption>HDMI · volitelně</figcaption>
+    </figure>
+    <figure>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 160" role="img" aria-label="Páka a mikrospína&#13;">
+        <rect width="300" height="160" fill="#141414"/>
+        <text x="150" y="22" text-anchor="middle" fill="#888" font-family="system-ui,sans-serif" font-size="11">Páka · mikrospína&#13; · Dupont k Nano</text>
+        <rect x="168" y="48" width="96" height="56" rx="8" fill="#2a2820" stroke="#a65" stroke-width="2"/>
+        <path fill="none" stroke="#bbb" stroke-width="2" stroke-linecap="round" d="M 200 52 L 188 44"/>
+        <circle cx="182" cy="84" r="4" fill="#c94c4c" stroke="#822"/>
+        <circle cx="230" cy="84" r="4" fill="#c94c4c" stroke="#822"/>
+        <text x="216" y="42" text-anchor="middle" fill="#ccc" font-family="system-ui,sans-serif" font-size="9">Spína&#13;</text>
+        <path fill="none" stroke="#c94c4c" stroke-width="2" d="M 168 84 L 52 84"/>
+        <text x="88" y="78" fill="#eaa" font-family="system-ui,sans-serif" font-size="8">GND</text>
+        <text x="88" y="96" fill="#eaa" font-family="system-ui,sans-serif" font-size="8">D2</text>
+        <text x="150" y="138" text-anchor="middle" fill="#555" font-family="system-ui,sans-serif" font-size="8">INPUT_PULLUP · viz wiring-guide</text>
+      </svg>
+      <figcaption>Páka · spínač</figcaption>
+    </figure>
+  </div>
+
+  <h2>Signály na breakoutu (obecné SPI e-paper)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Signál</th>
+        <th>Spojení pro 8 kusů</th>
+        <th>Poznámka</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>3V3</code> / <code>VCC</code></td>
+        <td>Ze stabilního 3,3 V zdroje ke každému modulu.</td>
+        <td>Součet proudů při refreshi bývá výrazně vyšší než „typical“ u jednoho kusu; dimenzuj zdroj a rozpad GND.</td>
+      </tr>
+      <tr>
+        <td><code>GND</code></td>
+        <td>Hvězdicově k Raspberry Pi / zdroji, krátce u každého panelu.</td>
+        <td>Společná reference pro SPI a BUSY.</td>
+      </tr>
+      <tr>
+        <td><code>MOSI</code> · <code>DIN</code> / <code>SDI</code></td>
+        <td><strong>Jeden</strong> MOSI z Pi (např. hardware SPI) na všechny panely.</td>
+        <td>Sériový vstup všech displejů na stejnou linku.</td>
+      </tr>
+      <tr>
+        <td><code>SCK</code> · <code>CLK</code></td>
+        <td><strong>Jeden</strong> hodinový výstup z Pi na všechny panely.</td>
+        <td>Sdílený hodinový signál.</td>
+      </tr>
+      <tr>
+        <td><code>CS</code></td>
+        <td><strong>Vždy jen jeden aktivní</strong> — 8 samostatných GPIO (často „soft“ CS; hardwarové CE0/CE1 na Pi nestačí).</td>
+        <td>Pojmenuj <code>CS1</code>…<code>CS8</code> ve skriptu / daemonu.</td>
+      </tr>
+      <tr>
+        <td><code>DC</code> · <code>D/C</code></td>
+        <td>Ideálně <strong>8 samostatných</strong> GPIO (nejjednodušší na ovládání).</td>
+        <td>Alternativně převodník / expandér, pokud docházejí piny (s kompromisem v rychlosti).</td>
+      </tr>
+      <tr>
+        <td><code>RST</code></td>
+        <td>8 samostatných GPIO nebo řízený reset přes expandér.</td>
+        <td>Inicializace driveru obvykle štěpí po jednom panelu — typicky nespouštěj všechny najednou náhodně z jedné linky.</td>
+      </tr>
+      <tr>
+        <td><code>BUSY</code></td>
+        <td>8 vstupů na Pi (3,3 V logika, BCM jako vstup).</td>
+        <td>Během refreshi čekej na uvolnění podle knihovny; každý panel má vlastní stav.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Počet GPIO a mapování na Raspberry Pi</h2>
+  <p>Osm panelů potřebuje <strong>24 výstupy</strong> (<code>CS</code>, <code>DC</code>, <code>RST</code>) a <strong>8 vstupů</strong> (<code>BUSY</code>) plus sdílené <code>MOSI</code> a <code>SCK</code>. V praxi to z jedné desky bez <strong>GPIO expandéru</strong> nebo druhého řadiče málokdy sedí — viz sekce <strong>Jde osm EPD jen z GPIO Raspberry Pi?</strong> výše. Hardware <code>SPI0</code> nabízí jen <code>CE0</code> a <code>CE1</code>; další <code>CS</code> musí být soft na běžných GPIO.</p>
+  <p>Ilustrativní mapování v <strong>BCM</strong> jen pro dva panely (stejná knihovna jako u běžných SPI příkladů); panely 3–8 doplň na volné piny nebo přes expandér:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Panel</th>
+        <th><code>CS</code> (BCM)</th>
+        <th><code>DC</code></th>
+        <th><code>RST</code></th>
+        <th><code>BUSY</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>8</td><td>24</td><td>25</td><td>17</td></tr>
+      <tr><td>2</td><td>7</td><td>23</td><td>22</td><td>27</td></tr>
+      <tr><td>3–8</td><td colspan="4">Stejný vzor na dalších volných BCM pinech nebo přes expandér — každý panel musí mít vlastní čtveřici <code>CS</code>, <code>DC</code>, <code>RST</code>, <code>BUSY</code>.</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:0.85rem"><code>MOSI</code> / <code>SCK</code> typicky GPIO 10 / 11 u <code>SPI0</code> (po zapnutí SPI v konfiguraci systému). Konzistentní 3,3 V logika — bez 5 V na signálech k panelu.</p>
+
+  <h2>Praktické poznámky</h2>
+  <ul>
+    <li><strong>Jeden typ panelu:</strong> osm× <a href="https://www.laskakit.cz/good-display-gdem0154f51h-1-54--200x200-epaper-displej-4-barvy/">GDEM0154F51H</a> znamená jednu knihovnu a jednu sadu LUT pro <code>JD79660</code>.</li>
+    <li><strong>Čas obnovy:</strong> 4-barevné full refresh bývá řádově v desítkách sekund u menších panelů — u osmi kusů sekvenčně počítej s dlouhými cykly nebo s frontou úloh.</li>
+    <li><strong>GPIO:</strong> u 8× EPD ber expandér nebo rozdělení sestavy jako výchozí plán, ne jako výjimku.</li>
+    <li><strong>Úroveň TTL:</strong> vše prováděj v <strong>3,3 V</strong>; 5 V logika bez převodníku panel poškodí.</li>
+  </ul>

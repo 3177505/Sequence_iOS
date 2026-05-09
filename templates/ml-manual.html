@@ -1,0 +1,174 @@
+  <article class="manufacturing-prose ml-manual">
+  <h1>Sequence — ML příručka (vše na jedné stránce)</h1>
+
+  <p class="ml-manual__lead">
+    Tato stránka je <strong>jediný textový návod</strong> k učení malého „doplňku“ k obrázkům (LoRA) a k vykreslení nových PNG u tebe na počítači.
+    <strong>Kiosk v galerii</strong> (Prototyp / Pi) <strong>toto nespouští</strong> — ML děláš doma nebo na výkonném PC, výsledné soubory pak můžeš ručně použít v projektu.
+  </p>
+
+  <nav class="ml-manual__toc" aria-label="Obsah příručky">
+    <h2>Postup — klikni na krok</h2>
+    <ol>
+      <li><a href="#ml-manual-co-je">Co se tu vlastně děje (bez kódu)</a></li>
+      <li><a href="#ml-manual-dve-cesty">Proč má repozitář SD 1.5 a kdy Z-Image (Ostris)</a></li>
+      <li><a href="#ml-manual-pc">Počítač, Windows a ovladač NVIDIA</a></li>
+      <li><a href="#ml-manual-venv">Virtuální prostředí Python, PyTorch s CUDA, accelerate</a></li>
+      <li><a href="#ml-manual-data">Obrázky ve složce <code>4_Research</code></a></li>
+      <li><a href="#ml-manual-trenink">Trénink LoRA (spuštění)</a></li>
+      <li><a href="#ml-manual-generate">Generování PNG</a></li>
+      <li><a href="#ml-manual-nastroje">Tlačítka v prohlížeči, Gradio, další čtení</a></li>
+    </ol>
+  </nav>
+
+  <section class="ml-guide-block ml-guide-block--1" id="ml-manual-co-je" aria-labelledby="h-ml-1">
+    <h2 id="h-ml-1">1. Co se tu vlastně děje (bez kódu)</h2>
+    <p>
+      Existuje velký hotový model <strong>Stable Diffusion 1.5</strong> — umí kreslit z anglického textu (promptu), protože byl kdysi natrénovaný na obřím množství obrázků z internetu.
+      Ty ho u sebe <strong>nepíšeš od nuly</strong>.
+    </p>
+    <p>
+      <strong>LoRA</strong> je malý soubor navíc: na tvém PC se z tvých fotek v <code>public/4_Research</code> naučí „přisadit“ se k modelu — typicky barvy, styl nebo opakující se motiv.
+      Výsledek ukládáme do <code>ml/outputs/lora-run</code>.
+    </p>
+    <p>
+      <strong>Generování</strong>: při <code>research-folder-training.ps1</code> jdou PNG do <code>outputs/gen-lora-…</code> v kořeni Sequence; ručně voláš <code>ml/generate.py</code> s <code>--out-dir</code> (např. <code>outputs/gen</code> z kořene).
+    </p>
+  </section>
+
+  <section class="ml-guide-block ml-guide-block--2" id="ml-manual-dve-cesty" aria-labelledby="h-ml-2">
+    <h2 id="h-ml-2">2. Dvě možné cesty — tento repozitář vs Z-Image (Ostris)</h2>
+    <p>
+      Oba směry řeší „chci, aby AI znala můj vizuál“, ale <strong>nejde o totéž programově</strong>.
+      V repu je jako hlavní linka <strong>SD 1.5 + LoRA ve složce <code>ml/</code></strong>.
+      <strong>Z-Image s Ostris <em>ai-toolkit</em></strong> je <strong>jiná větev</strong>: jiný základní model, jiná instalace (vlastní repozitář, YAML, často víc kroků).
+    </p>
+    <div class="ml-guide-compare">
+      <div class="ml-guide-compare__col">
+        <span class="ml-guide-compare__label">Doporučeno v tomto projektu</span>
+        <h3>SD 1.5 + LoRA (<code>ml/</code>)</h3>
+        <p>
+          Skripty už jsou tady: <code>launch_train</code>, <code>generate.py</code>, jedna sada knihoven v <code>ml/.venv</code>.
+          Dokumentace i <a href="ml-dashboard.html">tlačítka v prohlížeči</a> počítají s tím.
+          Výchozí cesta, pokud chceš <strong>méně rozcestí</strong> a držet vše v Sequence.
+        </p>
+      </div>
+      <div class="ml-guide-compare__col">
+        <span class="ml-guide-compare__label">Volba navíc</span>
+        <h3>Z-Image + Ostris</h3>
+        <p>
+          Chceš-li <strong>konkrétně Z-Image</strong> a ekosystém <a href="https://github.com/ostris/ai-toolkit" rel="noopener">ai-toolkit</a>, jde o <strong>samostatný setup</strong> mimo jednoduchý jeden-sloupec <code>ml/</code>.
+          V repu máme stránku <a href="zimage-toolkit.html">ML toolkit</a> (SD LoRA z <code>4_Research</code>, volitelně Z-Image / Ostris a <code>.txt</code> k obrázkům).
+          Není to „špatně“ — je to <strong>jiný nástroj a jiný model</strong>, ne náhrada téže příručky řádek po řádku.
+        </p>
+      </div>
+    </div>
+    <p>
+      <strong>Shrnutí:</strong> začni u <strong>SD 1.5 + LoRA v <code>ml/</code></strong>. K Ostris / Z-Image přejdi, až budeš chtít záměrně ten druhý workflow.
+    </p>
+  </section>
+
+  <section class="ml-guide-block ml-guide-block--3" id="ml-manual-pc" aria-labelledby="h-ml-3">
+    <h2 id="h-ml-3">3. Počítač, Windows a ovladač NVIDIA</h2>
+    <p>
+      Trénink LoRA je na <strong>CPU</strong> možný, ale velmi pomalý. Pro smysluplnou rychlost počítej s <strong>Windows nebo Linuxem</strong> a kartou <strong>NVIDIA</strong> s aktuálním <strong>ovladačem</strong> ze stránek výrobce.
+    </p>
+    <p>
+      Apple Silicon (Mac) umí některé věci přes <strong>MPS</strong>, trénink ale obvykle zůstane nepohodlně dlouhý; generování je o trochu snesitelnější. Pro těžký trénink je fér mít <strong>dedikované PC s NVIDIA</strong>.
+    </p>
+  </section>
+
+  <section class="ml-guide-block ml-guide-block--4" id="ml-manual-venv" aria-labelledby="h-ml-4">
+    <h2 id="h-ml-4">4. Virtuální prostředí, PyTorch s CUDA, accelerate</h2>
+    <p>
+      Vše se děje v podsložce <code>ml/</code> ve <strong>virtuálním prostředí</strong> <code>ml/.venv</code>, aby se knihovny netloukly s jiným Pythonem na systému.
+    </p>
+    <p>
+      <strong>Pořadí na stroji s NVIDIA:</strong> nejdřív z oficiální stránky PyTorch nainstaluj <strong>torch + torchvision s CUDA</strong> pro tvůj systém (viz odkaz v <code>ml/README.md</code>), pak <code>pip install -r requirements.txt</code>, pak jednorázově <code>accelerate config</code> a odpověz jako pro jedno běžné GPU.
+    </p>
+    <p>
+      Ověření, že GPU vidí PyTorch (v aktivovaném <code>ml/.venv</code>):
+    </p>
+    <pre>python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else '')"</pre>
+    <p>
+      Podrobný seznam příkazů je v <code>ml/README.md</code> a v <code>RUN.md</code> u kořene projektu.
+    </p>
+  </section>
+
+  <section class="ml-guide-block ml-guide-block--5" id="ml-manual-data" aria-labelledby="h-ml-5">
+    <h2 id="h-ml-5">5. Obrázky ve složce <code>4_Research</code></h2>
+    <p>
+      Tréninkové snímky dáváš do stromu <code>public/4_Research</code> (může být vnořený).
+      Při startu tréninku se z nich automaticky vytvoří <strong>plochá</strong> kopie v <code>ml/data/instance_flat</code> (skript <code>ml/collect_instance_images.py</code>), protože DreamBooth krok očekává jednu složku se soubory.
+    </p>
+    <p>
+      Společný text pro všechny snímky je v logice tréninku jako <strong>jeden instance prompt</strong> (v <code>ml/launch_train.py</code>); pokud bys chtěl u každého obrázku vlastní popisek, řeší se to samostatnými <code>.txt</code> soubory — např. u větve Z-Image / Ostris <code>ml/zimage_sidecar_captions.py</code> a stránka <a href="zimage-toolkit.html">ML toolkit</a>.
+    </p>
+  </section>
+
+  <section class="ml-guide-block ml-guide-block--6" id="ml-manual-trenink" aria-labelledby="h-ml-6">
+    <h2 id="h-ml-6">6. Trénink LoRA (spuštění)</h2>
+    <p>
+      Spouštíš vždy z <strong>kořene repozitáře</strong> (složka, kde leží <code>ml/</code> a <code>public/</code>), aby cesty seděly.
+      První běh stáhne oficiální skript tréninku do <code>ml/vendor/</code>. Váhy končí v <code>ml/outputs/lora-run</code>.
+    </p>
+    <p>
+      Délku můžeš zkrátit proměnnou <code>MAX_TRAIN_STEPS</code> (např. 200 na slabším stroji). Obnovení od posledního uloženého stavu: <code>RESUME=1</code> (Linux / macOS v bash) nebo <code>set RESUME=1</code> (Windows cmd) před příkazem — viz <code>ml/README.md</code>.
+    </p>
+    <div class="ml-2col">
+      <div class="ml-2col__panel">
+        <h3>macOS / Linux</h3>
+        <pre>./ml/launch_train.sh</pre>
+        <p>nebo: <code>python ml/launch_train.py</code> s aktivním <code>ml/.venv</code> podle README.</p>
+      </div>
+      <div class="ml-2col__panel">
+        <h3>Windows (cmd, kořen projektu)</h3>
+        <pre>ml\launch_train.bat</pre>
+        <p>Skript uvnitř zavolá <code>ml\launch_train.py</code> Pythonem z <code>ml\.venv</code>.</p>
+      </div>
+    </div>
+    <p>
+      <strong>Soubor <code>public/251205_cc8_gpu_accelator.py</code> s tím nesouvisí</strong> — to je jiná experimentální hra s klasifikátorem, ne tento LoRA trénink.
+    </p>
+  </section>
+
+  <section class="ml-guide-block ml-guide-block--7" id="ml-manual-generate" aria-labelledby="h-ml-7">
+    <h2 id="h-ml-7">7. Generování PNG</h2>
+    <p>
+      S aktivovaným <code>ml/.venv</code> a pracovním adresářem <code>ml</code> (kvůli cestám <code>outputs/…</code>):
+    </p>
+    <div class="ml-2col">
+      <div class="ml-2col__panel">
+        <h3>Se LoRA (po tréninku)</h3>
+        <pre>cd ml
+source .venv/bin/activate
+python generate.py --lora outputs/lora-run --prompt "a sksseq photograph, research mood, detailed" --out-dir outputs/gen --count 2</pre>
+        <p>Windows: <code>.venv\Scripts\activate</code> místo <code>source</code>.</p>
+      </div>
+      <div class="ml-2col__panel">
+        <h3>Bez LoRA (základní SD 1.5)</h3>
+        <pre>python generate.py --prompt "a sksseq photograph, abstract" --out-dir outputs/gen --count 2</pre>
+      </div>
+    </div>
+    <p>
+      Výstupní soubory jsou typicky <code>out_00.png</code>, <code>out_01.png</code> v <code>outputs/gen-lora-…</code> po <code>research-folder-training.ps1</code>, případně v libovolné složce zadané jako <code>--out-dir</code> u <code>generate.py</code>. Prompt piš anglicky; „sksseq“ drž konzistentní s tréninkem.
+    </p>
+  </section>
+
+  <section class="ml-guide-block ml-guide-block--8" id="ml-manual-nastroje" aria-labelledby="h-ml-8">
+    <h2 id="h-ml-8">8. Tlačítka v prohlížeči, Gradio, další čtení</h2>
+    <p>
+      <a href="ml-dashboard.html">ML průvodce (tlačítka)</a> funguje při běžícím <code>npm run dev</code> a volá lokální API, které spouští stejné Python skripty (viz text přímo na té stránce). Není to náhrada za přečtení kroků výše, ale zkratka, když už máš vše nainstalované.
+    </p>
+    <p>
+      <strong>Gradio</strong> (<code>ml-gui/app.py</code>) otevírá druhé okno s tréninkem a náhledem generování — stále stejné <code>ml/.venv</code>, popis v <code>ml-gui/README.md</code>. Dva tréninky současně nespouštěj.
+    </p>
+    <p>
+      Textové soubory: <code>ml/README.md</code>, <code>RUN.md</code>. Stránka <a href="zimage-toolkit.html">ML toolkit</a> pro průvodce z <code>4_Research</code> a volitelný Ostris.
+    </p>
+  </section>
+
+  <p>
+    <a href="ml-train.html">Starší stránka „ML trénink“ (jen odkaz sem)</a> ·
+    <a href="ml-generate.html">Starší stránka „ML generování“ (jen odkaz sem)</a>
+  </p>
+  </article>

@@ -1,0 +1,29 @@
+<div id="app" class="app app--baseline">
+  <div class="grid">
+    <div id="pane-left" class="pane pane--reddit" aria-label="Reddit videa — obrazovka A">
+      <div class="pane-layer">
+        <video class="pane__media is-hidden" data-side="L" data-layer="0" muted playsinline loop referrerpolicy="strict-origin-when-cross-origin"></video>
+        <iframe class="pane__media pane__media--frame is-hidden" data-side="L" data-layer="0" title="Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+      <div class="pane-layer">
+        <video class="pane__media is-hidden" data-side="L" data-layer="1" muted playsinline loop referrerpolicy="strict-origin-when-cross-origin"></video>
+        <iframe class="pane__media pane__media--frame is-hidden" data-side="L" data-layer="1" title="Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+    </div>
+    <div id="pane-right" class="pane pane--reddit" aria-label="Reddit videa — obrazovka B">
+      <div class="pane-layer">
+        <video class="pane__media is-hidden" data-side="R" data-layer="0" muted playsinline loop referrerpolicy="strict-origin-when-cross-origin"></video>
+        <iframe class="pane__media pane__media--frame is-hidden" data-side="R" data-layer="0" title="Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+      <div class="pane-layer">
+        <video class="pane__media is-hidden" data-side="R" data-layer="1" muted playsinline loop referrerpolicy="strict-origin-when-cross-origin"></video>
+        <iframe class="pane__media pane__media--frame is-hidden" data-side="R" data-layer="1" title="Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button type="button" id="trigger">Spustit (15 s alternativní sekvence)</button>
+    <button type="button" id="serial-connect">Připojit senzor (USB serial)</button>
+    <span id="status" class="status"></span>
+  </div>
+</div>

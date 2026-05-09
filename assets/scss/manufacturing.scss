@@ -1,0 +1,68 @@
+@use 'vars' as *;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: $bg-page;
+  color: $text-ui;
+  line-height: 1.5;
+  padding: 1.25rem clamp(1rem, 4vw, 2rem) 2.5rem;
+}
+
+.manufacturing-prose {
+  max-width: 80vw;
+  margin-inline: auto;
+}
+
+h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+  border-bottom: 1px solid $border-ui;
+  padding-bottom: 0.3rem;
+}
+
+p {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  color: $text-muted;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  margin-top: 0.35rem;
+}
+
+th,
+td {
+  border: 1px solid $border-ui;
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: $bg-table-header;
+  color: $text-ui;
+}
+
+code {
+  font-size: 0.9em;
+  color: $col-folder2-a;
+}
+
+a {
+  color: $col-trigger-a2;
+}
