@@ -85,3 +85,19 @@ button {
   font-size: 14px;
   opacity: 0.85;
 }
+
+.site--kiosk {
+  #site-nav-host,
+  #site-footer {
+    display: none;
+  }
+
+  #page-root {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .controls {
+    display: none;
+  }
+}

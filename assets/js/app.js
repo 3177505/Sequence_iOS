@@ -243,4 +243,21 @@ serialConnectBtn?.addEventListener('click', async () => {
   }
 });
 
+async function maybeAutoSerialKiosk() {
+  if (!document.body.classList.contains('site--kiosk')) return;
+  if (!('serial' in navigator) || serialPort) return;
+  try {
+    const ports = await navigator.serial.getPorts();
+    const port = ports[0];
+    if (!port) return;
+    serialPort = port;
+    await serialPort.open({ baudRate: SERIAL_BAUD });
+    if (statusEl) statusEl.textContent = '';
+    readSerialLines(serialPort);
+  } catch (_) {
+    serialPort = null;
+  }
+}
+
 startBaseline();
+maybeAutoSerialKiosk();

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Sequence Chromium kiosk
+StartupNotify=false
+Terminal=false
+X-GNOME-Autostart-enabled=true
+Exec=/usr/local/bin/sequence-start-chromium.sh

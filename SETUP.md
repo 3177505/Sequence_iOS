@@ -29,10 +29,7 @@ Short checklist for preparing the **Raspberry Pi 4** kiosk and hosting **Sequenc
 - Use the **official Pi 4 power supply** (about **5.1 V / 3 A**) or equivalent stable supply; dual HDMI and video load matter.
 - After boot: **Preferences → Screen Configuration** (or equivalent) to arrange displays.
 - For a kiosk: enable **auto-login**, disable **screen blanking**, then autostart Chromium fullscreen to your URL (details depend on OS version; see the main README kiosk outline).
-
----
-
-## 4. Host the site on Netlify (Git deploy)
+- Repo **already on the Pi**: **`deploy/raspberry-pi/DUAL_SCREEN_KIOSK_SETUP.md`** · after **`git pull`**: **`sudo ./deploy/raspberry-pi/install-boot-after-pull.sh`** then **`sudo reboot`** (then automatic on each start). **`provision-pi.sh`** stays for machines without a clone yet.
 
 The repo includes [`netlify.toml`](netlify.toml): build **`npm ci && npm run build`**, publish directory **`dist`**.
 

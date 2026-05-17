@@ -85,6 +85,11 @@ async function run() {
   if (!html.trim()) throw new Error(`empty template: ${template}`);
   injectHTML(pageRoot, html);
 
+  const kiosk = new URL(window.location.href).searchParams.get('kiosk');
+  if (kiosk !== null && kiosk !== '' && kiosk !== '0' && kiosk.toLowerCase() !== 'false') {
+    document.body.classList.add('site--kiosk');
+  }
+
   try {
     const footer = document.getElementById('site-footer');
     if (footer) {

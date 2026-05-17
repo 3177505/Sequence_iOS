@@ -64,7 +64,7 @@ Always **A+B** together, then **C+D** — one clip (or color) per screen at a ti
 
 **OS:** Raspberry Pi OS (64-bit) with desktop; enable auto-login; disable screen blanking for kiosk use.
 
----
+**Pi kiosk:** [`deploy/raspberry-pi/DUAL_SCREEN_KIOSK_SETUP.md`](deploy/raspberry-pi/DUAL_SCREEN_KIOSK_SETUP.md). If the repo **already exists** on device (Pi Imager, git, Node): **`cd Sequence_iOS && git pull && sudo ./deploy/raspberry-pi/install-boot-after-pull.sh && sudo reboot`** — then every boot runs **`sequence-site`** (pull/build/serve) **+ Chromium autostart**. Clean slate from network only: **`curl …/provision-pi.sh | sudo bash`** (see guide).
 
 ## Shopping list
 
