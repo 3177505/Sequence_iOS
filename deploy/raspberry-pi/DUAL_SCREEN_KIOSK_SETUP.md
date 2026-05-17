@@ -34,7 +34,8 @@ sudo reboot
 This writes **`sequence-site.service`**, **`/usr/local/bin/sequence-start-chromium.sh`**, **`/etc/xdg/autostart/sequence-kiosk.desktop`**, and **`/etc/sequence/kiosk.conf`** (created if missing). It also runs **`raspi-config nonint do_boot_behaviour B4`** when available (desktop autologin).
 
 - **Updates to the site** after you push Git: every restart of **`sequence-site.service`** (including each boot) resets the working tree to **`origin/main`**, runs **`npm ci`**, **`npm run build`**, and serves **`dist`**.
-- **`/etc/sequence/kiosk.conf`**: if it already exists, it is **not** overwritten (keeps your tweaks). To reset it from defaults:  
+- **Private repo / PAT:** **`GITHUB_TOKEN`** (or **`GIT_USERNAME`** + PAT in **`GIT_PASSWORD`**) → either **`Sequence_iOS/.env`** (gitignored — never **`git push`**) **`chmod 600`**, OR machine-only **`/etc/sequence/git.env`** (same keys — **`chmod 640`**, **`sudo chown root:pi`** so user **`pi`** can read). See **`deploy/raspberry-pi/.env.example`** and **`deploy/raspberry-pi/git-env.on-pi.example`**. Copy from your laptop once: **`scp git-env.local pi:/tmp/git.env`** then **`sudo mv /tmp/git.env /etc/sequence/git.env`**. Prefer **`/etc/…`** if resets clone often and you hate recreating **`~/*.env`**.
+- **`/etc/sequence/kiosk.conf`**: if it already exists, it is **not** overwritten (keeps your tweaks). To reset it from defaults:
   `sudo FORCE_SEQUENCE_KIOSK_CONF=1 ./deploy/raspberry-pi/install-boot-after-pull.sh`
 
 ---

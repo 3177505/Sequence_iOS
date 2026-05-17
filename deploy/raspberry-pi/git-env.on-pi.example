@@ -1,0 +1,18 @@
+
+Machine-only GIT secrets for `sequence-site.sh` — **do not push** contents to GitHub.
+
+Put this **on the Pi** as **`/etc/sequence/git.env`**, **`chmod 640`**, **`chown root:pi`**:
+
+GITHUB_TOKEN=
+
+Or:
+
+GIT_USERNAME=
+
+GIT_PASSWORD=
+
+Reload by restarting **`sequence-site.service`**.
+
+Same vars as **`deploy/raspberry-pi/.env.example`**, plus **`checkout/.env`** in the repo (gitignored).
+
+Priority if both exist: **`…/Sequence_iOS/.env`**, then **`/etc/sequence/git.env`** (later overrides).

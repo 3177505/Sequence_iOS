@@ -5,3 +5,5 @@ node_modules/
 *.pyc
 
 assets/css/
+.env
+**/deploy/raspberry-pi/.env
