@@ -35,6 +35,14 @@ notify_seq() {
 (
   flock -n 200 || exit 0
 
+  export DISPLAY="${DISPLAY:-:0}"
+  [[ -z "${XAUTHORITY:-}" && -f "${HOME}/.Xauthority" ]] && export XAUTHORITY="${HOME}/.Xauthority"
+
+  LOG="${SEQUENCE_KIOSK_LOG:-$HOME/.local/share/sequence-kiosk-chromium.log}"
+  mkdir -p "$(dirname "$LOG")"
+  exec >>"$LOG" 2>&1
+  echo "$(date -Is) sequence-start-chromium start uid=$(id -u) DISPLAY=${DISPLAY}"
+
   PROFILE="${SEQUENCE_USER_DATA_DIR:-$HOME/.local/share/sequence-chromium-kiosk}"
   mkdir -p "$PROFILE"
 
@@ -54,6 +62,8 @@ notify_seq() {
   else
     notify_seq "Timeout" "No response on :${PORT} after ${MAXWAIT}s — opening browser anyway. Check: journalctl -u sequence-site.service"
   fi
+
+  sleep "${SEQUENCE_KIOSK_START_DELAY:-10}"
 
   CHR=""
   for c in /usr/bin/chromium-browser /usr/bin/chromium /snap/bin/chromium; do
@@ -78,6 +88,10 @@ notify_seq() {
     --disable-restore-session-state
     --noerrdialogs
   )
+  if [[ "${SEQUENCE_CHROMIUM_USE_X11_OZONE:-0}" == 1 ]]; then
+    CHROME_KIOSK_FLAGS+=(--ozone-platform=x11)
+    echo "$(date -Is) chromium: SEQUENCE_CHROMIUM_USE_X11_OZONE=1 (--ozone-platform=x11)"
+  fi
 
   spawn_one() {
     local prof="$1" x="$2" y="$3" ww="$4" hh="$5" url="$6"

@@ -16,6 +16,7 @@ export SEQUENCE_WINDOW_HEIGHT="${SEQUENCE_WINDOW_HEIGHT:-480}"
 
 chmod +x "$REPODIR/deploy/raspberry-pi/sequence-site.sh" 2>/dev/null || true
 chmod +x "$REPODIR/deploy/raspberry-pi/sequence-start-chromium.sh" 2>/dev/null || true
+chmod +x "$REPODIR/deploy/raspberry-pi/sequence-kiosk-session.sh" 2>/dev/null || true
 
 echo "[sequence] Writing systemd unit (repo: $SEQUENCE_SITE_DIR, user: $SEQUENCE_SERVICE_USER, port $SEQUENCE_HTTP_PORT) ..."
 bash "$REPODIR/deploy/raspberry-pi/install-sequence-systemd.sh"
@@ -27,9 +28,21 @@ SEQUENCE_SITE_DIR="$SEQUENCE_SITE_DIR" \
   SEQUENCE_WINDOW_HEIGHT="$SEQUENCE_WINDOW_HEIGHT" \
   bash "$REPODIR/deploy/raspberry-pi/install-kiosk-autostart.sh"
 
+if [[ "${SEQUENCE_BOOT_INSTALL_DUAL_IMAGE:-0}" == 1 ]]; then
+  echo "[sequence] Dual-image kiosk (two pygame windows, images from repo public/exhibit-*) ..."
+  SEQUENCE_SITE_DIR="$SEQUENCE_SITE_DIR" SEQUENCE_DISABLE_CHROMIUM_KIOSK=1 \
+    bash "$REPODIR/deploy/raspberry-pi/install-dual-image-kiosk.sh"
+fi
+
 echo ""
 echo "Ready. Enable on every boot:"
 echo "  • sequence-site.service (git refresh, npm run build, serve dist)"
 echo "  • Chromium via /etc/xdg/autostart/sequence-kiosk.desktop"
+echo ""
+echo "Optional dual-screen image kiosk (no Chromium):"
+echo "  sudo SEQUENCE_BOOT_INSTALL_DUAL_IMAGE=1 SEQUENCE_SITE_DIR=$SEQUENCE_SITE_DIR \\"
+echo "    ./deploy/raspberry-pi/install-boot-after-pull.sh"
+echo ""
+echo "Chromium troubleshooting log (uid 1000): ~/.local/share/sequence-kiosk-chromium.log"
 echo ""
 echo "Reboot: sudo reboot"

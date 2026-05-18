@@ -76,7 +76,38 @@ Background service: **`sequence-site.service`** — each start = **git reset to 
 ```bash
 bash ~/Sequence_IOS/deploy/raspberry-pi/check-kiosk-boot.sh
 sudo journalctl -u sequence-site.service -n 60 --no-pager
+tail -n 80 ~/.local/share/sequence-kiosk-chromium.log
 ```
+
+If Chromium never appears after adding a second HDMI, set **`SEQUENCE_CHROMIUM_USE_X11_OZONE=1`** in **`/etc/sequence/kiosk.conf`** (helps some Wayland setups), raise **`SEQUENCE_KIOSK_START_DELAY`** (e.g. **`20`**), reinstall **`install-boot-after-pull.sh`**, reboot — then check the log path above.
+
+---
+
+## Dual-image kiosk (two pygame windows, no browser)
+
+Two plain windows slideshow images from folders **inside your repo checkout**:
+
+- **`public/exhibit-left/`** → left HDMI window  
+- **`public/exhibit-right/`** → right HDMI window  
+
+Sizes come from **`SEQUENCE_WINDOW_WIDTH`**, **`SEQUENCE_WINDOW_HEIGHT`**, **`SEQUENCE_MONITOR_LEFT_WIDTH`** in **`/etc/sequence/kiosk.conf`** (same numbers as Chromium mode).
+
+**Install from the Pi** (after `git pull`; removes Chromium autostart):
+
+```bash
+cd ~/Sequence_IOS
+chmod +x deploy/raspberry-pi/*.sh
+sudo SEQUENCE_SITE_DIR="$(pwd)" SEQUENCE_DISABLE_CHROMIUM_KIOSK=1 ./deploy/raspberry-pi/install-dual-image-kiosk.sh
+sudo reboot
+```
+
+**Automate with the main installer** (systemd git/build/serve **plus** dual-image instead of Chromium):
+
+```bash
+sudo SEQUENCE_BOOT_INSTALL_DUAL_IMAGE=1 SEQUENCE_SITE_DIR="$HOME/Sequence_IOS" ./deploy/raspberry-pi/install-boot-after-pull.sh
+```
+
+Optional in **`kiosk.conf`**: **`SEQUENCE_SITE_DIR`** (repo path), **`SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS`**, **`SEQUENCE_DUAL_IMAGE_START_DELAY`** (defaults follow **`SEQUENCE_KIOSK_START_DELAY`**).
 
 ---
 
@@ -157,9 +188,29 @@ Goal: **automatic desktop login**, no dialogs asking **`raspi`** password after 
 
 | Symptom | What to try |
 |---------|--------------|
-| **“Unlock keyring” / “Default Keyring” (blocks kiosk)** | **Do not put this password in `.env`** — anyone with disk or `git`/backups could read it. Prefer: (1) Reinstall kiosk launcher after `git pull` so **`sequence-start-chromium.sh`** passes **`--password-store=basic`**, which stops Chromium from using GNOME Keyring for its store (often fixes this dialog). Still stuck: **Passwords and Keys** (Seahorse) → **Default Keyring** (or Login) → **Change Password** → **empty**. |
+| **“Unlock keyring” / “Default Keyring” (blocks kiosk)** | **Do not put this password in `.env`.** (1) **`sequence-start-chromium.sh`** uses **`--password-store=basic`** after reinstall — Chromium usually stops touching Keyring. (2) GUI: Seahorse → Default Keyring → change password → empty. (3) SSH-only: § **Keyring reset via SSH** below (moves old `.keyring` files aside; Wi‑Fi secrets may need re-entry). |
 | **Login screen each boot** | `sudo raspi-config nonint do_boot_behaviour B4` → reboot. Confirm **desktop** Pi OS image (not Lite). |
 | **Screen blank then asks password** | **Screensaver**, **energy saving**, **screen lock**: turn off locking or disable blanking (or shorten test). |
 | **You need SSH `sudo` without typing password** (field repair only) | Run `sudo visudo` and add **`raspi ALL=(ALL) NOPASSWD:ALL`** — only if the Pi is trusted; narrower NOPASSWD rules are safer. |
 
 Prefer **SSH keys** for SSH (no SSH password guessing). Rotate your **Git PAT** (`GITHUB_TOKEN`) if it ever appeared in paste/log.
+
+### Keyring reset via SSH (terminal, no Seahorse)
+
+There is **no supported CLI** that cleanly sets “Default Keyring password = empty”. Moving old files aside forces new keyrings on next graphical login (**Wi‑Fi / saved secrets** that lived in those files may need entering once again):
+
+```bash
+U="$(awk -F: '$3==1000 {print $1; exit}' /etc/passwd)"
+sudo -u "$U" bash -lc '
+KB="$HOME/.local/share/keyrings/keyring-backup-$(date +%Y%m%d%H%M)"
+mkdir -p "$KB"
+shopt -s nullglob
+for f in "$HOME/.local/share/keyrings/"*.keyring "$HOME/.local/share/keyrings/"*.keyring~; do
+  mv "$f" "$KB/"
+done
+echo "Backed up under $KB"
+'
+sudo reboot
+```
+
+Combine with **`--password-store=basic`** in **`sequence-start-chromium.sh`** so Chromium stops asking Keyring for its password store.
