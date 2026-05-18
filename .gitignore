@@ -8,6 +8,14 @@ assets/css/
 .env
 **/deploy/raspberry-pi/.env
 
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+.sass-cache/
+
 public/api-public-tree/*.json
 !public/api-public-tree/concept.json
 assets/data/reddit-videos.json
