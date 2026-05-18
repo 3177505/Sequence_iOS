@@ -1,8 +1,10 @@
 # Exhibit pygame kiosk + Arduino Nano — **from here on**
 
-**Assumes you already have:** Raspberry Pi OS with desktop, **`Sequence_IOS`** cloned on the Pi, and **`install-dual-image-kiosk.sh`** run so autostart installs **`dual-image-kiosk-launch.sh`** (default: **one** pygame window driven by **`exhibit_dual_strip.py`** with left/right panes). Two separate windows (**`image_window.py` × 2**) remain available via **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=1`**.
+**This runbook uses:** login **`raspi`**, repo **`~/Sequence_IOS`** (same as **`cd Sequence_IOS`** immediately after **`cd ~`**), Nano USB serial **`/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0`** (CH340 **`1a86`**, node **`/dev/ttyUSB0`**).
 
-**This file is the checklist you keep editing.** When you finish a batch of changes, push from your Mac, then on the Pi follow **section 6** (repo pull, install refresh, reboot).
+**Assumes:** Raspberry Pi OS desktop; **`Sequence_IOS`** cloned into **`~/Sequence_IOS`**; **`install-dual-image-kiosk.sh`** deployed **`dual-image-kiosk-launch.sh`** → **`exhibit_dual_strip.py`**. Write **`/etc/sequence/kiosk.conf`** exactly as section **3** (**`dual-image-kiosk-launch.sh`** reads **`SEQUENCE_NATIVE_SERIAL_*`**, pacing env vars, **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=0`** each boot).
+
+Once **`origin/main`** contains updates, execute section **5** on this Pi: **`git pull`**, **`install-dual-image-kiosk.sh`**, **`reboot`**.
 
 ---
 
@@ -15,98 +17,78 @@ sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.s
 sudo reboot
 ```
 
-To **keep Chromium autostart as well**, use **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=0`** with that command. Else Chromium autostart is removed by default.
-
 ---
 
-## 1 — Arduino Nano (prefab sketch + terminal upload)
+## 1 — Arduino Nano (prefab sketch, upload on Pi)
 
-The repo ships a sketch you **never hand-edit unless you change the pin**:
+Sketch path:
 
-- Sketch: **`Sequence_IOS/deploy/raspberry-pi/arduino/exhibit_sensor/exhibit_sensor.ino`**
-- Default wiring: sensor **OUT → D2**, **5V → 5V**, **GND → GND**
-- Baud **`115200`** (must match **`SEQUENCE_NATIVE_SERIAL_BAUD`** in **`kiosk.conf`**)
+`~/Sequence_IOS/deploy/raspberry-pi/arduino/exhibit_sensor/exhibit_sensor.ino`
 
-Upload from the machine where the Nano is plugged in (usually your laptop). **Arduino IDE optional.**
+Wiring: IR **OUT1 → Nano D2**, IR **5V → Nano 5V**, IR **GND → Nano GND**. Sketch emits **`digitalRead(2)`** as **`0`** / **`1`** lines at **115200** baud (**`SEQUENCE_NATIVE_SERIAL_BAUD`** in **`/etc/sequence/kiosk.conf`** is **115200**).
 
-### One-time tool install
+Before upload: stop dual-image kiosk if it holds the serial port; plug Nano USB into Pi.
 
-```bash
-brew install arduino-cli
-```
-
-**(Linux Raspberry Pi)**
+Arduino CLI:
 
 ```bash
-sudo apt-get update && sudo apt-get install -y arduino-cli || true
+sudo apt-get update
+sudo apt-get install -y arduino-cli
 ```
 
-If **`apt`** has no **`arduino-cli`**, use Arduino’s installer: **[arduino-cli installation](https://arduino.github.io/arduino-cli/latest/installation/)**.
-
-### Every upload (terminal only)
-
-From your repo root:
+Upload:
 
 ```bash
 cd ~/Sequence_IOS
 chmod +x deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh
-./deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh
-```
-
-That prints **`arduino-cli board list`**. Pick the Nano’s **`Port`** (macOS **`/dev/cu.…`**; Linux **`/dev/ttyACM0`** or **`/dev/ttyUSB0`**).
-
-```bash
-./deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh /dev/cu.YOUR_PORT_HERE
-```
-
-**Upload fails (“device not syncing”)**: many clones need the older bootloader **`FQBN`**:
-
-```bash
 export ARDUINO_FQBN="arduino:avr:nano:cpu=atmega328old"
-./deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh /dev/cu.YOUR_PORT_HERE
+./deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
 ```
 
-**Analog sensor on `A0`** (Pi uses **`SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD`**): edit **`exhibit_sensor.ino`** and replace the **`loop()` body** with **`Serial.println(analogRead(A0));`** (same **`delay(20)`**), then run the **`upload`** line again.
-
-**Custom pin:** change **`#define SENSOR_PIN 2`** in **`exhibit_sensor.ino`** to match **`OUT`** ( **`3`** for **D3** ), re-run upload.
-
-The Pi exhibit app reads **full lines** from serial — keep **`Serial.println`** (one reading per line).
+Prefab **`exhibit_sensor.ino`** already uses **`Serial.println(digitalRead(2))`** and **`delay(20)`**.
 
 ---
 
-## 2 — Raspberry Pi — which serial device?
+## 2 — Image layout (`exhibit_dual_strip`)
 
-(CH340 clones often **`/dev/ttyUSB0`**; others **`/dev/ttyACM0`**.)
+Default roots:
+
+`~/Sequence_IOS/public/exhibit-left`
+
+`~/Sequence_IOS/public/exhibit-right`
+
+Numbered mounts (shuffle order each cycle):
+
+`~/Sequence_IOS/public/exhibit-left/1`  
+`~/Sequence_IOS/public/exhibit-right/1`  
+`~/Sequence_IOS/public/exhibit-left/2`  
+`~/Sequence_IOS/public/exhibit-right/2`  
+`~/Sequence_IOS/public/exhibit-left/3`  
+`~/Sequence_IOS/public/exhibit-right/3`  
+`~/Sequence_IOS/public/exhibit-left/4`  
+`~/Sequence_IOS/public/exhibit-right/4`  
+`~/Sequence_IOS/public/exhibit-left/5`  
+`~/Sequence_IOS/public/exhibit-right/5`
+
+Each next numeric folder **`N`** gets **`~/Sequence_IOS/public/exhibit-left/N`** and **`~/Sequence_IOS/public/exhibit-right/N`** with matching photos paired index-wise inside every folder bucket.
+
+Flat mode JPG/PNG/WebP live strictly under **`~/Sequence_IOS/public/exhibit-left`** and **`~/Sequence_IOS/public/exhibit-right`** with **zero** mirrored numeric directories on **both** sides.
+
+---
+
+## 3 — `/etc/sequence/kiosk.conf`
 
 ```bash
-ls -l /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
-```
-
-Put that path in **`SEQUENCE_NATIVE_SERIAL_DEVICE`** below.
-
----
-
-## 3 — Image layout (`exhibit_dual_strip`)
-
-Under **`Sequence_IOS/public/`** by default (**`SEQUENCE_DUAL_IMAGE_DIR_LEFT`** / **`_RIGHT`** can override roots):
-
-- **Numbered folders (recommended):** `exhibit-left/1`, `exhibit-right/1`, **`2`**, **`3`**, … The same numeric id must exist on **both** sides. Folder order is shuffled each cycle; image lists inside each folder are shuffled. Pairs zip by index within each folder **`min(left_count, right_count)`**.
-- **Flat layout:** JPG/PNG/WebP directly under `exhibit-left` / `exhibit-right`. Matching **`1`** / **`2`** / **`3`** subtrees must exist **on both left and right** to use numbered mode; otherwise the player pairs **top‑level files** only (no crossing numbered + flat mixes in one mode).
-
----
-
-## 4 — `/etc/sequence/kiosk.conf`
-
-```bash
+sudo install -dm755 /etc/sequence
 sudo nano /etc/sequence/kiosk.conf
 ```
 
-Example (edit **`YOUR_USER`**, device path, thresholds):
+Inside **`nano`**, clear leftovers, paste the block below only, **`Ctrl+O`**, **`Enter`**, **`Ctrl+X`**.
 
 ```bash
-SEQUENCE_SITE_DIR=/home/YOUR_USER/Sequence_IOS
+SEQUENCE_SITE_DIR=~/Sequence_IOS
 
-SEQUENCE_NATIVE_SERIAL_DEVICE=/dev/ttyUSB0
+SEQUENCE_NATIVE_SERIAL_DEVICE=/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
 SEQUENCE_NATIVE_SERIAL_BAUD=115200
 SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD=250
 SEQUENCE_NATIVE_SERIAL_LINE_IDLE_MS=0.05
@@ -131,56 +113,48 @@ SEQUENCE_PYGAME_OVERFLOW_TOP_PIXELS=44
 SEQUENCE_PYGAME_BORDERLESS=1
 ```
 
-**Sensor burst:** A rising edge on the serial stream (**`0→1`** or analog crossing **`SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD`**) starts a **`SEQUENCE_BURST_TOTAL_MS`** window where slide time and wipe time grow from **`_START_*`** toward **`_END_*`** (exponential-ish curve via **`exp_span`**); after that wall‑clock interval, timing returns to baseline. While a burst is already active, repeated edges do not restart the curve — the line should go **`0`**/`low enough` again before the next **`1`**/trigger if you want another burst.
-
-Legacy two windows (**`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=1`**): optional **`SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS`** is passed to **`image_window.py`**. The env vars in this block apply to the default **`exhibit_dual_strip.py`** path.
+Baseline hold **1000** ms per pair; **`0→1`** on **`digitalRead(2)`** starts **`SEQUENCE_BURST_TOTAL_MS`** **`15000`**, **`exp_span`** ramps slide+wipe from **`SEQUENCE_BURST_*_START`** to **`SEQUENCE_BURST_*_END`** during **`15000`** ms; **`exhibit_dual_strip.py`** starts the next burst solely after **`digitalRead(2)`** reads **`0`** then **`1`** again.
 
 ---
 
-## 5 — `dialout` (if opening serial fails / permission denied)
+## 4 — `dialout` for `raspi`
 
 ```bash
-sudo usermod -aG dialout "$USER"
-groups
+sudo usermod -aG dialout raspi
+groups raspi
 ```
 
-Then **log out of the desktop session and back in**, or reboot.
+Log out GUI session completely and back in, or **`sudo reboot`**.
 
 ---
 
-## 6 — Apply repo, refresh kiosk scripts, reboot (after every push or `kiosk.conf` batch)
+## 5 — Repo pull, refresh kiosk scripts, reboot
 
 ```bash
 cd ~/Sequence_IOS
 git pull origin main
-sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.sh
+sudo SEQUENCE_SITE_DIR=~/Sequence_IOS ./deploy/raspberry-pi/install-dual-image-kiosk.sh
 sudo reboot
 ```
 
-Use your real branch if it is not **`main`**.
-
 ---
 
-## 7 — Top bar still visible (Wayfire)
+## 6 — Top bar (`wf-panel-pi`)
 
 ```bash
 sudo mv /etc/xdg/autostart/wf-panel-pi.desktop /etc/xdg/autostart/wf-panel-pi.desktop.off
 sudo reboot
 ```
 
-Undo: rename **`.off`** back to **`.desktop`**.
+Restore: rename **`wf-panel-pi.desktop.off`** back to **`wf-panel-pi.desktop`**.
 
 ---
 
-## Optional checks
+## 7 — Checks
 
 ```bash
 journalctl -u sequence-site.service -n 20 --no-pager
-groups | grep dialout
+groups raspi | grep dialout
+ls -l /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0 /dev/ttyUSB0
 ```
 
----
-
-## Scratch / extra notes
-
-(Drafts for your next batch — wiring, pin numbers, thresholds you tried, etc.)

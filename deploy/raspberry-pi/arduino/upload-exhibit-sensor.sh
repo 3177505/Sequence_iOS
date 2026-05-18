@@ -74,8 +74,25 @@ if [[ "$CMD" == "compile-only" ]]; then
   exit 0
 fi
 
+require_port() {
+  local p="$1"
+  [[ -e "$p" ]] && return 0
+  say ""
+  say "No such device: $p"
+  say "Linux paths are case-sensitive (/dev/ttyACM0 — capital ACM)."
+  say "Unplug/replug the Nano USB, then:"
+  say "  ls -l /dev/serial/by-id/ 2>/dev/null || true"
+  say "  ls -l /dev/ttyUSB* /dev/ttyACM* 2>/dev/null || true"
+  if command -v arduino-cli >/dev/null 2>&1; then
+    say "  ./$(basename "${BASH_SOURCE[0]}") list"
+    say ""
+    arduino-cli board list || true
+  fi
+  exit 1
+}
+
 PORT="$CMD"
-[[ -e "$PORT" ]] || die "Serial port does not exist: $PORT"
+require_port "$PORT"
 
 ensure_avr_core
 arduino-cli compile --fqbn "$FQBN" "$SKETCH_DIR"
