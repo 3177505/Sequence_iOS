@@ -2,7 +2,23 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 SKETCH_DIR="$SCRIPT_DIR/exhibit_sensor"
+
+prepend_arduino_cli_path() {
+  local d
+  for d in "$REPO_ROOT/bin" "$HOME/Sequence_IOS/bin"; do
+    if [[ -x "$d/arduino-cli" ]]; then
+      PATH="$d${PATH:+:$PATH}"
+      export PATH
+      return 0
+    fi
+  done
+  return 0
+}
+
+prepend_arduino_cli_path
+
 FQBN="${ARDUINO_FQBN:-arduino:avr:nano:cpu=atmega328}"
 
 say() {
@@ -18,9 +34,15 @@ ensure_arduino_cli() {
   if command -v arduino-cli >/dev/null 2>&1; then
     return 0
   fi
-  die "arduino-cli missing. Examples:
-  • macOS: brew install arduino-cli
-  • Linux Pi: sudo apt-get update && sudo apt-get install -y arduino-cli || curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh"
+  die "arduino-cli missing on PATH.
+Install:
+
+  mkdir -p $REPO_ROOT/bin
+  curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=$REPO_ROOT/bin sh
+
+Rerun upload-exhibit-sensor.sh (it prepends $REPO_ROOT/bin when present).
+
+macOS: brew install arduino-cli"
 }
 
 ensure_avr_core() {
@@ -98,4 +120,4 @@ ensure_avr_core
 arduino-cli compile --fqbn "$FQBN" "$SKETCH_DIR"
 arduino-cli upload -p "$PORT" --fqbn "$FQBN" "$SKETCH_DIR"
 
-say "upload ok — on the Pi set SEQUENCE_NATIVE_SERIAL_DEVICE if the tty name changed."
+say "upload ok — kiosk reads SEQUENCE_NATIVE_SERIAL_DEVICE from /etc/sequence/kiosk.conf"

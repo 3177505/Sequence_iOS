@@ -29,12 +29,17 @@ Wiring: IR **OUT1 → Nano D2**, IR **5V → Nano 5V**, IR **GND → Nano GND**.
 
 Before upload: stop dual-image kiosk if it holds the serial port; plug Nano USB into Pi.
 
-Arduino CLI:
+Arduino CLI (**recent Debian / Raspberry Pi OS** often omit **`arduino-cli`** in **`apt`**): install binaries into **`~/Sequence_IOS/bin`**, then widen **`PATH`**.
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y arduino-cli
+cd ~/Sequence_IOS
+mkdir -p bin
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR="$(pwd)/bin" sh
+export PATH="$(pwd)/bin:$PATH"
+printf '\nexport PATH="$HOME/Sequence_IOS/bin:$PATH"\n' >> ~/.bashrc
 ```
+
+Even before opening a new terminal, **`deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh`** prepends **`Sequence_IOS/bin`** for that run (**`arduino-cli`** in **`~/Sequence_IOS/bin`** is enough).
 
 Upload:
 
@@ -86,7 +91,7 @@ sudo nano /etc/sequence/kiosk.conf
 Inside **`nano`**, clear leftovers, paste the block below only, **`Ctrl+O`**, **`Enter`**, **`Ctrl+X`**.
 
 ```bash
-SEQUENCE_SITE_DIR=~/Sequence_IOS
+SEQUENCE_SITE_DIR=$HOME/Sequence_IOS
 
 SEQUENCE_NATIVE_SERIAL_DEVICE=/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
 SEQUENCE_NATIVE_SERIAL_BAUD=115200
@@ -130,10 +135,24 @@ Log out GUI session completely and back in, or **`sudo reboot`**.
 
 ## 5 — Repo pull, refresh kiosk scripts, reboot
 
+Pi **`git`** may reference **`credential-osxkeychain`** when a macOS **`~/.gitconfig`** leaked onto **`raspi`**. Strip mac helpers once:
+
+```bash
+git config --global --unset-all credential.helper
+```
+
+Later **`git pull`** prompts for credentials; **`store`** persists the next successful login:
+
+```bash
+git config --global credential.helper store
+```
+
+Apply updates:
+
 ```bash
 cd ~/Sequence_IOS
 git pull origin main
-sudo SEQUENCE_SITE_DIR=~/Sequence_IOS ./deploy/raspberry-pi/install-dual-image-kiosk.sh
+sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.sh
 sudo reboot
 ```
 
@@ -153,6 +172,7 @@ Restore: rename **`wf-panel-pi.desktop.off`** back to **`wf-panel-pi.desktop`**.
 ## 7 — Checks
 
 ```bash
+command -v arduino-cli >/dev/null && arduino-cli version
 journalctl -u sequence-site.service -n 20 --no-pager
 groups raspi | grep dialout
 ls -l /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0 /dev/ttyUSB0
