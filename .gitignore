@@ -7,3 +7,8 @@ node_modules/
 assets/css/
 .env
 **/deploy/raspberry-pi/.env
+
+public/api-public-tree/*.json
+!public/api-public-tree/concept.json
+assets/data/reddit-videos.json
+public/exhibit-images.json
