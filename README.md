@@ -1,6 +1,6 @@
 # Sequence
 
-Dual-screen kiosk prototype: one page, two columns. Each column plays its own randomized sequence (colors for now; videos later). A **trigger** switches both columns to a second pair of sequences for **15 seconds** (faster cadence in the current build).
+Dual-screen kiosk prototype: one page, two columns (or two separate Chromium `--app` windows per HDMI). Each column can play its own sequence (see `index.html` colours, `data-videos.html`, or empty `exhibit-left.html` / `exhibit-right.html` shells for your own media). A **trigger** switches both columns to a second pair of sequences for **15 seconds** where that mode exists.
 
 **Setup checklist (Pi imaging, SSH / Connect, Netlify, dual HDMI):** see [`SETUP.md`](SETUP.md).
 

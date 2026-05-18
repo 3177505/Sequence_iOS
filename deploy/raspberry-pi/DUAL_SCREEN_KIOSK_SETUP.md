@@ -11,7 +11,7 @@ After the SD card exists and the Pi joins the network:
 
 - **Git checkout** refreshed on every **`sequence-site.service`** start, static **`npm run build`**, **`serve dist`** listens on **`SEQUENCE_HTTP_PORT`** (defaults **3000**).
 - **Desktop auto-login** (UID 1000, usually **`pi`**).
-- **Chromium opens by itself**: **`/etc/xdg/autostart/sequence-kiosk.desktop`** runs **`sequence-start-chromium.sh`**, which waits until **TCP :3000** answers, starts **one Chromium** at **`window-size`** from **`/etc/sequence/kiosk.conf`** (**1600 × 480** by default = two **800 × 480** units side‑by‑side assumption), URL **`…/index.html?kiosk=1`**.
+- **Chromium opens by itself**: **`/etc/xdg/autostart/sequence-kiosk.desktop`** runs **`sequence-start-chromium.sh`**, which waits until **TCP :3000** answers, then either **one Chromium** **`--app`** at **`window-size`** from **`/etc/sequence/kiosk.conf`**, or **two Chromium windows** (left + right HDMI) when **`SEQUENCE_START_URL_RIGHT`** is set (**`SEQUENCE_MONITOR_LEFT_WIDTH`** splits **`SEQUENCE_WINDOW_WIDTH`**). Default left URL **`exhibit-left.html?kiosk=1`** (blank exhibit shell); override with **`SEQUENCE_START_URL`**.
 
 You still take care of flashing the OS via **Pi Imager** once (keyboardless later if SSH or Imager’s first‑boot commands are configured).
 

@@ -28,6 +28,19 @@ body {
   flex-direction: column;
 }
 
+.exhibit-shell {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+}
+
+.exhibit-shell #exhibit-stage {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
 .app {
   flex: 1;
   min-height: 0;

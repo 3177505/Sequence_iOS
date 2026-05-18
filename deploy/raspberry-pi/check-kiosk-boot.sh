@@ -35,7 +35,14 @@ else
 fi
 
 echo ""
-echo "=== Autostart expectations ==="
-echo "Chromium ONLY starts AFTER the graphical desktop loads for user pi."
-echo "If you see login screen each boot: sudo raspi-config → System Options → Auto Login → Desktop Autologin"
-echo "Or: sudo raspi-config nonint do_boot_behaviour B4"
+echo "=== Chromium binary ==="
+FOUND=0
+for b in chromium-browser chromium; do
+  if p=$(command -v "$b" 2>/dev/null); then echo "FOUND: $p"; FOUND=1; break; fi
+done
+[[ "$FOUND" -eq 1 ]] || echo "(missing — sudo apt update && sudo apt install -y chromium-browser || sudo apt install -y chromium)"
+
+echo ""
+echo "=== Desktop autostart ==="
+echo "Chromium runs only AFTER the graphical session starts (often needs desktop autologin)."
+echo "sudo raspi-config nonint do_boot_behaviour B4   # then reboot"

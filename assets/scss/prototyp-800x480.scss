@@ -15,3 +15,18 @@
   height: 480px;
 }
 
+.site--kiosk .app--fixed-800x480 {
+  align-items: stretch;
+}
+
+.site--kiosk .app--fixed-800x480 .grid {
+  flex: 1 1 0;
+  width: auto;
+  height: auto;
+}
+
+.site--kiosk .app--fixed-800x480 .pane {
+  width: auto;
+  height: auto;
+}
+
