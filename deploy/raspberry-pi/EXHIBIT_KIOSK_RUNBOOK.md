@@ -19,36 +19,58 @@ To **keep Chromium autostart as well**, use **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=0
 
 ---
 
-## 1 — Arduino Nano (sketch behaviour)
+## 1 — Arduino Nano (prefab sketch + terminal upload)
 
-Turn on USB serial (`115200` — matches Pi **`kiosk.conf`**).
+The repo ships a sketch you **never hand-edit unless you change the pin**:
 
-```cpp
-void setup() {
-  Serial.begin(115200);
-  pinMode(YOUR_PIN, INPUT_PULLUP); // or INPUT — match your module
-}
+- Sketch: **`Sequence_IOS/deploy/raspberry-pi/arduino/exhibit_sensor/exhibit_sensor.ino`**
+- Default wiring: sensor **OUT → D2**, **5V → 5V**, **GND → GND**
+- Baud **`115200`** (must match **`SEQUENCE_NATIVE_SERIAL_BAUD`** in **`kiosk.conf`**)
+
+Upload from the machine where the Nano is plugged in (usually your laptop). **Arduino IDE optional.**
+
+### One-time tool install
+
+```bash
+brew install arduino-cli
 ```
 
-**Digital (prints `0` or `1` per line):**
+**(Linux Raspberry Pi)**
 
-```cpp
-void loop() {
-  Serial.println(digitalRead(YOUR_PIN));
-  delay(20);
-}
+```bash
+sudo apt-get update && sudo apt-get install -y arduino-cli || true
 ```
 
-**Analog (`0` … `1023` on `A0` — threshold in `kiosk.conf`):**
+If **`apt`** has no **`arduino-cli`**, use Arduino’s installer: **[arduino-cli installation](https://arduino.github.io/arduino-cli/latest/installation/)**.
 
-```cpp
-void loop() {
-  Serial.println(analogRead(A0));
-  delay(20);
-}
+### Every upload (terminal only)
+
+From your repo root:
+
+```bash
+cd ~/Sequence_IOS
+chmod +x deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh
+./deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh
 ```
 
-Prefer **`Serial.println`** (full line).
+That prints **`arduino-cli board list`**. Pick the Nano’s **`Port`** (macOS **`/dev/cu.…`**; Linux **`/dev/ttyACM0`** or **`/dev/ttyUSB0`**).
+
+```bash
+./deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh /dev/cu.YOUR_PORT_HERE
+```
+
+**Upload fails (“device not syncing”)**: many clones need the older bootloader **`FQBN`**:
+
+```bash
+export ARDUINO_FQBN="arduino:avr:nano:cpu=atmega328old"
+./deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh /dev/cu.YOUR_PORT_HERE
+```
+
+**Analog sensor on `A0`** (Pi uses **`SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD`**): edit **`exhibit_sensor.ino`** and replace the **`loop()` body** with **`Serial.println(analogRead(A0));`** (same **`delay(20)`**), then run the **`upload`** line again.
+
+**Custom pin:** change **`#define SENSOR_PIN 2`** in **`exhibit_sensor.ino`** to match **`OUT`** ( **`3`** for **D3** ), re-run upload.
+
+The Pi exhibit app reads **full lines** from serial — keep **`Serial.println`** (one reading per line).
 
 ---
 
