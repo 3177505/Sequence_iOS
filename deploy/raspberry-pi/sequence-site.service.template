@@ -3,13 +3,13 @@ Description=Sequence_site — Sequence_iOS Git update, build dist, HTTP server
 Documentation=https://github.com/3177505/Sequence_iOS
 After=network-online.target
 Wants=network-online.target
+StartLimitBurst=12
+StartLimitIntervalSec=600
 
 [Service]
 Type=simple
 Restart=always
 RestartSec=30
-StartLimitBurst=12
-StartLimitIntervalSec=600
 TimeoutStartSec=0
 
 WorkingDirectory=@@REPO_ROOT@@
