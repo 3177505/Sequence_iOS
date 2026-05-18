@@ -17,6 +17,7 @@ export SEQUENCE_WINDOW_HEIGHT="${SEQUENCE_WINDOW_HEIGHT:-480}"
 chmod +x "$REPODIR/deploy/raspberry-pi/sequence-site.sh" 2>/dev/null || true
 chmod +x "$REPODIR/deploy/raspberry-pi/sequence-start-chromium.sh" 2>/dev/null || true
 chmod +x "$REPODIR/deploy/raspberry-pi/sequence-kiosk-session.sh" 2>/dev/null || true
+chmod +x "$REPODIR/deploy/raspberry-pi/install-web-serial-policy.sh" 2>/dev/null || true
 
 echo "[sequence] Writing systemd unit (repo: $SEQUENCE_SITE_DIR, user: $SEQUENCE_SERVICE_USER, port $SEQUENCE_HTTP_PORT) ..."
 bash "$REPODIR/deploy/raspberry-pi/install-sequence-systemd.sh"
@@ -26,6 +27,8 @@ SEQUENCE_SITE_DIR="$SEQUENCE_SITE_DIR" \
   SEQUENCE_HTTP_PORT="$SEQUENCE_HTTP_PORT" \
   SEQUENCE_WINDOW_WIDTH="$SEQUENCE_WINDOW_WIDTH" \
   SEQUENCE_WINDOW_HEIGHT="$SEQUENCE_WINDOW_HEIGHT" \
+  SEQUENCE_WEB_SERIAL_VID_HEX="${SEQUENCE_WEB_SERIAL_VID_HEX:-}" \
+  SEQUENCE_WEB_SERIAL_PID_HEX="${SEQUENCE_WEB_SERIAL_PID_HEX:-}" \
   bash "$REPODIR/deploy/raspberry-pi/install-kiosk-autostart.sh"
 
 if [[ "${SEQUENCE_BOOT_INSTALL_DUAL_IMAGE:-0}" == 1 ]]; then
@@ -38,6 +41,11 @@ echo ""
 echo "Ready. Enable on every boot:"
 echo "  • sequence-site.service (git refresh, npm run build, serve dist)"
 echo "  • Chromium via /etc/xdg/autostart/sequence-kiosk.desktop"
+echo ""
+echo "Optional Web Serial without picker (IDs from lsusb, CH340 USB-serial often 1a86:7523):"
+echo "  sudo SEQUENCE_WEB_SERIAL_VID_HEX=1a86 SEQUENCE_WEB_SERIAL_PID_HEX=7523 SEQUENCE_SITE_DIR=$SEQUENCE_SITE_DIR \\"
+echo "    ./deploy/raspberry-pi/install-boot-after-pull.sh"
+echo "Then add the same two hex lines to /etc/sequence/kiosk.conf and reboot."
 echo ""
 echo "Optional dual-screen image kiosk (no Chromium):"
 echo "  sudo SEQUENCE_BOOT_INSTALL_DUAL_IMAGE=1 SEQUENCE_SITE_DIR=$SEQUENCE_SITE_DIR \\"

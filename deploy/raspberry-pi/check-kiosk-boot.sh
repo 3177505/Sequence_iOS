@@ -27,6 +27,16 @@ else
 fi
 
 echo ""
+echo "=== Chromium managed policy (Web Serial auto-grant) ==="
+if [[ -f /etc/chromium/policies/managed/sequence-web-serial.json ]]; then
+  cat /etc/chromium/policies/managed/sequence-web-serial.json
+elif [[ -f /etc/opt/chrome/policies/managed/sequence-web-serial.json ]]; then
+  cat /etc/opt/chrome/policies/managed/sequence-web-serial.json
+else
+  echo "(missing install-web-serial-policy.sh — Web Serial will show the picker)"
+fi
+
+echo ""
 echo "=== Quick HTTP test ==="
 if command -v curl >/dev/null 2>&1; then
   curl -sf -o /dev/null -w "HTTP %{http_code}\n" --connect-timeout 2 http://127.0.0.1:3000/ || echo "curl: no response"

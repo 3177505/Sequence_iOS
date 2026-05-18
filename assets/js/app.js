@@ -246,16 +246,44 @@ serialConnectBtn?.addEventListener('click', async () => {
 async function maybeAutoSerialKiosk() {
   if (!document.body.classList.contains('site--kiosk')) return;
   if (!('serial' in navigator) || serialPort) return;
-  try {
-    const ports = await navigator.serial.getPorts();
-    const port = ports[0];
-    if (!port) return;
-    serialPort = port;
-    await serialPort.open({ baudRate: SERIAL_BAUD });
-    if (statusEl) statusEl.textContent = '';
-    readSerialLines(serialPort);
-  } catch (_) {
-    serialPort = null;
+  const params = new URL(window.location.href).searchParams;
+  const vidHex = params.get('serialVid');
+  const pidHex = params.get('serialPid');
+  const maxAttempts = 40;
+  const delayMs = 500;
+  for (let attempt = 0; attempt < maxAttempts && !serialPort; attempt++) {
+    try {
+      let port = null;
+      const ports = await navigator.serial.getPorts();
+      if (ports.length > 0) port = ports[0];
+      else if (
+        attempt >= 15 &&
+        vidHex &&
+        pidHex &&
+        /^[0-9a-fA-F]{1,5}$/.test(vidHex) &&
+        /^[0-9a-fA-F]{1,5}$/.test(pidHex)
+      ) {
+        try {
+          port = await navigator.serial.requestPort({
+            filters: [{ usbVendorId: parseInt(vidHex, 16), usbProductId: parseInt(pidHex, 16) }],
+          });
+        } catch (_) {
+          port = null;
+        }
+      }
+      if (!port) {
+        await new Promise((r) => setTimeout(r, delayMs));
+        continue;
+      }
+      serialPort = port;
+      await serialPort.open({ baudRate: SERIAL_BAUD });
+      if (statusEl) statusEl.textContent = '';
+      readSerialLines(serialPort);
+      return;
+    } catch (_) {
+      serialPort = null;
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
   }
 }
 

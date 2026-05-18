@@ -83,6 +83,36 @@ If Chromium never appears after adding a second HDMI, set **`SEQUENCE_CHROMIUM_U
 
 ---
 
+## Web Serial trigger — no “Connect” popup (Chromium)
+
+That dialog is normal browser security: sites cannot open USB serial until allowed. Two repo-supported approaches:
+
+1. **Stay in Chromium:** install Chromium’s **`SerialAllowUsbDevicesForUrls`** policy for **`http://127.0.0.1:3000`** using your adapter’s **`lsusb`** IDs (hex **without** `0x`). Example — cheap USB‑UART (**CH340**) is often **`1a86:7523`**:
+
+   ```bash
+   lsusb
+   cd ~/Sequence_IOS
+   sudo SEQUENCE_WEB_SERIAL_VID_HEX=1a86 SEQUENCE_WEB_SERIAL_PID_HEX=7523 SEQUENCE_SITE_DIR="$HOME/Sequence_IOS" \
+     ./deploy/raspberry-pi/install-boot-after-pull.sh
+   ```
+
+   (Already ran the installer once? **`sudo SEQUENCE_WEB_SERIAL_VID_HEX=… SEQUENCE_WEB_SERIAL_PID_HEX=… SEQUENCE_HTTP_PORT=3000 /usr/local/bin/install-web-serial-policy.sh`** then reboot.)
+
+   Then put the **same two lines** (uncommented) in **`sudo nano /etc/sequence/kiosk.conf`**:
+
+   ```
+   SEQUENCE_WEB_SERIAL_VID_HEX=1a86
+   SEQUENCE_WEB_SERIAL_PID_HEX=7523
+   ```
+
+   Reboot. The kiosk launcher adds **`&serialVid=…&serialPid=…`** to app URLs; **`app.js`** retries **`getPorts()`** and may call **`requestPort({filters})`** once enterprise policy allows it.
+
+   Verify: **`bash ~/Sequence_IOS/deploy/raspberry-pi/check-kiosk-boot.sh`** (shows **`sequence-web-serial.json`**).
+
+2. **Bypass the browser entirely:** § **Native Python kiosk** (`/dev/ttyUSB0` / **`ttyACM0`**).
+
+---
+
 ## Dual-image kiosk (two pygame windows, no browser)
 
 Two plain windows slideshow images from folders **inside your repo checkout**:
@@ -113,9 +143,7 @@ Optional in **`kiosk.conf`**: **`SEQUENCE_SITE_DIR`** (repo path), **`SEQUENCE_D
 
 ## Native Python kiosk (two panes + auto USB serial, no Chromium)
 
-Browsers only expose **`/dev/tty*`** via Web Serial **after** a user chose the device (**`navigator.serial.requestPort()`**). **`getPorts()`** in kiosk only reconnects ports that already have that permission, so fresh Chromium profiles rarely auto-connect.
-
-Python opens **`SEQUENCE_SERIAL_DEVICE`** or the first **`/dev/ttyACM0`** / **`/dev/ttyUSB0`** (same **115200** baud). Any **non‑empty serial line** starts the trigger sequence (**15 s**) like **`assets/js/app.js`**.
+Browsers block silent USB serial unless you installed **`SerialAllowUsbDevicesForUrls`** (§ **Web Serial trigger** above). This Python kiosk skips the browser and opens **`/dev/ttyACM0`** / **`ttyUSB0`** directly (**115200** baud); any non‑empty line triggers like **`assets/js/app.js`**.
 
 Same dual layout: one window, half width left / half width right (**`SEQUENCE_*` dimensions** from **`/etc/sequence/kiosk.conf`**).
 

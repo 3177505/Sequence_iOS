@@ -17,6 +17,18 @@ URL_LEFT="${SEQUENCE_START_URL:-$DEFAULT_URL_LEFT}"
 MAXWAIT="${SEQUENCE_HTTP_WAIT_SECONDS:-240}"
 URL_RIGHT_RAW="${SEQUENCE_START_URL_RIGHT:-}"
 
+append_serial_query() {
+  local u="$1"
+  [[ -z "$u" ]] && { echo ""; return; }
+  [[ "$u" == *serialVid=* ]] && { echo "$u"; return; }
+  [[ -z "${SEQUENCE_WEB_SERIAL_VID_HEX:-}" || -z "${SEQUENCE_WEB_SERIAL_PID_HEX:-}" ]] && { echo "$u"; return; }
+  local q="serialVid=${SEQUENCE_WEB_SERIAL_VID_HEX}&serialPid=${SEQUENCE_WEB_SERIAL_PID_HEX}"
+  if [[ "$u" == *\?* ]]; then echo "${u}&${q}"; else echo "${u}?${q}"; fi
+}
+
+URL_LEFT=$(append_serial_query "$URL_LEFT")
+URL_RIGHT_RAW=$(append_serial_query "$URL_RIGHT_RAW")
+
 RUNDIR="${XDG_RUNTIME_DIR:-/tmp}"
 LCK="$RUNDIR/sequence-chromium-kiosk.lock"
 mkdir -p "$RUNDIR"
