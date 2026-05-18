@@ -1,15 +1,19 @@
 const SLIDE_MS = 2500;
-const TRIGGER_SLIDE_MS = 400;
+const TRIGGER_SLIDE_MS = 70;
 const TRIGGER_MS = 15000;
 const EXHIBIT_MANIFEST = '/public/exhibit-images.json';
 
 const WIPE_MS_BASELINE = 420;
-const WIPE_MS_TRIGGER = 220;
+const WIPE_MS_TRIGGER = 55;
+const SERIAL_ANALOG_THRESHOLD = 400;
 const OFFSCREEN_Y = 'translateY(110%)';
 
 function parseSensorBoostFromSerialLine(line) {
   const s = String(line || '').trim();
   if (!s) return null;
+  const lo = s.toLowerCase();
+  if (['high', 'on', 'yes', 'true', 'trigger', 'trip'].includes(lo)) return true;
+  if (['low', 'off', 'no', 'false'].includes(lo)) return false;
   if (/^[01]$/.test(s)) return s === '1';
   const tokens = s.split(/[,;\t\s]+/).filter(Boolean);
   if (tokens.length >= 1 && tokens.length <= 5 && tokens.every((t) => /^[01]$/.test(t))) {
@@ -17,6 +21,10 @@ function parseSensorBoostFromSerialLine(line) {
   }
   if (/^[01]+$/.test(s)) {
     return [...s.slice(0, 5)].some((c) => c === '1');
+  }
+  if (/^\d+$/.test(s)) {
+    const v = parseInt(s, 10);
+    return v >= SERIAL_ANALOG_THRESHOLD;
   }
   return null;
 }

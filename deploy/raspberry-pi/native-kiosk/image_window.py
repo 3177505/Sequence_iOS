@@ -24,10 +24,15 @@ def collect_images(dirpath):
     return out
 
 
-def parse_sensor_boost_line(line):
+def parse_sensor_boost_line(line, analog_threshold, analog_enabled):
     s = (line or "").strip()
     if not s:
         return None
+    lo = s.lower()
+    if lo in ("high", "on", "yes", "true", "trigger", "trip"):
+        return True
+    if lo in ("low", "off", "no", "false"):
+        return False
     if re.fullmatch(r"[01]", s):
         return s == "1"
     tokens = [t for t in re.split(r"[,;\t\s]+", s) if t]
@@ -35,7 +40,19 @@ def parse_sensor_boost_line(line):
         return any(t == "1" for t in tokens)
     if re.fullmatch(r"[01]+", s):
         return any(c == "1" for c in s[:5])
+    if analog_enabled and re.fullmatch(r"\d+", s):
+        v = int(s, 10)
+        if analog_threshold <= 0:
+            return v > 0
+        return v >= analog_threshold
     return None
+
+
+def apply_serial_payload(raw_bytes, analog_threshold, analog_enabled, share):
+    text = raw_bytes.decode("utf-8", errors="ignore").strip()
+    parsed = parse_sensor_boost_line(text, analog_threshold, analog_enabled)
+    if parsed is not None:
+        share.set_boost(parsed)
 
 
 def ease_out_cubic(t):
@@ -80,25 +97,33 @@ class SensorShare:
 def serial_reader(device, baud, share: SensorShare):
     if serial is None or not device:
         return
+    idle_flush_s = env_float("SEQUENCE_NATIVE_SERIAL_LINE_IDLE_MS", 0.05)
+    analog_thr = env_int("SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD", 400)
+    analog_off = os.environ.get("SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD", "").strip() == "-1"
+    analog_enabled = not analog_off
+    dbg = os.environ.get("SEQUENCE_NATIVE_SERIAL_DEBUG", "").strip() not in ("", "0", "false")
     while True:
         try:
-            ser = serial.Serial(device, baud, timeout=0.2)
+            ser = serial.Serial(device, baud, timeout=0.08)
+            if dbg:
+                print(f"native-kiosk: serial open {device}", file=sys.stderr)
             buf = b""
+            last_rx = time.monotonic()
             while True:
                 chunk = ser.read(4096)
+                now = time.monotonic()
                 if chunk:
                     buf += chunk
+                    last_rx = now
+                buf = buf.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
                 while b"\n" in buf:
                     line, buf = buf.split(b"\n", 1)
-                    try:
-                        text = line.decode("utf-8", errors="ignore")
-                    except Exception:
-                        continue
-                    text = text.replace("\r", "").strip()
-                    parsed = parse_sensor_boost_line(text)
-                    if parsed is not None:
-                        share.set_boost(parsed)
-                time.sleep(0.01)
+                    apply_serial_payload(line, analog_thr, analog_enabled, share)
+                if buf.strip() and (now - last_rx) >= idle_flush_s:
+                    apply_serial_payload(buf, analog_thr, analog_enabled, share)
+                    buf = b""
+                    last_rx = now
+                time.sleep(0.004)
         except Exception:
             time.sleep(1.0)
 
@@ -130,13 +155,18 @@ def main():
     ap.add_argument("--sensor-state-in", default=None)
     args = ap.parse_args()
 
+    overflow_top = env_int("SEQUENCE_PYGAME_OVERFLOW_TOP_PIXELS", 0)
+    if overflow_top > 0:
+        args.y -= overflow_top
+        args.height += overflow_top
+
     d = Path(args.dir)
     os.environ["SDL_VIDEO_WINDOW_POS"] = f"{args.x},{args.y}"
 
     slide_ms = env_int("SEQUENCE_EXHIBIT_SLIDE_MS", 2500)
-    trigger_slide_ms = env_int("SEQUENCE_EXHIBIT_TRIGGER_SLIDE_MS", 400)
+    trigger_slide_ms = env_int("SEQUENCE_EXHIBIT_TRIGGER_SLIDE_MS", 70)
     wipe_base_ms = env_int("SEQUENCE_EXHIBIT_WIPE_MS_BASELINE", 420)
-    wipe_trig_ms = env_int("SEQUENCE_EXHIBIT_WIPE_MS_TRIGGER", 220)
+    wipe_trig_ms = env_int("SEQUENCE_EXHIBIT_WIPE_MS_TRIGGER", 55)
     serial_baud = env_int("SEQUENCE_NATIVE_SERIAL_BAUD", 115200)
 
     if args.interval is not None:

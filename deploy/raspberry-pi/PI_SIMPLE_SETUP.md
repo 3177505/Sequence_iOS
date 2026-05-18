@@ -113,39 +113,14 @@ That dialog is normal browser security: sites cannot open USB serial until allow
 
 ---
 
-## Dual-image kiosk (two pygame windows, no browser)
+## Exhibit pygame kiosk (dual windows + Arduino) — **work from here**
 
-Two plain windows slideshow images from folders **inside your repo checkout**:
+If the Pi already runs desktop + **`Sequence_IOS`** checkout, everything you tweak **next** (Nano sketch, `/etc/sequence/kiosk.conf`, serial speed, panel bar, `git pull` + refresh scripts) lives in one place — **not** repeated as another “first install” block here:
 
-- **`public/exhibit-left/`** → left HDMI window  
-- **`public/exhibit-right/`** → right HDMI window  
+**→ [EXHIBIT_KIOSK_RUNBOOK.md](EXHIBIT_KIOSK_RUNBOOK.md)**
 
-Sizes come from **`SEQUENCE_WINDOW_WIDTH`**, **`SEQUENCE_WINDOW_HEIGHT`**, **`SEQUENCE_MONITOR_LEFT_WIDTH`** in **`/etc/sequence/kiosk.conf`** (same numbers as Chromium mode).
-
-**Install from the Pi** (after `git pull`; **removes Chromium kiosk autostart by default** — pygame-only):
-
-```bash
-cd ~/Sequence_IOS
-chmod +x deploy/raspberry-pi/*.sh
-sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.sh
-sudo reboot
-```
-
-To **also** keep Chromium kiosk autostart: add **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=0`** to that `sudo … install-dual-image-kiosk.sh` line.
-
-If Chromium was installed earlier and you only run **`install-boot-after-pull.sh`** (no dual-image step), remove its desktop file manually:
-
-```bash
-sudo rm -f /etc/xdg/autostart/sequence-kiosk.desktop
-```
-
-**Automate with the main installer** (systemd git/build/serve **plus** dual-image instead of Chromium):
-
-```bash
-sudo SEQUENCE_BOOT_INSTALL_DUAL_IMAGE=1 SEQUENCE_SITE_DIR="$HOME/Sequence_IOS" ./deploy/raspberry-pi/install-boot-after-pull.sh
-```
-
-Optional in **`kiosk.conf`**: **`SEQUENCE_SITE_DIR`** (repo path), **`SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS`**, **`SEQUENCE_DUAL_IMAGE_START_DELAY`** (defaults follow **`SEQUENCE_KIOSK_START_DELAY`**). Top bar: **`SEQUENCE_HIDE_DESKTOP_PANEL=1`** (default) stops **`lxpanel`** / **`wf-panel-pi`** before pygame runs; **`SEQUENCE_PYGAME_BORDERLESS=1`** removes window decorations (default).
+**Only if this Pi never had pygame dual-window install:** run once on the Pi:  
+`sudo SEQUENCE_SITE_DIR="$HOME/Sequence_IOS" ./deploy/raspberry-pi/install-dual-image-kiosk.sh` then reboot (or use **`install-boot-after-pull.sh`** with **`SEQUENCE_BOOT_INSTALL_DUAL_IMAGE=1`** during a fresh SD bring-up — same idea as § *One-time setup* above).
 
 ---
 
