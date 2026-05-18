@@ -67,7 +67,7 @@ You need **Raspberry Pi OS with desktop** (not Lite). User below is **`raspi`** 
 3. When **http://127.0.0.1:3000** is ready, another **notification**: *Opening Sequence* (one Chromium or two, depending on **`kiosk.conf`**).  
 4. **Chromium** uses **`/etc/sequence/kiosk.conf`** for size. **Two independent monitors:** set **`SEQUENCE_START_URL`** and **`SEQUENCE_START_URL_RIGHT`** (see § *Two monitors, two setups*). **Default left URL** if unset: **`exhibit-left.html?kiosk=1`** (empty stage, no site nav). **`SEQUENCE_START_URL_RIGHT` unset:** one **`--app`** window (often spanning both HDMI if width/height match the desktop).
 
-Background service: **`sequence-site.service`** — each start = **git reset to `origin/main`**, **`npm ci`**, **`npm run build`**, **`serve dist`**.
+Background service: **`sequence-site.service`** — installed and enabled by **`install-boot-after-pull.sh`**, so it starts **on every boot**. Each service start runs **git sync to `origin/main`**, **`npm ci`**, **`npm run build`**, **`serve dist`** (and again after a crash once systemd restarts the unit).
 
 ---
 

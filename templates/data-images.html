@@ -1,0 +1,25 @@
+<div id="app" class="app app--baseline app--fixed-800x480">
+  <div class="grid">
+    <div id="pane-left" class="pane pane--reddit" aria-label="Exhibit images — screen A">
+      <div class="pane-layer">
+        <img class="pane__media is-hidden" data-side="L" data-layer="0" alt="" decoding="async" />
+      </div>
+      <div class="pane-layer">
+        <img class="pane__media is-hidden" data-side="L" data-layer="1" alt="" decoding="async" />
+      </div>
+    </div>
+    <div id="pane-right" class="pane pane--reddit" aria-label="Exhibit images — screen B">
+      <div class="pane-layer">
+        <img class="pane__media is-hidden" data-side="R" data-layer="0" alt="" decoding="async" />
+      </div>
+      <div class="pane-layer">
+        <img class="pane__media is-hidden" data-side="R" data-layer="1" alt="" decoding="async" />
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button type="button" id="trigger">Spustit (15 s alternativní sekvence)</button>
+    <button type="button" id="serial-connect">Připojit senzor (USB serial)</button>
+    <span id="status" class="status"></span>
+  </div>
+</div>

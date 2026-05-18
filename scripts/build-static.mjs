@@ -23,6 +23,7 @@ async function safeCp(src, dest) {
 async function main() {
   run('node scripts/generate-public-tree-json.mjs');
   run('node scripts/generate-api-static-json.mjs');
+  run('node scripts/generate-exhibit-images-json.mjs');
   try {
     run('node scripts/scrape-reddit-videos.mjs');
   } catch {

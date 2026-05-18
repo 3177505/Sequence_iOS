@@ -29,6 +29,11 @@
   object-position: center center;
 }
 
+.pane--reddit img.pane__media {
+  object-fit: cover;
+  object-position: center center;
+}
+
 .pane--reddit .pane__media.is-hidden {
   opacity: 0;
   pointer-events: none;
@@ -53,6 +58,16 @@
 }
 
 .app--trigger .pane--reddit video.pane__media {
+  transform: scale(1);
+  object-fit: contain;
+}
+
+.app--baseline .pane--reddit img.pane__media {
+  transform: scale($reddit-baseline-video-scale);
+  object-fit: cover;
+}
+
+.app--trigger .pane--reddit img.pane__media {
   transform: scale(1);
   object-fit: contain;
 }

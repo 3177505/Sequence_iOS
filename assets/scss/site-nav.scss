@@ -41,3 +41,7 @@ body:has(#site-nav-host:not([data-nav-overlay])) {
 .site-nav a[aria-current='page'] {
   color: $text-ui;
 }
+
+body.site--kiosk:has(#site-nav-host:not([data-nav-overlay])) {
+  padding-top: 0;
+}
