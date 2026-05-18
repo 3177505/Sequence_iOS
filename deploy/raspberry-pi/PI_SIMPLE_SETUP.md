@@ -65,7 +65,7 @@ You need **Raspberry Pi OS with desktop** (not Lite). User below is **`raspi`** 
 1. Desktop logs in by itself.
 2. A **notification**: *Waiting for local site (git pull / npm build can take a few minutes on first boot…)*  
 3. When **http://127.0.0.1:3000** is ready, another **notification**: *Opening Sequence* (one Chromium or two, depending on **`kiosk.conf`**).  
-4. **Chromium** uses **`/etc/sequence/kiosk.conf`** for size. **Two independent monitors:** set **`SEQUENCE_START_URL`** and **`SEQUENCE_START_URL_RIGHT`** (see § *Two monitors, two setups*). **Default left URL** if unset: **`exhibit-left.html?kiosk=1`** (empty stage, no site nav). **`SEQUENCE_START_URL_RIGHT` unset:** one **`--app`** window (often spanning both HDMI if width/height match the desktop).
+4. **Chromium** uses **`/etc/sequence/kiosk.conf`** for size. **Two independent monitors:** set **`SEQUENCE_START_URL`** and **`SEQUENCE_START_URL_RIGHT`** (see § *Two monitors, two setups*). **Default left URL** if unset: **`data-images.html?kiosk=1`** (two-column exhibit images with wipe-from-top; matches web prototype). **`SEQUENCE_START_URL_RIGHT` unset:** one **`--app`** window (often spanning both HDMI if width/height match the desktop).
 
 Background service: **`sequence-site.service`** — installed and enabled by **`install-boot-after-pull.sh`**, so it starts **on every boot**. Each service start runs **git sync to `origin/main`**, **`npm ci`**, **`npm run build`**, **`serve dist`** (and again after a crash once systemd restarts the unit).
 
@@ -122,13 +122,21 @@ Two plain windows slideshow images from folders **inside your repo checkout**:
 
 Sizes come from **`SEQUENCE_WINDOW_WIDTH`**, **`SEQUENCE_WINDOW_HEIGHT`**, **`SEQUENCE_MONITOR_LEFT_WIDTH`** in **`/etc/sequence/kiosk.conf`** (same numbers as Chromium mode).
 
-**Install from the Pi** (after `git pull`; removes Chromium autostart):
+**Install from the Pi** (after `git pull`; **removes Chromium kiosk autostart by default** — pygame-only):
 
 ```bash
 cd ~/Sequence_IOS
 chmod +x deploy/raspberry-pi/*.sh
-sudo SEQUENCE_SITE_DIR="$(pwd)" SEQUENCE_DISABLE_CHROMIUM_KIOSK=1 ./deploy/raspberry-pi/install-dual-image-kiosk.sh
+sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.sh
 sudo reboot
+```
+
+To **also** keep Chromium kiosk autostart: add **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=0`** to that `sudo … install-dual-image-kiosk.sh` line.
+
+If Chromium was installed earlier and you only run **`install-boot-after-pull.sh`** (no dual-image step), remove its desktop file manually:
+
+```bash
+sudo rm -f /etc/xdg/autostart/sequence-kiosk.desktop
 ```
 
 **Automate with the main installer** (systemd git/build/serve **plus** dual-image instead of Chromium):
@@ -137,7 +145,7 @@ sudo reboot
 sudo SEQUENCE_BOOT_INSTALL_DUAL_IMAGE=1 SEQUENCE_SITE_DIR="$HOME/Sequence_IOS" ./deploy/raspberry-pi/install-boot-after-pull.sh
 ```
 
-Optional in **`kiosk.conf`**: **`SEQUENCE_SITE_DIR`** (repo path), **`SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS`**, **`SEQUENCE_DUAL_IMAGE_START_DELAY`** (defaults follow **`SEQUENCE_KIOSK_START_DELAY`**).
+Optional in **`kiosk.conf`**: **`SEQUENCE_SITE_DIR`** (repo path), **`SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS`**, **`SEQUENCE_DUAL_IMAGE_START_DELAY`** (defaults follow **`SEQUENCE_KIOSK_START_DELAY`**). Top bar: **`SEQUENCE_HIDE_DESKTOP_PANEL=1`** (default) stops **`lxpanel`** / **`wf-panel-pi`** before pygame runs; **`SEQUENCE_PYGAME_BORDERLESS=1`** removes window decorations (default).
 
 ---
 
@@ -185,11 +193,11 @@ Goal: **one Chromium window fills the left HDMI with its own `--app` URL**, and 
    SEQUENCE_WINDOW_WIDTH=3840
    SEQUENCE_WINDOW_HEIGHT=1080
    SEQUENCE_MONITOR_LEFT_WIDTH=1920
-   SEQUENCE_START_URL=http://127.0.0.1:3000/exhibit-left.html?kiosk=1
+   SEQUENCE_START_URL=http://127.0.0.1:3000/data-images.html?kiosk=1
    SEQUENCE_START_URL_RIGHT=http://127.0.0.1:3000/exhibit-right.html?kiosk=1
    ```
 
-   With nothing set, the launcher defaults the **left** URL to **`exhibit-left.html?kiosk=1`** (empty stage: no nav, no colour demo). Point either URL at your own page (e.g. **`data-videos.html?kiosk=1`**, a future image route, or a built path under **`/public/...`**).
+   With nothing set, the launcher defaults the **left** URL to **`data-images.html?kiosk=1`** (two-column exhibit images with wipe-from-top). Override with **`SEQUENCE_START_URL`** (e.g. **`data-videos.html?kiosk=1`**).
 
 3. Reinstall the launcher after `git pull` so **`/usr/local/bin/sequence-start-chromium.sh`** is current, then reboot.
 

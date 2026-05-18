@@ -14,12 +14,12 @@ if [[ ! -f "$ROOT/deploy/raspberry-pi/native-kiosk/image_window.py" ]]; then
 fi
 
 if command -v apt-get >/dev/null 2>&1; then
-  apt-get install -qy python3-pygame || true
+  apt-get install -qy python3-pygame python3-serial || true
 fi
 
 U="$(awk -F: '$3==1000 {print $1; exit}' /etc/passwd)"
 if [[ -n "${U:-}" ]]; then
-  usermod -aG video,input "$U" 2>/dev/null || true
+  usermod -aG video,input,dialout "$U" 2>/dev/null || true
 fi
 
 install -dm755 /opt/sequence/native-kiosk
@@ -39,14 +39,18 @@ X-GNOME-Autostart-enabled=true
 Exec=/usr/local/bin/dual-image-kiosk-launch.sh
 DESKTOP
 
-if [[ "${SEQUENCE_DISABLE_CHROMIUM_KIOSK:-0}" == 1 ]]; then
+DISABLE_CHROME="${SEQUENCE_DISABLE_CHROMIUM_KIOSK:-1}"
+if [[ "$DISABLE_CHROME" == 1 ]]; then
   rm -f /etc/xdg/autostart/sequence-kiosk.desktop
-  echo "[sequence] Removed Chromium kiosk autostart."
+  echo "[sequence] Chromium kiosk autostart removed (pygame dual-image only). To keep Chromium too: SEQUENCE_DISABLE_CHROMIUM_KIOSK=0 when running this script."
 else
-  echo "[sequence] WARNING: Chromium kiosk autostart is still active — disable it if you only want dual-image (SEQUENCE_DISABLE_CHROMIUM_KIOSK=1)." >&2
+  echo "[sequence] Chromium kiosk autostart left enabled (SEQUENCE_DISABLE_CHROMIUM_KIOSK=0)."
 fi
 
 echo "[sequence] Dual-image kiosk installed."
 echo "  • Drop JPG/PNG/WebP into: $ROOT/public/exhibit-left and .../exhibit-right"
+echo "  • Timing matches web data-images (2.5s slide, ~420ms wipe); optional SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS=8 forces legacy interval."
+echo "  • Borderless pygame windows (SEQUENCE_PYGAME_BORDERLESS=1 default); desktop panel hidden before launch (SEQUENCE_HIDE_DESKTOP_PANEL=1 default)."
+echo "  • To keep the Pi menu bar: SEQUENCE_HIDE_DESKTOP_PANEL=0 in /etc/sequence/kiosk.conf"
 echo "  • Optional in /etc/sequence/kiosk.conf: SEQUENCE_SITE_DIR=$ROOT"
 echo "  • Reboot or log out."

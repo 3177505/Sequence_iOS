@@ -20,8 +20,6 @@ W_RIGHT=$(( W - W_LEFT ))
 [[ "$W_RIGHT" -lt 1 ]] && W_RIGHT=1
 [[ "$W_LEFT" -lt 1 ]] && W_LEFT=1
 
-INT="${SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS:-8}"
-
 export DISPLAY="${DISPLAY:-:0}"
 
 RUNDIR="${XDG_RUNTIME_DIR:-/tmp}"
@@ -30,6 +28,28 @@ mkdir -p "$RUNDIR"
 
 PY=/opt/sequence/native-kiosk/image_window.py
 
+hide_desktop_panel() {
+  [[ "${SEQUENCE_HIDE_DESKTOP_PANEL:-1}" != 1 ]] && return 0
+  pkill lxpanel 2>/dev/null || true
+  pkill wf-panel-pi 2>/dev/null || true
+  pkill lxqt-panel 2>/dev/null || true
+}
+
+SENSOR_STATE="${SEQUENCE_NATIVE_SENSOR_STATE:-/tmp/sequence-exhibit-sensor-boost}"
+SERIAL="${SEQUENCE_NATIVE_SERIAL_DEVICE:-}"
+
+OPTS_L=( )
+OPTS_R=( )
+if [[ -n "${SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS:-}" ]]; then
+  OPTS_L+=(--interval "${SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS}")
+  OPTS_R+=(--interval "${SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS}")
+fi
+if [[ -n "$SERIAL" ]]; then
+  rm -f "$SENSOR_STATE"
+  OPTS_L+=(--serial-device "$SERIAL" --sensor-state-out "$SENSOR_STATE")
+  OPTS_R+=(--sensor-state-in "$SENSOR_STATE")
+fi
+
 (
   flock -n 205 || exit 0
 
@@ -37,7 +57,9 @@ PY=/opt/sequence/native-kiosk/image_window.py
 
   mkdir -p "$LEFT" "$RIGHT"
 
-  python3 "$PY" --dir "$LEFT" --width "$W_LEFT" --height "$H" --x 0 --y 0 --interval "$INT" &
-  python3 "$PY" --dir "$RIGHT" --width "$W_RIGHT" --height "$H" --x "$W_LEFT" --y 0 --interval "$INT" &
+  hide_desktop_panel
+
+  python3 "$PY" --dir "$LEFT" --width "$W_LEFT" --height "$H" --x 0 --y 0 "${OPTS_L[@]}" &
+  python3 "$PY" --dir "$RIGHT" --width "$W_RIGHT" --height "$H" --x "$W_LEFT" --y 0 "${OPTS_R[@]}" &
   wait
 ) 205>"$LCK"

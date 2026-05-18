@@ -37,7 +37,7 @@ SEQUENCE_HTTP_WAIT_SECONDS=300
 # SEQUENCE_KIOSK_START_DELAY=12
 # SEQUENCE_CHROMIUM_USE_X11_OZONE=1
 # SEQUENCE_KIOSK_LOG default: ~/.local/share/sequence-kiosk-chromium.log
-# SEQUENCE_START_URL=http://127.0.0.1:${HTTP}/exhibit-left.html?kiosk=1
+# SEQUENCE_START_URL=http://127.0.0.1:${HTTP}/data-images.html?kiosk=1
 # SEQUENCE_START_URL_RIGHT=http://127.0.0.1:${HTTP}/exhibit-right.html?kiosk=1
 # SEQUENCE_MONITOR_LEFT_WIDTH=1920
 # Web Serial auto (USB adapter on ttyUSB0): lsusb → idVendor:idProduct hex, then run:
@@ -45,6 +45,10 @@ SEQUENCE_HTTP_WAIT_SECONDS=300
 # And set same pair in kiosk.conf so ?kiosk=1 URLs get &serialVid=&serialPid= (Chromium launcher appends):
 # SEQUENCE_WEB_SERIAL_VID_HEX=1a86
 # SEQUENCE_WEB_SERIAL_PID_HEX=7523
+#
+# Pygame dual-image kiosk (/usr/local/bin/dual-image-kiosk-launch.sh):
+# SEQUENCE_HIDE_DESKTOP_PANEL=1
+# SEQUENCE_PYGAME_BORDERLESS=1
 CFG
 fi
 
