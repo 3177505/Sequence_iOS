@@ -41,6 +41,20 @@ hide_desktop_panel() {
   pkill lxqt-panel 2>/dev/null || true
 }
 
+restore_desktop_panel() {
+  [[ "${SEQUENCE_HIDE_DESKTOP_PANEL:-1}" != 1 ]] && return 0
+  export DISPLAY="${DISPLAY:-:0}"
+  if command -v wf-panel-pi >/dev/null 2>&1 && ! pgrep -x wf-panel-pi >/dev/null 2>&1; then
+    nohup wf-panel-pi >/dev/null 2>&1 &
+  fi
+  if command -v lxqt-panel >/dev/null 2>&1 && ! pgrep -x lxqt-panel >/dev/null 2>&1; then
+    nohup lxqt-panel >/dev/null 2>&1 &
+  fi
+  if command -v lxpanel >/dev/null 2>&1 && ! pgrep -x lxpanel >/dev/null 2>&1; then
+    nohup lxpanel >/dev/null 2>&1 &
+  fi
+}
+
 SENSOR_STATE="${SEQUENCE_NATIVE_SENSOR_STATE:-/tmp/sequence-exhibit-sensor-boost}"
 SERIAL="${SEQUENCE_NATIVE_SERIAL_DEVICE:-}"
 
@@ -78,4 +92,5 @@ fi
     fi
     python3 "$PY_STRIP" "${STRIP_ARGS[@]}"
   fi
+  restore_desktop_panel
 ) 205>"$LCK"

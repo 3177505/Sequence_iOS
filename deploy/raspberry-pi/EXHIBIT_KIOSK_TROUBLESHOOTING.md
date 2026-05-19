@@ -82,6 +82,20 @@ Only loose files (**no mirrored numeric dirs**) ⇒ **`build_flat_timeline`**.
 
 ---
 
+## Desktop top panel (Wayfire **`wf-panel-pi`** / LXDE **`lxpanel`**)
+
+During exhibit **`SEQUENCE_HIDE_DESKTOP_PANEL=1`** (**`kiosk.conf`**) runs **`sequence-hide-desktop-panel.sh`**, which **kills** the panel. **`dual-image-kiosk-launch.sh`** starts it again when **`exhibit_dual_strip`** (**or legacy windows**) exits. **`git pull`** **then** **`sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.sh`** updates **`/usr/local/bin/dual-image-kiosk-launch.sh`** so that **restore** behaviour is installed.
+
+Manual bring-back after killing exhibit (**`Wayfire`** typical):
+
+```bash
+wf-panel-pi &
+```
+
+**Never hide:** set **`SEQUENCE_HIDE_DESKTOP_PANEL=0`**, **`reboot`**.
+
+---
+
 ## Wayfire top bar (`wf-panel-pi`)
 
 ```bash
