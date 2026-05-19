@@ -17,13 +17,17 @@ Next **`git pull`** asks for HTTPS credentials once; **`store`** keeps them in *
 
 ---
 
-## **`arduino-cli`**: missing package, **`curl` 400**, **`PATH`**
+## **`arduino-cli`**: missing package, **`curl` 400**, **`curl` 404**, **`curl` (3)**, **`PATH`**
 
-- **APT:** On recent Debian/Raspberry Pi OS **`arduino-cli`** is often absent → use the tarball from the **[short-path §5 tarball block](EXHIBIT_KIOSK_RUNBOOK.md)** ( **`releases/download`**, **`VERS=…`**) — **not** `raw.githubusercontent.com/.../install.sh` (**HTTP 400** is common).
+- **APT:** On recent Debian/Raspberry Pi OS **`arduino-cli`** is often absent → use the tarball block in **[EXHIBIT_KIOSK_RUNBOOK.md](EXHIBIT_KIOSK_RUNBOOK.md)** (**Appendix — `arduino-cli` + Nano upload**) — **not** `raw.githubusercontent.com/.../install.sh` (**HTTP 400** is common).
+
+- **`curl: (22) … 404`:** Filename must match the release asset exactly (**`arduino-cli_${VERS}_Linux_ARM64.tar.gz`** on 64‑bit Pi, **`…_Linux_ARMv7.tar.gz`** on 32‑bit). Paste the **`curl`** **`https://github.com/arduino/arduino-cli/releases/download/v…`** line into your shell **unchanged** (chat **`…`/ellipsis** placeholders break **`curl`**). If **`uname -m`** is **`arm64`**, the runbook appendix expects **`aarch64|arm64`**. Debian package fallback (**same `VERS`**) on Raspberry Pi OS: **`curl -fSLO`** **`…/arduino-cli_${VERS}-1_arm64.deb`** (64‑bit) or **`…_armhf.deb`** (32‑bit **`armv7l`**) → **`sudo apt install -y ./*.deb`** (installs **`/usr/bin/arduino-cli`**; **`PATH`** tweak optional).
+
+- **`curl: (3) unmatched brace/`** **`bracket`:** **`URL`** or **`curl`** quoted string contains **`}`**/garbage characters —usually a pasted **`…Z}`** or summarised **`https://github.com/…`** URL. Replace with full **`releases/download`** line from runbook **`EXHIBIT_KIOSK_RUNBOOK.md`** appendix.
 
 - **`PATH`:** Keep **`arduino-cli`** in **`~/Sequence_IOS/bin`** add:
 
-  **`export PATH="$HOME/Sequence_IOS/bin:$PATH"`** to **`~/.bashrc`** (shown in §5).
+  **`export PATH="$HOME/Sequence_IOS/bin:$PATH"`** to **`~/.bashrc`** (shown in **`EXHIBIT_KIOSK_RUNBOOK`** appendix).
 
 - **`upload-exhibit-sensor.sh`** prepends **`$REPO_ROOT/bin`** (**`~/Sequence_IOS`** parent of **`deploy/`**) for that process so uploads can succeed before **`bashrc`** is re-loaded.
 
@@ -79,6 +83,24 @@ For each **`N`** (**`1`**, **`2`**, …**) create **`~/Sequence_IOS/public/exhib
 Only loose files (**no mirrored numeric dirs**) ⇒ **`build_flat_timeline`**.
 
 **Analog readings:** **`SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD`**. **`kiosk.conf`** may set **`SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD=-1`** to disable analogue handling in **`serial_reader`** (same file).
+
+---
+
+## Two pygame windows vs one strip; Chromium
+
+- **Dual-image kiosk** (**`install-dual-image-kiosk.sh`**) autostarts **`dual-image-kiosk-launch.sh`** (Python). By default it **deletes** **`/etc/xdg/autostart/sequence-kiosk.desktop`** (**Chromium**). If the browser still opens, list **`ls /etc/xdg/autostart/`** and **`grep -R sequence /etc/xdg/autostart`** — remove or disable other **`chromium`/`chrome`** entries, or re-run the installer with **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=1`** (default).
+- **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=1`:** **two** **`image_window.py`** processes (**separate windows**). **`=0`:** **`exhibit_dual_strip.py`** (**one** window, two columns). See **[EXHIBIT_KIOSK_RUNBOOK.md](EXHIBIT_KIOSK_RUNBOOK.md)** table.
+
+## Two HDMI — only one panel fills or missing right window
+
+Launcher sizes come from **`SEQUENCE_WINDOW_WIDTH`**, **`SEQUENCE_WINDOW_HEIGHT`**, **`SEQUENCE_MONITOR_LEFT_WIDTH`**. Missing → **`1600×480`**; right window can sit off-screen or tiny.
+
+- **Legacy two-window mode:** left window **`x=0`**, **`width=LEFT`**; right **`x=LEFT`**, **`width=WIDTH−LEFT`**. You still need a virtual desktop at least **`WIDTH`** px wide — **Screen Configuration → extended** in one row is usual (**mirror** duplicates the same coordinates on both outputs).
+- **Strip mode:** one pygame window **`WIDTH`×`HEIGHT`** at origin; same **`WIDTH`** requirement.
+
+Check **`grep SEQUENCE_WINDOW /etc/sequence/kiosk.conf`**. After edits: **`pkill -f 'exhibit_dual_strip|image_window'`** then **`DISPLAY=:0 SEQUENCE_DUAL_IMAGE_START_DELAY=0 /usr/local/bin/dual-image-kiosk-launch.sh`** (**or reboot**).
+
+Wayland quirks — **[PI_SIMPLE_SETUP.md](PI_SIMPLE_SETUP.md)** (**Two monitors**).
 
 ---
 
