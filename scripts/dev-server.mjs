@@ -18,7 +18,13 @@ import { handleMlApi } from './lib/ml-api.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const rootResolved = path.resolve(root);
-const PORT = Number(process.env.PORT) || 3000;
+const rawPort =
+  process.env.PORT ?? process.env.port ?? (process.env.npm_config_port != null ? process.env.npm_config_port : '');
+const parsedPort = rawPort === '' || rawPort == null ? NaN : Number(String(rawPort).trim());
+const DEV_PORT_PREF =
+  Number.isFinite(parsedPort) && parsedPort >= 1 && parsedPort <= 65535 ? Math.floor(parsedPort) : 3000;
+let devTryPort = DEV_PORT_PREF;
+const DEV_PORT_MAX_STEP = 30;
 const scssRoot = path.join(root, 'assets', 'scss');
 
 const clients = new Set();
@@ -424,9 +430,29 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Dev http://localhost:${PORT} — SCSS on-demand, extensionless → .html, live reload`);
+server.on('error', (err) => {
+  if (err?.code !== 'EADDRINUSE') {
+    console.error(err);
+    process.exit(1);
+  }
+  devTryPort += 1;
+  if (devTryPort > DEV_PORT_PREF + DEV_PORT_MAX_STEP) {
+    console.error(
+      `sequence-dev: no free port in ${DEV_PORT_PREF}–${DEV_PORT_PREF + DEV_PORT_MAX_STEP}. On Pi the site often uses :3000 — run:  sudo systemctl stop sequence-site.service`,
+    );
+    process.exit(1);
+  }
+  console.warn(`sequence-dev: port ${devTryPort - 1} busy → ${devTryPort}`);
+  server.listen(devTryPort);
 });
+
+server.on('listening', () => {
+  const a = server.address();
+  const p = a && typeof a === 'object' ? a.port : devTryPort;
+  console.log(`Dev http://127.0.0.1:${p} — SCSS on-demand, extensionless → .html, live reload`);
+});
+
+server.listen(devTryPort);
 
 try {
   const watcher = fs.watch(scssRoot, { recursive: true }, () => notifyReload());
