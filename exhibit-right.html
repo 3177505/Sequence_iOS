@@ -3,10 +3,17 @@
 <head>
   <base href="/">
   <meta charset="utf-8">
-  <title>Sequence — exhibit (right)</title>
+  <title>Sequence — exhibit vpravo (celá obrazovka)</title>
   <link rel="stylesheet" href="assets/scss/main.scss">
+  <link rel="stylesheet" href="assets/scss/reddit-sequence.scss">
+  <link rel="stylesheet" href="assets/scss/exhibit-single.scss">
 </head>
-<body data-template="templates/exhibit-pane.html">
+<body
+  data-template="templates/exhibit-single-screen.html"
+  data-scripts="assets/js/app-exhibit-single.js"
+  data-exhibit-side="R"
+  data-exhibit-fullscreen
+>
   <div id="page-root"></div>
   <script type="module" src="assets/js/site-layout.js"></script>
 </body>

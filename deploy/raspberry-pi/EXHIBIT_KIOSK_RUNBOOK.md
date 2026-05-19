@@ -6,12 +6,14 @@ If something breaks, use **[EXHIBIT_KIOSK_TROUBLESHOOTING.md](EXHIBIT_KIOSK_TROU
 
 **Minimal setup:** Raspberry Pi desktop, user **`raspi`**, checkout **`~/Sequence_IOS`**. The dual-image installer runs **Python** (**`/usr/local/bin/dual-image-kiosk-launch.sh`** → **`/opt/sequence/native-kiosk/*.py`**), **not** Chromium — it removes **`sequence-kiosk.desktop`** unless you installed with **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=0`**.
 
+If **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC`** is **missing** from **`kiosk.conf`**, the launcher defaults to **`1`** (**two pygame windows**). Set **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=0`** explicitly for **one-window** **`exhibit_dual_strip`**.
+
 **Two ways to show left + right content:**
 
 | **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC`** | What runs |
 | --- | --- |
-| **`1`** | **Two separate pygame windows** (**`image_window.py`** each): left at **`x=0`**, right at **`x=SEQUENCE_MONITOR_LEFT_WIDTH`**. Each side **shuffles its own folder** (flat files only under **`exhibit-left`** / **`exhibit-right`**). |
-| **`0`** | **One window** (**`exhibit_dual_strip.py`**): paired left/right **in one frame**, numbered folders **`1`**, **`2`**, … on both sides; timing **`SEQUENCE_EXHIBIT_BASELINE_*`** / **`SEQUENCE_BURST_*`**. |
+| **`1`** (default when unset) | **Two separate pygame windows** (**`image_window.py`** each): left **`x=0`**, right **`x=SEQUENCE_MONITOR_LEFT_WIDTH`**. Each side walks **only that tree** (see §3). |
+| **`0`** | **One window** (**`exhibit_dual_strip.py`**): paired left/right **same frame**; timing **`SEQUENCE_EXHIBIT_BASELINE_*`** / **`SEQUENCE_BURST_*`**. |
 
 Placing the right window beside the left still needs a desktop wide enough (**`SEQUENCE_WINDOW_WIDTH`** = sum of outputs) — Raspberry Pi OS **Screen Configuration → extended** row is the usual way to get **`x = 0`** and **`x = 1920`** (etc.) on different HDMI heads. **Mirrored** duplicate shows both windows stacked on the same logical area.
 
@@ -37,7 +39,7 @@ sudo install -dm755 /etc/sequence
 sudo nano /etc/sequence/kiosk.conf
 ```
 
-Overwrite with values that match **your** geometry. **Two HDMI + two pygame windows** → **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=1`** (below). **Single window, paired wipes** → set it to **`0`**.
+Overwrite with values that match **your** geometry. **Single window, paired wipes** → set **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=0`**. Omit **`LEGACY`** or **`=1`** for **two pygame windows** (**default** in launcher).
 
 ```bash
 SEQUENCE_SITE_DIR=$HOME/Sequence_IOS
@@ -81,8 +83,8 @@ Chromium / multi-URL setup (different path): **[PI_SIMPLE_SETUP.md](PI_SIMPLE_SE
 
 ### 3 — Image folders
 
-- **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=1`:** put image files **directly** under **`~/Sequence_IOS/public/exhibit-left`** and **`…/exhibit-right`** (each side shuffles **independently**).
-- **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=0`** (**`exhibit_dual_strip`**): use **matching numbered folders** on both sides (**`1`**, **`2`**, …) for paired sets, or **flat** files only in both roots for flat pairing (see troubleshooting).
+- **`LEGACY_TWO_PROC=1`** (**`image_window` ×2:** if **`exhibit-left`** (or **`right`**) has **any non-empty digit-named subfolder** **`1`**, **`2`**, …, that side uses **numbered mode**: random order of folders, then random order of images inside each folder (images must sit **inside** those subfolders, **not** loose in the root). If there are **no** such subfolders with images, loose image files in **`exhibit-left`** / **`exhibit-right`** roots are used (**flat** shuffle). **Folders on left and right do not have to match by number** — each display is independent.
+- **`LEGACY_TWO_PROC=0`** (**`exhibit_dual_strip`**): **paired** sets — use the **same numbered folder names on both sides**, or both roots **flat** only (see troubleshooting).
 
 ---
 
@@ -144,7 +146,7 @@ H="${SEQUENCE_WINDOW_HEIGHT:-480}"
 LW="${SEQUENCE_MONITOR_LEFT_WIDTH:-$((W / 2))}"
 RW=$((W - LW))
 export DISPLAY="${DISPLAY:-:0}"
-if [[ "${SEQUENCE_EXHIBIT_LEGACY_TWO_PROC:-0}" == "1" ]]; then
+if [[ "${SEQUENCE_EXHIBIT_LEGACY_TWO_PROC:-1}" == "1" ]]; then
   python3 /opt/sequence/native-kiosk/image_window.py --dir "$REP/public/exhibit-left" --width "$LW" --height "$H" --x 0 --y 0 &
   python3 /opt/sequence/native-kiosk/image_window.py --dir "$REP/public/exhibit-right" --width "$RW" --height "$H" --x "$LW" --y 0 &
   wait

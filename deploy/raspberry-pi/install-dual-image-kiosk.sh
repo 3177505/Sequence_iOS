@@ -56,10 +56,8 @@ else
 fi
 
 echo "[sequence] Dual-image kiosk installed (Python pygame — Chromium autostart removed unless SEQUENCE_DISABLE_CHROMIUM_KIOSK=0)."
-echo "  • SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=1 → two pygame windows (image_window.py left+right). =0 → one window exhibit_dual_strip.py (paired panes)."
-echo "  • Set SEQUENCE_EXHIBIT_LEGACY_TWO_PROC (and SEQUENCE_WINDOW_* / SEQUENCE_MONITOR_LEFT_WIDTH) in /etc/sequence/kiosk.conf — see EXHIBIT_KIOSK_RUNBOOK.md."
-echo "  • exhibit_dual_strip (LEGACY_TWO_PROC=0): paired frames; numbered dirs on both sides or flat pair lists — see runbook."
-echo "  • image_window ×2 (LEGACY_TWO_PROC=1): two windows; put images flat under exhibit-left / exhibit-right (independent shuffles)."
+echo "  • Default (omit LEGACY or =1): two windows image_window.py; §3 numbered subdirs per side OK. LEGACY_TWO_PROC=0 → exhibit_dual_strip (paired panes)."
+echo "  • exhibit_dual_strip: matching numbered dirs both sides or both roots flat pair lists."
 echo "  • Timing strip: SEQUENCE_EXHIBIT_BASELINE_* / SEQUENCE_BURST_*. Timing legacy windows: SEQUENCE_EXHIBIT_SLIDE_MS / SEQUENCE_EXHIBIT_WIPE_MS_*."
 echo "  • Legacy optional: SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS. Panel hide: /usr/local/bin/sequence-hide-desktop-panel.sh."
 echo "  • Panel bar visible? PI_SIMPLE_SETUP (Panel)."

@@ -78,7 +78,9 @@ Burst: a **`0→1`** serial edge starts **`SEQUENCE_BURST_TOTAL_MS`** (**`15000`
 
 ## Exhibit image pairing
 
-For each **`N`** (**`1`**, **`2`**, …**) create **`~/Sequence_IOS/public/exhibit-left/N`** and **`~/Sequence_IOS/public/exhibit-right/N`** with paired images inside; kiosk shuffles folder IDs **then zips filenames by index**.
+**Dual-window `image_window`** (**`LEGACY_TWO_PROC=1`**, default when unset in launcher): numbered subfolders **`1`**, **`2`**, … **per side** behave like a **per-display** playlist (order of folders shuffled, then images inside each folder). **Loose files in the root** of **`exhibit-left` / **`exhibit-right`** are used only when **no** digit-named folder there contains images. Older **`image_window`** builds only scanned the **root**, so **`…/left/1/a.jpg`** made **that side appear black**.
+
+**`exhibit_dual_strip`** (**`LEGACY_TWO_PROC=0`**): For each **`N`** (**`1`**, **`2`**, …**) create **`~/Sequence_IOS/public/exhibit-left/N`** and **`~/Sequence_IOS/public/exhibit-right/N`** with paired images inside; kiosk shuffles folder IDs **then zips filenames by index**.
 
 Only loose files (**no mirrored numeric dirs**) ⇒ **`build_flat_timeline`**.
 
@@ -89,7 +91,7 @@ Only loose files (**no mirrored numeric dirs**) ⇒ **`build_flat_timeline`**.
 ## Two pygame windows vs one strip; Chromium
 
 - **Dual-image kiosk** (**`install-dual-image-kiosk.sh`**) autostarts **`dual-image-kiosk-launch.sh`** (Python). By default it **deletes** **`/etc/xdg/autostart/sequence-kiosk.desktop`** (**Chromium**). If the browser still opens, list **`ls /etc/xdg/autostart/`** and **`grep -R sequence /etc/xdg/autostart`** — remove or disable other **`chromium`/`chrome`** entries, or re-run the installer with **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=1`** (default).
-- **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=1`:** **two** **`image_window.py`** processes (**separate windows**). **`=0`:** **`exhibit_dual_strip.py`** (**one** window, two columns). See **[EXHIBIT_KIOSK_RUNBOOK.md](EXHIBIT_KIOSK_RUNBOOK.md)** table.
+- **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC`** omitted or **`1`:** **two** **`image_window.py`** (**default**). **`0`:** **`exhibit_dual_strip.py`**. **[EXHIBIT_KIOSK_RUNBOOK.md](EXHIBIT_KIOSK_RUNBOOK.md)**.
 
 ## Two HDMI — only one panel fills or missing right window
 

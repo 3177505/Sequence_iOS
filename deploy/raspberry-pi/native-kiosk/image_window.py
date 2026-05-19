@@ -12,16 +12,43 @@ from pathlib import Path
 import pygame
 
 
-def collect_images(dirpath):
-    root = Path(dirpath)
+_IMG_EXT = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif"}
+
+
+def collect_flat_direct_files(root: Path):
     if not root.is_dir():
         return []
-    exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif"}
-    out = []
+    return [
+        p
+        for p in sorted(root.iterdir())
+        if p.is_file() and p.suffix.lower() in _IMG_EXT
+    ]
+
+
+def nonempty_ids(root: Path):
+    if not root.is_dir():
+        return []
+    ids = []
     for p in sorted(root.iterdir()):
-        if p.is_file() and p.suffix.lower() in exts:
-            out.append(p)
-    return out
+        if not p.is_dir() or not p.name.isdigit():
+            continue
+        if collect_flat_direct_files(p):
+            ids.append(int(p.name))
+    return ids
+
+
+def build_slideshow_paths(root: Path, rng: random.Random):
+    ids = nonempty_ids(root)
+    if ids:
+        rng.shuffle(ids)
+        out = []
+        for n in ids:
+            sub = root / str(n)
+            imgs = collect_flat_direct_files(sub)
+            rng.shuffle(imgs)
+            out.extend(imgs)
+        return out
+    return collect_flat_direct_files(root)
 
 
 def parse_sensor_boost_line(line, analog_threshold, analog_enabled):
@@ -188,9 +215,12 @@ def main():
     screen = pygame.display.set_mode((args.width, args.height), flags)
     pygame.display.set_caption("" if borderless else "Sequence exhibit")
 
-    paths = collect_images(d)
-    random.shuffle(paths)
+    seed_opt = os.environ.get("SEQUENCE_EXHIBIT_RNG_SEED", "").strip()
+    seed = int(seed_opt) if seed_opt.isdigit() else int(time.time() * 1000) % (2**31)
+    rng = random.Random(seed)
+    paths = build_slideshow_paths(d, rng)
     idx = 0
+    reshuffle = env_int("SEQUENCE_EXHIBIT_RESHUFFLE_EACH_CYCLE", 1)
 
     clock = pygame.time.Clock()
     running = True
@@ -223,7 +253,11 @@ def main():
             return None
 
     def next_path():
-        nonlocal idx
+        nonlocal idx, paths
+        if not paths:
+            return None
+        if idx > 0 and idx % len(paths) == 0 and reshuffle:
+            paths = build_slideshow_paths(d, rng)
         if not paths:
             return None
         p = paths[idx % len(paths)]

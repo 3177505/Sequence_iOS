@@ -89,6 +89,9 @@ async function run() {
   if (kiosk !== null && kiosk !== '' && kiosk !== '0' && kiosk.toLowerCase() !== 'false') {
     document.body.classList.add('site--kiosk');
   }
+  if (document.body.hasAttribute('data-exhibit-fullscreen')) {
+    document.body.classList.add('site--kiosk');
+  }
 
   try {
     const footer = document.getElementById('site-footer');

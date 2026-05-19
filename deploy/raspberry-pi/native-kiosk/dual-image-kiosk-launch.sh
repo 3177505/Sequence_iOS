@@ -60,7 +60,7 @@ SERIAL="${SEQUENCE_NATIVE_SERIAL_DEVICE:-}"
 
 OPTS_L=( )
 OPTS_R=( )
-if [[ "${SEQUENCE_EXHIBIT_LEGACY_TWO_PROC:-0}" == "1" ]]; then
+if [[ "${SEQUENCE_EXHIBIT_LEGACY_TWO_PROC:-1}" == "1" ]]; then
   if [[ -n "${SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS:-}" ]]; then
     OPTS_L+=(--interval "${SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS}")
     OPTS_R+=(--interval "${SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS}")
@@ -81,7 +81,7 @@ fi
 
   hide_desktop_panel
 
-  if [[ "${SEQUENCE_EXHIBIT_LEGACY_TWO_PROC:-0}" == "1" ]]; then
+  if [[ "${SEQUENCE_EXHIBIT_LEGACY_TWO_PROC:-1}" == "1" ]]; then
     python3 "$PY_LEGACY_L" --dir "$LEFT" --width "$W_LEFT" --height "$H" --x 0 --y 0 "${OPTS_L[@]}" &
     python3 "$PY_LEGACY_L" --dir "$RIGHT" --width "$W_RIGHT" --height "$H" --x "$W_LEFT" --y 0 "${OPTS_R[@]}" &
     wait
