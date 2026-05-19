@@ -117,7 +117,7 @@ That dialog is normal browser security: sites cannot open USB serial until allow
 
 If the Pi already runs desktop + **`Sequence_IOS`** checkout, everything you tweak **next** (Nano sketch, `/etc/sequence/kiosk.conf`, serial speed, panel bar, `git pull` + refresh scripts) lives in one place — **not** repeated as another “first install” block here:
 
-**→ [EXHIBIT_KIOSK_RUNBOOK.md](EXHIBIT_KIOSK_RUNBOOK.md)**
+**Happy path:** [EXHIBIT_KIOSK_RUNBOOK.md](EXHIBIT_KIOSK_RUNBOOK.md) · **Problems / detail:** [EXHIBIT_KIOSK_TROUBLESHOOTING.md](EXHIBIT_KIOSK_TROUBLESHOOTING.md)
 
 **Only if this Pi never had pygame dual-window install:** run once on the Pi:  
 `sudo SEQUENCE_SITE_DIR="$HOME/Sequence_IOS" ./deploy/raspberry-pi/install-dual-image-kiosk.sh` then reboot (or use **`install-boot-after-pull.sh`** with **`SEQUENCE_BOOT_INSTALL_DUAL_IMAGE=1`** during a fresh SD bring-up — same idea as § *One-time setup* above).

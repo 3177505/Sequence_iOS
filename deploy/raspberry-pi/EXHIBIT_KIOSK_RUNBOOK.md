@@ -1,14 +1,14 @@
-# Exhibit pygame kiosk + Arduino Nano — **from here on**
+# Exhibit kiosk — **short path**
 
-**This runbook uses:** login **`raspi`**, repo **`~/Sequence_IOS`** (same as **`cd Sequence_IOS`** immediately after **`cd ~`**), Nano USB serial **`/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0`** (CH340 **`1a86`**, node **`/dev/ttyUSB0`**).
-
-**Assumes:** Raspberry Pi OS desktop; **`Sequence_IOS`** cloned into **`~/Sequence_IOS`**; **`install-dual-image-kiosk.sh`** deployed **`dual-image-kiosk-launch.sh`** → **`exhibit_dual_strip.py`**. Write **`/etc/sequence/kiosk.conf`** exactly as section **3** (**`dual-image-kiosk-launch.sh`** reads **`SEQUENCE_NATIVE_SERIAL_*`**, pacing env vars, **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=0`** each boot).
-
-Once **`origin/main`** contains updates, execute section **5** on this Pi: **`git pull`**, **`install-dual-image-kiosk.sh`**, **`reboot`**.
+If something breaks, use **[EXHIBIT_KIOSK_TROUBLESHOOTING.md](EXHIBIT_KIOSK_TROUBLESHOOTING.md)** (Git, **`arduino-cli`**, serial ports, bootloader, burst timing, Wayfire bar).
 
 ---
 
-## 0 — First-time kiosk install on this Pi
+**This copy assumes:** Raspberry Pi desktop, user **`raspi`**, checkout **`~/Sequence_IOS`**, Arduino Nano USB at **`/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0`** ( **`/dev/ttyUSB0`** ), IR module **OUT1 → Nano D2**, **5 V**, **GND**.
+
+---
+
+### 1 — Kiosk installers (once per fresh Pi)
 
 ```bash
 cd ~/Sequence_IOS
@@ -19,76 +19,14 @@ sudo reboot
 
 ---
 
-## 1 — Arduino Nano (prefab sketch, upload on Pi)
-
-Sketch path:
-
-`~/Sequence_IOS/deploy/raspberry-pi/arduino/exhibit_sensor/exhibit_sensor.ino`
-
-Wiring: IR **OUT1 → Nano D2**, IR **5V → Nano 5V**, IR **GND → Nano GND**. Sketch emits **`digitalRead(2)`** as **`0`** / **`1`** lines at **115200** baud (**`SEQUENCE_NATIVE_SERIAL_BAUD`** in **`/etc/sequence/kiosk.conf`** is **115200**).
-
-Before upload: stop dual-image kiosk if it holds the serial port; plug Nano USB into Pi.
-
-Arduino CLI (**recent Debian / Raspberry Pi OS** often omit **`arduino-cli`** in **`apt`**): install binaries into **`~/Sequence_IOS/bin`**, then widen **`PATH`**.
-
-```bash
-cd ~/Sequence_IOS
-mkdir -p bin
-curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR="$(pwd)/bin" sh
-export PATH="$(pwd)/bin:$PATH"
-printf '\nexport PATH="$HOME/Sequence_IOS/bin:$PATH"\n' >> ~/.bashrc
-```
-
-Even before opening a new terminal, **`deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh`** prepends **`Sequence_IOS/bin`** for that run (**`arduino-cli`** in **`~/Sequence_IOS/bin`** is enough).
-
-Upload:
-
-```bash
-cd ~/Sequence_IOS
-chmod +x deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh
-export ARDUINO_FQBN="arduino:avr:nano:cpu=atmega328old"
-./deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
-```
-
-Prefab **`exhibit_sensor.ino`** already uses **`Serial.println(digitalRead(2))`** and **`delay(20)`**.
-
----
-
-## 2 — Image layout (`exhibit_dual_strip`)
-
-Default roots:
-
-`~/Sequence_IOS/public/exhibit-left`
-
-`~/Sequence_IOS/public/exhibit-right`
-
-Numbered mounts (shuffle order each cycle):
-
-`~/Sequence_IOS/public/exhibit-left/1`  
-`~/Sequence_IOS/public/exhibit-right/1`  
-`~/Sequence_IOS/public/exhibit-left/2`  
-`~/Sequence_IOS/public/exhibit-right/2`  
-`~/Sequence_IOS/public/exhibit-left/3`  
-`~/Sequence_IOS/public/exhibit-right/3`  
-`~/Sequence_IOS/public/exhibit-left/4`  
-`~/Sequence_IOS/public/exhibit-right/4`  
-`~/Sequence_IOS/public/exhibit-left/5`  
-`~/Sequence_IOS/public/exhibit-right/5`
-
-Each next numeric folder **`N`** gets **`~/Sequence_IOS/public/exhibit-left/N`** and **`~/Sequence_IOS/public/exhibit-right/N`** with matching photos paired index-wise inside every folder bucket.
-
-Flat mode JPG/PNG/WebP live strictly under **`~/Sequence_IOS/public/exhibit-left`** and **`~/Sequence_IOS/public/exhibit-right`** with **zero** mirrored numeric directories on **both** sides.
-
----
-
-## 3 — `/etc/sequence/kiosk.conf`
+### 2 — Serial + environment (`kiosk.conf`)
 
 ```bash
 sudo install -dm755 /etc/sequence
 sudo nano /etc/sequence/kiosk.conf
 ```
 
-Inside **`nano`**, clear leftovers, paste the block below only, **`Ctrl+O`**, **`Enter`**, **`Ctrl+X`**.
+Overwrite the file with **`Ctrl+O`**, **`Enter`**, **`Ctrl+X`**:
 
 ```bash
 SEQUENCE_SITE_DIR=$HOME/Sequence_IOS
@@ -118,36 +56,59 @@ SEQUENCE_PYGAME_OVERFLOW_TOP_PIXELS=44
 SEQUENCE_PYGAME_BORDERLESS=1
 ```
 
-Baseline hold **1000** ms per pair; **`0→1`** on **`digitalRead(2)`** starts **`SEQUENCE_BURST_TOTAL_MS`** **`15000`**, **`exp_span`** ramps slide+wipe from **`SEQUENCE_BURST_*_START`** to **`SEQUENCE_BURST_*_END`** during **`15000`** ms; **`exhibit_dual_strip.py`** starts the next burst solely after **`digitalRead(2)`** reads **`0`** then **`1`** again.
-
 ---
 
-## 4 — `dialout` for `raspi`
+### 3 — Serial permissions
 
 ```bash
 sudo usermod -aG dialout raspi
-groups raspi
 ```
 
-Log out GUI session completely and back in, or **`sudo reboot`**.
+Log out of the graphical session entirely (or **`sudo reboot`**) so **`dialout`** applies.
 
 ---
 
-## 5 — Repo pull, refresh kiosk scripts, reboot
+### 4 — Image folders (`exhibit_dual_strip`)
 
-Pi **`git`** may reference **`credential-osxkeychain`** when a macOS **`~/.gitconfig`** leaked onto **`raspi`**. Strip mac helpers once:
+Use **`~/Sequence_IOS/public/exhibit-left`** and **`~/Sequence_IOS/public/exhibit-right`** with the **same numbered subfolders on both sides** (**`1`**, **`2`**, … pairs of JPG/PNG). Add **`~/…/left/N`** and **`~/…/right/N`** together when you add sets.
+
+(No numbered folders **on both** sides → kiosk pairs **flat** lists in those dirs; behaviour detail → troubleshooting.)
+
+---
+
+### 5 — Arduino **`arduino-cli` + Nano sketch** (pause dual-image kiosk if it grabs the USB serial node)
+
+Extract CLI into **`~/Sequence_IOS/bin`** and extend **`PATH`**:
 
 ```bash
-git config --global --unset-all credential.helper
+cd ~/Sequence_IOS
+mkdir -p bin
+VERS=1.4.1
+case "$(uname -m)" in
+  aarch64) ARSUF=Linux_ARM64 ;;
+  armv7l)  ARSUF=Linux_ARMv7 ;;
+  armv6l)  ARSUF=Linux_ARMv6 ;;
+  *) echo "unsupported cpu $(uname -m) — pick a tar.gz from troubleshooting" >&2; exit 1 ;;
+esac
+curl -fsSL "https://github.com/arduino/arduino-cli/releases/download/v${VERS}/arduino-cli_${VERS}_${ARSUF}.tar.gz" | tar xzf - -C "$(pwd)/bin"
+chmod +x "$(pwd)/bin/arduino-cli"
+printf '\nexport PATH="$HOME/Sequence_IOS/bin:$PATH"\n' >> ~/.bashrc
 ```
 
-Later **`git pull`** prompts for credentials; **`store`** persists the next successful login:
+Sketch path: **`deploy/raspberry-pi/arduino/exhibit_sensor/`** (**`digitalRead(2)`**, **`115200`**).
 
 ```bash
-git config --global credential.helper store
+cd ~/Sequence_IOS
+chmod +x deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh
+export ARDUINO_FQBN="arduino:avr:nano:cpu=atmega328old"
+./deploy/raspberry-pi/arduino/upload-exhibit-sensor.sh /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
 ```
 
-Apply updates:
+**Bootloader issue?** See **[EXHIBIT_KIOSK_TROUBLESHOOTING.md](EXHIBIT_KIOSK_TROUBLESHOOTING.md)** (**`FQBN`**).
+
+---
+
+### 6 — After **`git pull`**
 
 ```bash
 cd ~/Sequence_IOS
@@ -156,25 +117,14 @@ sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.s
 sudo reboot
 ```
 
----
-
-## 6 — Top bar (`wf-panel-pi`)
-
-```bash
-sudo mv /etc/xdg/autostart/wf-panel-pi.desktop /etc/xdg/autostart/wf-panel-pi.desktop.off
-sudo reboot
-```
-
-Restore: rename **`wf-panel-pi.desktop.off`** back to **`wf-panel-pi.desktop`**.
+**(Pull prompts / **`credential-osxkeychain`** → troubleshooting.)**
 
 ---
 
-## 7 — Checks
+### 7 — Quick checks
 
 ```bash
-command -v arduino-cli >/dev/null && arduino-cli version
-journalctl -u sequence-site.service -n 20 --no-pager
+"$HOME/Sequence_IOS/bin/arduino-cli" version
 groups raspi | grep dialout
 ls -l /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0 /dev/ttyUSB0
 ```
-

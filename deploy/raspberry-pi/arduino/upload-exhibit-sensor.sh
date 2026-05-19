@@ -34,15 +34,10 @@ ensure_arduino_cli() {
   if command -v arduino-cli >/dev/null 2>&1; then
     return 0
   fi
-  die "arduino-cli missing on PATH.
-Install:
-
-  mkdir -p $REPO_ROOT/bin
-  curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=$REPO_ROOT/bin sh
-
-Rerun upload-exhibit-sensor.sh (it prepends $REPO_ROOT/bin when present).
-
-macOS: brew install arduino-cli"
+  say "arduino-cli missing on PATH."
+  say "See deploy/raspberry-pi/EXHIBIT_KIOSK_RUNBOOK.md (arduino tarball + upload)."
+  say "Problems: deploy/raspberry-pi/EXHIBIT_KIOSK_TROUBLESHOOTING.md"
+  exit 1
 }
 
 ensure_avr_core() {
