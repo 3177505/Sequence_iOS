@@ -1,10 +1,16 @@
-const SLIDE_MS = 2500;
-const TRIGGER_SLIDE_MS = 70;
+const TRIGGER_SLIDE_MS = 52;
 const TRIGGER_MS = 15000;
 const EXHIBIT_MANIFEST = '/public/exhibit-images.json';
 
-const WIPE_MS_BASELINE = 420;
-const WIPE_MS_TRIGGER = 55;
+const SLIDE_GAP_START = 1050;
+const SLIDE_GAP_FLOOR = 75;
+const SLIDE_GAP_MUL = 0.94;
+
+const WIPE_MS_TRIGGER = 48;
+const WIPE_MS_GAP_RATIO = 0.36;
+const WIPE_MS_CAP = 320;
+const WIPE_MS_FLOOR = 85;
+
 const SERIAL_ANALOG_THRESHOLD = 400;
 const OFFSCREEN_Y = 'translateY(110%)';
 
@@ -47,6 +53,25 @@ const triggerBtn = document.getElementById('trigger');
 const serialConnectBtn = document.getElementById('serial-connect');
 const statusEl = document.getElementById('status');
 
+function buildFolderGroupedSequence(urls, sideKey) {
+  const prefix = `/public/exhibit-${sideKey}/`;
+  const buckets = new Map();
+  for (const u of urls) {
+    if (!u || typeof u !== 'string') continue;
+    const slice = u.startsWith(prefix) ? u.slice(prefix.length) : '';
+    const parts = slice.split('/').filter(Boolean);
+    const top = parts.length >= 2 ? parts[0] : '_root';
+    if (!buckets.has(top)) buckets.set(top, []);
+    buckets.get(top).push(u);
+  }
+  const order = shuffle([...buckets.keys()]);
+  const out = [];
+  for (const k of order) {
+    out.push(...shuffle(buckets.get(k) || []));
+  }
+  return out.length ? out : shuffle(urls.slice());
+}
+
 function qImg(layer) {
   return document.querySelector(`#pane-single img.pane__media[data-layer="${layer}"]`);
 }
@@ -66,27 +91,49 @@ const slot = mountSingleSlot();
 let pool = [];
 let seq = [];
 let idx = 0;
-let tickId = null;
+let advanceTimerId = null;
+let slideGapMs = SLIDE_GAP_START;
 let triggerEndId = null;
 let triggerRemainingId = null;
 let inTrigger = false;
 let sensorBoost = false;
 
-function slideIntervalMs() {
-  return inTrigger || sensorBoost ? TRIGGER_SLIDE_MS : SLIDE_MS;
-}
-
 function wipeDurationMs() {
-  return inTrigger || sensorBoost ? WIPE_MS_TRIGGER : WIPE_MS_BASELINE;
+  if (inTrigger || sensorBoost) return WIPE_MS_TRIGGER;
+  return Math.max(
+    WIPE_MS_FLOOR,
+    Math.min(WIPE_MS_CAP, Math.round(slideGapMs * WIPE_MS_GAP_RATIO)),
+  );
 }
 
-function restartSlideInterval() {
-  if (tickId !== null) {
-    window.clearInterval(tickId);
-    tickId = null;
+function stopAdvanceTimer() {
+  if (advanceTimerId !== null) {
+    window.clearTimeout(advanceTimerId);
+    advanceTimerId = null;
   }
-  if (!pool.length) return;
-  tickId = window.setInterval(tick, slideIntervalMs());
+}
+
+function restartAdvanceTimer() {
+  stopAdvanceTimer();
+  if (!seq.length) return;
+  const gap = inTrigger || sensorBoost ? TRIGGER_SLIDE_MS : slideGapMs;
+  advanceTimerId = window.setTimeout(() => {
+    advanceTimerId = null;
+    tick();
+    restartAdvanceTimer();
+  }, gap);
+}
+
+function stopTimers() {
+  stopAdvanceTimer();
+  if (triggerEndId !== null) {
+    window.clearTimeout(triggerEndId);
+    triggerEndId = null;
+  }
+  if (triggerRemainingId !== null) {
+    window.clearInterval(triggerRemainingId);
+    triggerRemainingId = null;
+  }
 }
 
 function refreshBaselineStatus() {
@@ -95,7 +142,7 @@ function refreshBaselineStatus() {
   const label = IS_RIGHT ? 'vpravo' : 'vlevo';
   statusEl.textContent = sensorBoost
     ? 'Sériový vstup: rychlý posuv (kanály 1–5; některý je 1).'
-    : `Základní režim: obrázky public/exhibit-${poolKey} (${label}).`;
+    : `Základní režim: public/exhibit-${poolKey} (${label}); náhodné řazení složek, zrychlování stupňovitě.`;
 }
 
 function setMode(baseline) {
@@ -165,7 +212,8 @@ function slotWipeFromTopImage(url, durationMs) {
 }
 
 function applyPane(animate) {
-  const u = seq[idx % seq.length];
+  const ln = seq.length;
+  const u = seq[idx % ln];
   const dur = wipeDurationMs();
   if (!animate) {
     slotSetInstantImage(u);
@@ -175,22 +223,15 @@ function applyPane(animate) {
 }
 
 function tick() {
+  if (!seq.length) return;
   idx++;
   applyPane(true);
-}
-
-function stopTimers() {
-  if (tickId !== null) {
-    window.clearInterval(tickId);
-    tickId = null;
+  if (!inTrigger && !sensorBoost) {
+    slideGapMs = Math.max(SLIDE_GAP_FLOOR, slideGapMs * SLIDE_GAP_MUL);
   }
-  if (triggerEndId !== null) {
-    window.clearTimeout(triggerEndId);
-    triggerEndId = null;
-  }
-  if (triggerRemainingId !== null) {
-    window.clearInterval(triggerRemainingId);
-    triggerRemainingId = null;
+  if (seq.length > 1 && idx > 0 && idx % seq.length === 0) {
+    seq = buildFolderGroupedSequence(pool, poolKey);
+    slideGapMs = SLIDE_GAP_START;
   }
 }
 
@@ -198,13 +239,14 @@ function startBaseline() {
   stopTimers();
   inTrigger = false;
   setMode(true);
-  seq = shuffle(pool);
+  seq = buildFolderGroupedSequence(pool, poolKey);
   idx = 0;
+  slideGapMs = SLIDE_GAP_START;
   applyPane(false);
   const ok = pool.length > 0;
   if (triggerBtn) triggerBtn.disabled = !ok;
   if (ok) refreshBaselineStatus();
-  if (ok) restartSlideInterval();
+  if (ok) restartAdvanceTimer();
 }
 
 function updateTriggerStatus(remainingSec) {
@@ -217,7 +259,7 @@ function startTrigger() {
   inTrigger = true;
   setMode(false);
   if (triggerBtn) triggerBtn.disabled = true;
-  seq = shuffle(pool);
+  seq = shuffle(pool.slice());
   idx = 0;
   applyPane(false);
   let remaining = Math.ceil(TRIGGER_MS / 1000);
@@ -226,7 +268,7 @@ function startTrigger() {
     remaining -= 1;
     if (remaining > 0) updateTriggerStatus(remaining);
   }, 1000);
-  restartSlideInterval();
+  restartAdvanceTimer();
   triggerEndId = window.setTimeout(() => {
     startBaseline();
   }, TRIGGER_MS);
@@ -257,7 +299,8 @@ async function readSerialLines(port) {
         if (parsed !== null) {
           if (parsed !== sensorBoost) {
             sensorBoost = parsed;
-            restartSlideInterval();
+            stopAdvanceTimer();
+            restartAdvanceTimer();
             refreshBaselineStatus();
           }
         } else if (line.length > 0 && !inTrigger) {
@@ -341,12 +384,13 @@ async function init() {
   statusEl.textContent = 'Načítání manifestu obrázků…';
 
   const res = await fetch(EXHIBIT_MANIFEST, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`${EXHIBIT_MANIFEST} nedostupné — spusťte npm run build`);
+  if (!res.ok) throw new Error(`${EXHIBIT_MANIFEST} — spusťte: npm run build`);
   const json = await res.json();
   pool = Array.isArray(json[poolKey]) ? json[poolKey].filter(Boolean) : [];
 
   if (!pool.length) {
-    statusEl.textContent = `Žádné obrázky v public/exhibit-${poolKey}. Přidejte JPG/PNG a npm run build.`;
+    statusEl.textContent =
+      `Žádné JPG/PNG v public/exhibit-${poolKey}/ (ani v podsložkách). npm run build vytvoří exhibit-images.json.`;
     if (triggerBtn) triggerBtn.disabled = true;
     return;
   }
