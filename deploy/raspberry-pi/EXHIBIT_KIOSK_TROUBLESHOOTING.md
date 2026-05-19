@@ -143,6 +143,31 @@ Pygame autostart troubleshooting: confirm **`dual-image-kiosk-launch.sh`** exits
 
 ---
 
+## Mac shows exhibit web animation, Pi stays blank / old behaviour
+
+Pi does **not** read TS/JS/SCSS from the repo root at runtime — **`sequence-site.service`** runs **`npm run build`**, then **`serve dist`** (see **`deploy/raspberry-pi/sequence-site.sh`**).
+
+- **`git pull` alone:** files on disk update, but **`serve`** keeps serving **the previous `dist/` tree** until the process restarts or you run **`npm run build`** again.
+- **Rebuild + restart:**
+  ```bash
+  cd ~/Sequence_IOS   # must match SEQUENCE_SITE_DIR / unit install path
+  npm run build
+  sudo systemctl restart sequence-site.service
+  ```
+  Wait until **`journalctl -u sequence-site.service -n 30 --no-pager`** shows a fresh **`npm run build`** finishing without errors.
+- **Manifest non‑empty:** `exhibit-images.json` enumerates **`public/exhibit-left`** / **`exhibit-right`**, including **subfolders** — regenerated only **`npm run build`** ( **`generate-exhibit-images-json`** ). Check:
+  ```bash
+  curl -sS http://127.0.0.1:3000/public/exhibit-images.json | head -c 400
+  ```
+  If **`"left":[]`** or **`"right":[]`**, Images are missing from **`~/Sequence_IOS/public/...`** / build failed.
+- **Chromium cache:** use a **forced reload**, or **`exhibit-left.html?cachebust=`** + random number once.
+- **`npm run dev` on Pi on :3000** conflicts with **`sequence-site`** → stop whichever you are not debugging:
+  **`sudo systemctl stop sequence-site.service`** (dev only) vs **restart** for production.
+
+Also confirm **kiosk **`SEQUENCE_START_URL`** / **`SEQUENCE_START_URL_RIGHT`**:** default may still **`data-images.html`**, while **full‑screen‑per‑pane** URLs are **`/exhibit-left.html`** · **`/exhibit-right.html`**.
+
+---
+
 ## Repo folder name casing
 
 Checkout must match **`~/Sequence_IOS`** (**`SEQUENCE_SITE_DIR=$HOME/Sequence_IOS`**) unless you symlink.

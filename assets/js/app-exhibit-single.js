@@ -53,6 +53,24 @@ const triggerBtn = document.getElementById('trigger');
 const serialConnectBtn = document.getElementById('serial-connect');
 const statusEl = document.getElementById('status');
 
+function sortExhibitFolderKeys(keys) {
+  return keys.slice().sort((a, b) => {
+    if (a === '_root' && b === '_root') return 0;
+    if (a === '_root') return -1;
+    if (b === '_root') return 1;
+    const da = /^\d+$/.test(a);
+    const db = /^\d+$/.test(b);
+    if (da && db) return parseInt(a, 10) - parseInt(b, 10);
+    if (da) return -1;
+    if (db) return 1;
+    return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+  });
+}
+
+function sortUrlsByPath(paths) {
+  return paths.slice().sort((x, y) => x.localeCompare(y, undefined, { numeric: true }));
+}
+
 function buildFolderGroupedSequence(urls, sideKey) {
   const prefix = `/public/exhibit-${sideKey}/`;
   const buckets = new Map();
@@ -64,12 +82,12 @@ function buildFolderGroupedSequence(urls, sideKey) {
     if (!buckets.has(top)) buckets.set(top, []);
     buckets.get(top).push(u);
   }
-  const order = shuffle([...buckets.keys()]);
+  const order = sortExhibitFolderKeys([...buckets.keys()]);
   const out = [];
   for (const k of order) {
-    out.push(...shuffle(buckets.get(k) || []));
+    out.push(...sortUrlsByPath(buckets.get(k) || []));
   }
-  return out.length ? out : shuffle(urls.slice());
+  return out.length ? out : sortUrlsByPath(urls.filter(Boolean));
 }
 
 function qImg(layer) {
@@ -142,7 +160,7 @@ function refreshBaselineStatus() {
   const label = IS_RIGHT ? 'vpravo' : 'vlevo';
   statusEl.textContent = sensorBoost
     ? 'Sériový vstup: rychlý posuv (kanály 1–5; některý je 1).'
-    : `Základní režim: public/exhibit-${poolKey} (${label}); náhodné řazení složek, zrychlování stupňovitě.`;
+    : `Základní režim: public/exhibit-${poolKey} (${label}); pořadí složky → soubor (1,2… pak A→Z); zrychlování stupňovitě.`;
 }
 
 function setMode(baseline) {
