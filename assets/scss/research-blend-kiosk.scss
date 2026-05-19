@@ -1,0 +1,6 @@
+@use 'vars' as *;
+@use 'kiosk-fullscreen';
+
+.research-blend.research-blend--kiosk .pane {
+  min-width: 0;
+}

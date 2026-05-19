@@ -155,6 +155,8 @@ Pi does **not** read TS/JS/SCSS from the repo root at runtime — **`sequence-si
   sudo systemctl restart sequence-site.service
   ```
   Wait until **`journalctl -u sequence-site.service -n 30 --no-pager`** shows a fresh **`npm run build`** finishing without errors.
+- **`public/api-public-tree/research-images.json`:** někdy v **`.gitignore`** jako ostatní stromy — po **`git pull`** spusťte **`npm run build`**, aby blend stránky (vč. **`research-blend-*.html`**) dostaly statický výpis obrázků.
+- **Starší Chromia / fullscreen:** používáme **`html.kiosk-fs-root`** (ne **`:has()`**), aby měl dokument výšku viewportu i na starších prohlížečích na Pi.
 - **Manifest non‑empty:** `exhibit-images.json` enumerates **`public/exhibit-left`** / **`exhibit-right`**, including **subfolders** — regenerated only **`npm run build`** ( **`generate-exhibit-images-json`** ). Check:
   ```bash
   curl -sS http://127.0.0.1:3000/public/exhibit-images.json | head -c 400

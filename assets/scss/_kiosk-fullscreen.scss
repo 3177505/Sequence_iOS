@@ -1,0 +1,48 @@
+@use 'vars' as *;
+
+html.kiosk-fs-root {
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body.site--kiosk[data-exhibit-fullscreen] {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+body.site--kiosk[data-exhibit-fullscreen] #page-root {
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 100vh;
+  max-height: 100dvh;
+  width: 100%;
+}
+
+.app--fullscreen-kiosk {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.app--fullscreen-kiosk > .grid {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.app--fullscreen-kiosk > .grid > .pane {
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  border: 0;
+}

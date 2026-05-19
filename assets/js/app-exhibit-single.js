@@ -1,6 +1,15 @@
 const TRIGGER_SLIDE_MS = 52;
 const TRIGGER_MS = 15000;
-const EXHIBIT_MANIFEST = '/public/exhibit-images.json';
+
+function exhibitManifestHref() {
+  try {
+    const baseEl = document.querySelector('base[href]');
+    const base = baseEl?.href || new URL('./', window.location.href).href;
+    return new URL('public/exhibit-images.json', base).href;
+  } catch (_) {
+    return '/public/exhibit-images.json';
+  }
+}
 
 const SLIDE_GAP_START = 2600;
 const SLIDE_GAP_FLOOR = 1000;
@@ -52,6 +61,10 @@ const appEl = document.getElementById('app');
 const triggerBtn = document.getElementById('trigger');
 const serialConnectBtn = document.getElementById('serial-connect');
 const statusEl = document.getElementById('status');
+
+function setStatus(text) {
+  if (statusEl) statusEl.textContent = text;
+}
 
 function sortExhibitFolderKeys(keys) {
   return keys.slice().sort((a, b) => {
@@ -155,12 +168,14 @@ function stopTimers() {
 }
 
 function refreshBaselineStatus() {
-  if (!statusEl || !pool.length) return;
+  if (!pool.length) return;
   if (inTrigger) return;
   const label = IS_RIGHT ? 'vpravo' : 'vlevo';
-  statusEl.textContent = sensorBoost
-    ? 'Sériový vstup: rychlý posuv (kanály 1–5; některý je 1).'
-    : `Základní režim: public/exhibit-${poolKey} (${label}); pořadí složky → soubor (1,2… pak A→Z); zrychlování stupňovitě.`;
+  setStatus(
+    sensorBoost
+      ? 'Sériový vstup: rychlý posuv (kanály 1–5; některý je 1).'
+      : `Základní režim: public/exhibit-${poolKey} (${label}); pořadí složky → soubor (1,2… pak A→Z); zrychlování stupňovitě.`,
+  );
 }
 
 function setMode(baseline) {
@@ -268,7 +283,7 @@ function startBaseline() {
 }
 
 function updateTriggerStatus(remainingSec) {
-  if (statusEl) statusEl.textContent = `Spouštěč (zbývá ${remainingSec} s) — rychlejší střih.`;
+  setStatus(`Spouštěč (zbývá ${remainingSec} s) — rychlejší střih.`);
 }
 
 function startTrigger() {
@@ -333,23 +348,23 @@ async function readSerialLines(port) {
 
 serialConnectBtn?.addEventListener('click', async () => {
   if (!('serial' in navigator)) {
-    if (statusEl) statusEl.textContent = 'Web Serial vyžaduje Chromium. Použijte http://localhost nebo HTTPS.';
+    setStatus('Web Serial vyžaduje Chromium. Použijte http://localhost nebo HTTPS.');
     return;
   }
   if (serialPort) {
-    if (statusEl) statusEl.textContent = 'Sériový port je otevřený — obnovte stránku pro znovupřipojení.';
+    setStatus('Sériový port je otevřený — obnovte stránku pro znovupřipojení.');
     return;
   }
   try {
     serialPort = await navigator.serial.requestPort();
     await serialPort.open({ baudRate: SERIAL_BAUD });
-    if (statusEl)
-      statusEl.textContent =
-        'Sériový port otevřen — řádek 0/1 nebo až pět hodnot 0/1; jiný neprázdný řádek = 15 s trigger.';
+    setStatus(
+      'Sériový port otevřen — řádek 0/1 nebo až pět hodnot 0/1; jiný neprázdný řádek = 15 s trigger.',
+    );
     readSerialLines(serialPort);
   } catch (e) {
     serialPort = null;
-    if (e?.name !== 'NotFoundError' && statusEl) statusEl.textContent = String(e.message || e);
+    if (e?.name !== 'NotFoundError') setStatus(String(e.message || e));
   }
 });
 
@@ -387,7 +402,7 @@ async function maybeAutoSerialKiosk() {
       }
       serialPort = port;
       await serialPort.open({ baudRate: SERIAL_BAUD });
-      if (statusEl) statusEl.textContent = '';
+      setStatus('');
       readSerialLines(serialPort);
       return;
     } catch (_) {
@@ -398,17 +413,21 @@ async function maybeAutoSerialKiosk() {
 }
 
 async function init() {
-  if (!statusEl) return;
-  statusEl.textContent = 'Načítání manifestu obrázků…';
+  const manifestHref = exhibitManifestHref();
+  setStatus('Načítání manifestu obrázků…');
 
-  const res = await fetch(EXHIBIT_MANIFEST, { cache: 'no-store' });
-  if (!res.ok) throw new Error(`${EXHIBIT_MANIFEST} — spusťte: npm run build`);
+  const res = await fetch(manifestHref, { cache: 'no-store' });
+  if (!res.ok)
+    throw new Error(
+      `${manifestHref.split('/').slice(-2).join('/')} (${res.status}) — na Raspberry spusťte v kořeni webu npm run build; soubor exhibit-images.json není verzován (.gitignore).`,
+    );
   const json = await res.json();
   pool = Array.isArray(json[poolKey]) ? json[poolKey].filter(Boolean) : [];
 
   if (!pool.length) {
-    statusEl.textContent =
-      `Žádné JPG/PNG v public/exhibit-${poolKey}/ (ani v podsložkách). npm run build vytvoří exhibit-images.json.`;
+    setStatus(
+      `Žádné JPG/PNG v public/exhibit-${poolKey}/ (ani v podsložkách). npm run build vytvoří exhibit-images.json.`,
+    );
     if (triggerBtn) triggerBtn.disabled = true;
     return;
   }
@@ -418,6 +437,6 @@ async function init() {
 }
 
 init().catch((e) => {
-  if (statusEl) statusEl.textContent = String(e?.message || e);
+  setStatus(String(e?.message || e));
   if (triggerBtn) triggerBtn.disabled = true;
 });

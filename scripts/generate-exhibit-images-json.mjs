@@ -5,18 +5,8 @@ import { fileURLToPath } from 'url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const exts = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']);
 
-function encodePathSegmentFromFs(fsName) {
-  let s = fsName;
-  for (let n = 0; n < 8; n++) {
-    try {
-      const decoded = decodeURIComponent(s);
-      if (decoded === s) break;
-      s = decoded;
-    } catch {
-      break;
-    }
-  }
-  return encodeURIComponent(s);
+function webPathSegmentFromFs(fsName) {
+  return encodeURIComponent(fsName);
 }
 
 async function walkCollectImages(absDir, relSegments, relDirWebSeg) {
@@ -41,7 +31,7 @@ async function walkCollectImages(absDir, relSegments, relDirWebSeg) {
         '/public/' +
         relDirWebSeg +
         '/' +
-        segsNext.map((seg) => encodePathSegmentFromFs(seg)).join('/');
+        segsNext.map((seg) => webPathSegmentFromFs(seg)).join('/');
       out.push(url);
     }
   }
