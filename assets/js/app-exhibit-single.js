@@ -2,14 +2,14 @@ const TRIGGER_SLIDE_MS = 52;
 const TRIGGER_MS = 15000;
 const EXHIBIT_MANIFEST = '/public/exhibit-images.json';
 
-const SLIDE_GAP_START = 1050;
-const SLIDE_GAP_FLOOR = 75;
-const SLIDE_GAP_MUL = 0.94;
+const SLIDE_GAP_START = 2600;
+const SLIDE_GAP_FLOOR = 1000;
+const SLIDE_GAP_MUL = 0.992;
 
 const WIPE_MS_TRIGGER = 48;
 const WIPE_MS_GAP_RATIO = 0.36;
-const WIPE_MS_CAP = 320;
-const WIPE_MS_FLOOR = 85;
+const WIPE_MS_CAP = 480;
+const WIPE_MS_FLOOR = 220;
 
 const SERIAL_ANALOG_THRESHOLD = 400;
 const OFFSCREEN_Y = 'translateY(110%)';

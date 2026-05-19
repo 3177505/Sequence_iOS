@@ -5,6 +5,20 @@ import { fileURLToPath } from 'url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const exts = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp']);
 
+function encodePathSegmentFromFs(fsName) {
+  let s = fsName;
+  for (let n = 0; n < 8; n++) {
+    try {
+      const decoded = decodeURIComponent(s);
+      if (decoded === s) break;
+      s = decoded;
+    } catch {
+      break;
+    }
+  }
+  return encodeURIComponent(s);
+}
+
 async function walkCollectImages(absDir, relSegments, relDirWebSeg) {
   const out = [];
   let dirents = [];
@@ -27,7 +41,7 @@ async function walkCollectImages(absDir, relSegments, relDirWebSeg) {
         '/public/' +
         relDirWebSeg +
         '/' +
-        segsNext.map((seg) => encodeURIComponent(seg)).join('/');
+        segsNext.map((seg) => encodePathSegmentFromFs(seg)).join('/');
       out.push(url);
     }
   }
