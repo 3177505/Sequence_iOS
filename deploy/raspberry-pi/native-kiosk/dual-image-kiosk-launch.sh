@@ -16,7 +16,11 @@ RIGHT="${SEQUENCE_DUAL_IMAGE_DIR_RIGHT:-$REP/public/exhibit-right}"
 W="${SEQUENCE_WINDOW_WIDTH:-3840}"
 H="${SEQUENCE_WINDOW_HEIGHT:-1080}"
 W_LEFT="${SEQUENCE_MONITOR_LEFT_WIDTH:-$(( W / 2 ))}"
-[[ "$(( W_LEFT + 1 ))" -lt "$W" ]] || W_LEFT=$(( W / 2 ))
+W_RIGHT=$(( W - W_LEFT ))
+[[ "$W_RIGHT" -lt 1 ]] && W_RIGHT=1
+[[ "$W_LEFT" -lt 1 ]] && W_LEFT=1
+X_LEFT="${SEQUENCE_MONITOR_LEFT_X:-0}"
+X_RIGHT="${SEQUENCE_MONITOR_RIGHT_X:-$W_LEFT}"
 
 export DISPLAY="${DISPLAY:-:0}"
 
@@ -64,11 +68,20 @@ restore_desktop_panel() {
   export SEQUENCE_WINDOW_WIDTH="$W"
   export SEQUENCE_WINDOW_HEIGHT="$H"
   export SEQUENCE_MONITOR_LEFT_WIDTH="$W_LEFT"
+  export SEQUENCE_MONITOR_LEFT_X="$X_LEFT"
+  export SEQUENCE_MONITOR_RIGHT_X="$X_RIGHT"
   export SEQUENCE_DUAL_IMAGE_DIR_LEFT="$LEFT"
   export SEQUENCE_DUAL_IMAGE_DIR_RIGHT="$RIGHT"
   export SEQUENCE_SITE_DIR="$REP"
 
-  python3 "$PY"
+  rm -f "$RUNDIR/sequence-exhibit-sync.json"
+
+  python3 "$PY" --pane left &
+  LPID=$!
+  sleep 0.5
+  python3 "$PY" --pane right &
+  RPID=$!
+  wait "$LPID" "$RPID" || true
 
   restore_desktop_panel
 ) 205>"$LCK"

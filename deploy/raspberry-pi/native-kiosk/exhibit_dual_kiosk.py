@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
+import argparse
+import json
 import os
 import random
 import sys
 import threading
+import tempfile
 import time
 from pathlib import Path
 
@@ -19,17 +22,18 @@ SERIAL_BAUD = 115200
 MS_PER_LONG = 1000
 SLOT_MS = 10000
 SLOT_SPIN_MS = 7000
-SLOT_SETTLE_MS = 3000
 SLOT_SETTLE_ANIM_MS = 3000
 SLOT_SPIN_GAP_START_MS = 420
 SLOT_SPIN_GAP_END_MS = 38
 SLOT_SPIN_WIPE_MS = 42
 WIPE_MS_BASELINE = 420
 
-BASELINE_COVER_SCALE = 1.28
-BASELINE_MUTE_ALPHA = 150
+BASELINE_COVER_SCALE = 1.0
+BASELINE_MUTE_ALPHA = 140
 TRIGGER_LOWER_BIAS = 0.58
 SETTLE_LOWER_BIAS = 0.66
+FPS_BASELINE = 30
+FPS_SLOT = 50
 
 SETTLE_KEYFRAMES = [
     (0.0, -1.32),
@@ -49,11 +53,32 @@ def env_int(key, default):
         return default
 
 
-def env_float(key, default):
+def sync_path():
+    run = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
+    return os.path.join(run, "sequence-exhibit-sync.json")
+
+
+def write_sync(payload):
+    dest = sync_path()
+    os.makedirs(os.path.dirname(dest) or ".", exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix="seq-sync-", dir=os.path.dirname(dest) or ".")
     try:
-        return float(os.environ.get(key, str(default)))
-    except ValueError:
-        return default
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(payload, fh)
+        os.replace(tmp, dest)
+    except OSError:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+
+
+def read_sync():
+    try:
+        with open(sync_path(), encoding="utf-8") as fh:
+            return json.load(fh)
+    except (OSError, json.JSONDecodeError):
+        return None
 
 
 def sort_folder_keys(keys):
@@ -156,12 +181,21 @@ def settle_offset_ratio(t):
     return 0.0
 
 
-class ImageCache:
-    def __init__(self):
-        self._cache = {}
+def resize_image(raw, sw, sh, fast=False):
+    if sw < 1 or sh < 1:
+        return None
+    if fast:
+        return pygame.transform.scale(raw, (sw, sh))
+    return pygame.transform.smoothscale(raw, (sw, sh))
 
-    def get(self, path, size, mode, lower_bias):
-        key = (str(path), size, mode, round(lower_bias, 3))
+
+class ImageCache:
+    def __init__(self, fast_spin=False):
+        self._cache = {}
+        self.fast_spin = fast_spin
+
+    def get(self, path, size, mode, lower_bias, fast=False):
+        key = (str(path), size, mode, round(lower_bias, 3), bool(fast))
         if key in self._cache:
             return self._cache[key]
         try:
@@ -169,12 +203,16 @@ class ImageCache:
         except pygame.error:
             self._cache[key] = None
             return None
-        surf = render_image(raw, size[0], size[1], mode, lower_bias=lower_bias)
+        surf = render_image(raw, size[0], size[1], mode, lower_bias=lower_bias, fast=fast or self.fast_spin)
         self._cache[key] = surf
         return surf
 
+    def preload(self, paths, size, mode, lower_bias):
+        for p in paths:
+            self.get(p, size, mode, lower_bias)
 
-def render_image(raw, w, h, mode, lower_bias=0.5, y_offset_ratio=0.0):
+
+def render_image(raw, w, h, mode, lower_bias=0.5, y_offset_ratio=0.0, fast=False):
     iw, ih = raw.get_size()
     if iw < 1 or ih < 1:
         return None
@@ -183,7 +221,7 @@ def render_image(raw, w, h, mode, lower_bias=0.5, y_offset_ratio=0.0):
     if mode == "baseline":
         scale = max(w / iw, h / ih) * BASELINE_COVER_SCALE
         sw, sh = max(1, int(iw * scale)), max(1, int(ih * scale))
-        scaled = pygame.transform.smoothscale(raw, (sw, sh))
+        scaled = resize_image(raw, sw, sh, fast=fast)
         x = (w - sw) // 2
         y = (h - sh) // 2 + int(y_offset_ratio * h)
         out.blit(scaled, (x, y))
@@ -193,17 +231,42 @@ def render_image(raw, w, h, mode, lower_bias=0.5, y_offset_ratio=0.0):
         return out
     scale = min(w / iw, h / ih)
     sw, sh = max(1, int(iw * scale)), max(1, int(ih * scale))
-    scaled = pygame.transform.smoothscale(raw, (sw, sh))
+    scaled = resize_image(raw, sw, sh, fast=fast)
     x = (w - sw) // 2
     if sh <= h:
         y = (h - sh) // 2 + int(y_offset_ratio * h)
-        src = scaled
-        out.blit(src, (x, y))
+        out.blit(scaled, (x, y))
     else:
         src_y = int((sh - h) * lower_bias)
         y = int(y_offset_ratio * h)
         out.blit(scaled, (x, y), (0, src_y, sw, h))
     return out
+
+
+def pane_to_sync(pane):
+    data = {
+        "path": str(pane.show_path) if pane.show_path else "",
+        "mode": pane.mode,
+        "lower_bias": pane.lower_bias,
+        "anim": None,
+    }
+    if pane.wipe:
+        data["anim"] = {
+            "kind": "wipe",
+            "start": pane.wipe["start"],
+            "dur": pane.wipe["dur"],
+            "old_path": str(pane.wipe.get("old_path") or ""),
+            "new_path": str(pane.wipe["path"]),
+        }
+    elif pane.settle:
+        data["anim"] = {
+            "kind": "settle",
+            "start": pane.settle["start"],
+            "dur": pane.settle["dur"],
+            "old_path": str(pane.settle.get("old_path") or ""),
+            "new_path": str(pane.settle["path"]),
+        }
+    return data
 
 
 class Pane:
@@ -220,7 +283,7 @@ class Pane:
     def _size(self):
         return self.rect.w, self.rect.h
 
-    def set_instant(self, path, mode=None, lower_bias=None):
+    def set_instant(self, path, mode=None, lower_bias=None, fast=False):
         if mode is not None:
             self.mode = mode
         if lower_bias is not None:
@@ -228,14 +291,14 @@ class Pane:
         self.wipe = None
         self.settle = None
         self.show_path = path
-        self.show_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias)
+        self.show_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias, fast=fast)
 
-    def start_wipe(self, path, dur_ms, mode=None, lower_bias=None):
+    def start_wipe(self, path, dur_ms, mode=None, lower_bias=None, fast=False):
         if mode is not None:
             self.mode = mode
         if lower_bias is not None:
             self.lower_bias = lower_bias
-        next_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias)
+        next_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias, fast=fast)
         if next_surf is None:
             return
         now = pygame.time.get_ticks()
@@ -243,6 +306,7 @@ class Pane:
             "start": now,
             "dur": max(1, int(dur_ms)),
             "old": self.show_surf,
+            "old_path": self.show_path,
             "new": next_surf,
             "path": path,
         }
@@ -259,10 +323,61 @@ class Pane:
             "start": now,
             "dur": SLOT_SETTLE_ANIM_MS,
             "old": self.show_surf,
+            "old_path": self.show_path,
             "new": next_surf,
             "path": path,
         }
         self.wipe = None
+
+    def apply_sync(self, data):
+        path = data.get("path") or None
+        if path:
+            path = Path(path)
+        mode = data.get("mode") or "baseline"
+        lower_bias = float(data.get("lower_bias") or TRIGGER_LOWER_BIAS)
+        anim = data.get("anim")
+        if not anim:
+            if path and (path != self.show_path or mode != self.mode):
+                self.set_instant(path, mode, lower_bias)
+            return
+        kind = anim.get("kind")
+        new_path = Path(anim.get("new_path") or path or "")
+        old_path = anim.get("old_path") or ""
+        start = int(anim.get("start") or 0)
+        dur = int(anim.get("dur") or 1)
+        if kind == "wipe":
+            new_surf = self.cache.get(new_path, self._size(), mode, lower_bias, fast=True)
+            old_surf = self.cache.get(Path(old_path), self._size(), self.mode, self.lower_bias) if old_path else self.show_surf
+            if new_surf is None:
+                return
+            self.mode = mode
+            self.lower_bias = lower_bias
+            self.wipe = {
+                "start": start,
+                "dur": dur,
+                "old": old_surf,
+                "old_path": Path(old_path) if old_path else self.show_path,
+                "new": new_surf,
+                "path": new_path,
+            }
+            self.settle = None
+            self.show_path = self.wipe["old_path"]
+        elif kind == "settle":
+            new_surf = self.cache.get(new_path, self._size(), mode, lower_bias)
+            old_surf = self.cache.get(Path(old_path), self._size(), self.mode, self.lower_bias) if old_path else self.show_surf
+            if new_surf is None:
+                return
+            self.mode = mode
+            self.lower_bias = lower_bias
+            self.settle = {
+                "start": start,
+                "dur": dur,
+                "old": old_surf,
+                "old_path": Path(old_path) if old_path else self.show_path,
+                "new": new_surf,
+                "path": new_path,
+            }
+            self.wipe = None
 
     def tick(self, screen):
         now = pygame.time.get_ticks()
@@ -291,7 +406,6 @@ class Pane:
                 self._blit_surf(screen, self.show_surf, 0.0)
                 return
             eased = 1 - (1 - min(1.0, t)) ** 2
-            h = self.rect.h
             if w["old"] is not None:
                 self._blit_surf(screen, w["old"], eased)
             self._blit_surf(screen, w["new"], -1.0 + eased)
@@ -309,7 +423,7 @@ class Pane:
         screen.blit(surf, (self.rect.x, y))
 
 
-class ExhibitDualKiosk:
+class ExhibitConfig:
     def __init__(self):
         self.site_dir = os.environ.get("SEQUENCE_SITE_DIR", str(Path.home() / "Sequence_IOS"))
         self.left_root = os.environ.get(
@@ -320,47 +434,47 @@ class ExhibitDualKiosk:
             "SEQUENCE_DUAL_IMAGE_DIR_RIGHT",
             os.path.join(self.site_dir, "public", "exhibit-right"),
         )
-        self.w = env_int("SEQUENCE_WINDOW_WIDTH", 3840)
+        self.w_total = env_int("SEQUENCE_WINDOW_WIDTH", 3840)
         self.h = env_int("SEQUENCE_WINDOW_HEIGHT", 1080)
-        self.w_left = env_int("SEQUENCE_MONITOR_LEFT_WIDTH", self.w // 2)
-        self.w_right = max(1, self.w - self.w_left)
+        self.w_left = env_int("SEQUENCE_MONITOR_LEFT_WIDTH", self.w_total // 2)
+        self.w_right = max(1, self.w_total - self.w_left)
+        self.x_left = env_int("SEQUENCE_MONITOR_LEFT_X", 0)
+        self.x_right = env_int("SEQUENCE_MONITOR_RIGHT_X", self.w_left)
         self.ms_per_long = env_int("SEQUENCE_MS_PER_LONG_IMAGE", MS_PER_LONG)
-
         self.left_map = collect_folder_map(self.left_root)
         self.right_map = collect_folder_map(self.right_root)
         self.folder_keys = paired_folder_keys(self.left_map, self.right_map)
         if not self.folder_keys:
             raise SystemExit(f"No paired exhibit folders in {self.left_root} and {self.right_root}")
 
-        os.environ["SDL_VIDEO_WINDOW_POS"] = "0,0"
+
+class ExhibitMaster:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{cfg.x_left},0"
         pygame.init()
         borderless = env_int("SEQUENCE_PYGAME_BORDERLESS", 1)
-        flags = pygame.NOFRAME if borderless else 0
-        self.screen = pygame.display.set_mode((self.w, self.h), flags)
-        pygame.display.set_caption("" if borderless else "Sequence exhibit")
-
-        self.left_rect = pygame.Rect(0, 0, self.w_left, self.h)
-        self.right_rect = pygame.Rect(self.w_left, 0, self.w_right, self.h)
-        self.cache = ImageCache()
-        self.left = Pane(self.left_rect, self.cache)
-        self.right = Pane(self.right_rect, self.cache)
+        flags = pygame.DOUBLEBUF | (pygame.NOFRAME if borderless else 0)
+        self.screen = pygame.display.set_mode((cfg.w_left, cfg.h), flags)
+        pygame.display.set_caption("" if borderless else "Sequence left")
+        self.rect = pygame.Rect(0, 0, cfg.w_left, cfg.h)
+        self.cache = ImageCache(fast_spin=False)
+        self.left = Pane(self.rect, self.cache)
+        self.right = Pane(pygame.Rect(0, 0, cfg.w_right, cfg.h), ImageCache(fast_spin=True))
 
         self.mode = "baseline"
         self.folder_idx = 0
-        self.phase_start = 0
         self.left_idx = 0
         self.right_idx = 0
         self.left_next_at = 0
         self.right_next_at = 0
         self.phase_end_at = 0
-
         self.slot_started_at = 0
         self.slot_spin_next_at = 0
         self.slot_final_left = None
         self.slot_final_right = None
         self.slot_urls_left = []
         self.slot_urls_right = []
-
         self.sensor_high = False
         self.sensor_q = []
         self.sensor_lock = threading.Lock()
@@ -368,21 +482,28 @@ class ExhibitDualKiosk:
         self.serial_thread = threading.Thread(target=self._serial_loop, daemon=True)
 
     def _current_folder_key(self):
-        return self.folder_keys[self.folder_idx % len(self.folder_keys)]
+        return self.cfg.folder_keys[self.folder_idx % len(self.cfg.folder_keys)]
 
     def _folder_urls(self, key):
-        return self.left_map[key], self.right_map[key]
+        return self.cfg.left_map[key], self.cfg.right_map[key]
+
+    def _preload_folder(self, key):
+        left_urls, right_urls = self._folder_urls(key)
+        size_l = (self.cfg.w_left, self.cfg.h)
+        size_r = (self.cfg.w_right, self.cfg.h)
+        self.cache.preload(left_urls[:3], size_l, "baseline", TRIGGER_LOWER_BIAS)
+        self.right.cache.preload(right_urls[:3], size_r, "baseline", TRIGGER_LOWER_BIAS)
 
     def _start_baseline_folder(self, now):
         self.mode = "baseline"
         key = self._current_folder_key()
         left_urls, right_urls = self._folder_urls(key)
-        timing = folder_phase_equal(len(left_urls), len(right_urls), self.ms_per_long)
+        timing = folder_phase_equal(len(left_urls), len(right_urls), self.cfg.ms_per_long)
         if not timing:
             self.folder_idx += 1
             self._start_baseline_folder(now)
             return
-        self.phase_start = now
+        self._preload_folder(key)
         self.left_idx = 0
         self.right_idx = 0
         self.left_next_at = now + timing["left_interval_ms"] if len(left_urls) > 1 else now + 10**9
@@ -394,15 +515,14 @@ class ExhibitDualKiosk:
     def _advance_baseline(self, now):
         key = self._current_folder_key()
         left_urls, right_urls = self._folder_urls(key)
+        timing = folder_phase_equal(len(left_urls), len(right_urls), self.cfg.ms_per_long)
         if now >= self.left_next_at and self.left_idx + 1 < len(left_urls):
             self.left_idx += 1
             self.left.start_wipe(left_urls[self.left_idx], WIPE_MS_BASELINE, "baseline")
-            timing = folder_phase_equal(len(left_urls), len(right_urls), self.ms_per_long)
             self.left_next_at = now + timing["left_interval_ms"]
         if now >= self.right_next_at and self.right_idx + 1 < len(right_urls):
             self.right_idx += 1
             self.right.start_wipe(right_urls[self.right_idx], WIPE_MS_BASELINE, "baseline")
-            timing = folder_phase_equal(len(left_urls), len(right_urls), self.ms_per_long)
             self.right_next_at = now + timing["right_interval_ms"]
         if now >= self.phase_end_at:
             self.folder_idx += 1
@@ -418,8 +538,8 @@ class ExhibitDualKiosk:
         self.slot_final_right = random.choice(right_urls)
         self.slot_started_at = now
         self.slot_spin_next_at = now + slot_spin_gap_ms(0)
-        self.left.start_wipe(random.choice(left_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
-        self.right.start_wipe(random.choice(right_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
+        self.left.start_wipe(random.choice(left_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS, fast=True)
+        self.right.start_wipe(random.choice(right_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS, fast=True)
 
     def _advance_slot(self, now):
         elapsed = now - self.slot_started_at
@@ -433,8 +553,8 @@ class ExhibitDualKiosk:
                 self.right.start_settle(self.slot_final_right, "trigger", SETTLE_LOWER_BIAS)
             return
         if now >= self.slot_spin_next_at:
-            self.left.start_wipe(random.choice(self.slot_urls_left), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
-            self.right.start_wipe(random.choice(self.slot_urls_right), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
+            self.left.start_wipe(random.choice(self.slot_urls_left), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS, fast=True)
+            self.right.start_wipe(random.choice(self.slot_urls_right), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS, fast=True)
             self.slot_spin_next_at = now + slot_spin_gap_ms(elapsed)
 
     def _serial_loop(self):
@@ -487,6 +607,9 @@ class ExhibitDualKiosk:
             elif not val and self.sensor_high:
                 self.sensor_high = False
 
+    def _publish_sync(self, now):
+        write_sync({"tick": now, "right": pane_to_sync(self.right)})
+
     def run(self):
         self.serial_thread.start()
         now = pygame.time.get_ticks()
@@ -506,20 +629,83 @@ class ExhibitDualKiosk:
             self._poll_sensor()
             if self.mode == "baseline":
                 self._advance_baseline(now)
+                fps = FPS_BASELINE
             else:
                 self._advance_slot(now)
+                fps = FPS_SLOT
+            self._publish_sync(now)
             self.screen.fill((20, 22, 26))
             self.left.tick(self.screen)
-            self.right.tick(self.screen)
             pygame.display.flip()
-            clock.tick(60)
+            clock.tick(fps)
         self.stop_ev.set()
         pygame.quit()
 
 
+class ExhibitSlave:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{cfg.x_right},0"
+        pygame.init()
+        borderless = env_int("SEQUENCE_PYGAME_BORDERLESS", 1)
+        flags = pygame.DOUBLEBUF | (pygame.NOFRAME if borderless else 0)
+        self.screen = pygame.display.set_mode((cfg.w_right, cfg.h), flags)
+        pygame.display.set_caption("" if borderless else "Sequence right")
+        self.rect = pygame.Rect(0, 0, cfg.w_right, cfg.h)
+        self.cache = ImageCache(fast_spin=True)
+        self.pane = Pane(self.rect, self.cache)
+        self.last_anim_key = None
+
+    def _sync_key(self, right):
+        anim = right.get("anim")
+        if anim:
+            return (
+                anim.get("kind"),
+                anim.get("start"),
+                anim.get("dur"),
+                anim.get("new_path"),
+                anim.get("old_path"),
+            )
+        return ("still", right.get("path"), right.get("mode"), right.get("lower_bias"))
+
+    def _apply_remote(self, data):
+        if not data:
+            return
+        right = data.get("right") or {}
+        key = self._sync_key(right)
+        if key == self.last_anim_key:
+            return
+        self.last_anim_key = key
+        self.pane.apply_sync(right)
+
+    def run(self):
+        clock = pygame.time.Clock()
+        running = True
+        while running:
+            for ev in pygame.event.get():
+                if ev.type == pygame.QUIT:
+                    running = False
+                elif ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
+                    running = False
+            self._apply_remote(read_sync())
+            self.screen.fill((20, 22, 26))
+            self.pane.tick(self.screen)
+            pygame.display.flip()
+            clock.tick(FPS_SLOT)
+        pygame.quit()
+
+
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--pane", choices=("left", "right"), required=True)
+    args = ap.parse_args()
+    cfg = ExhibitConfig()
     try:
-        ExhibitDualKiosk().run()
+        if args.pane == "left":
+            ExhibitMaster(cfg).run()
+        else:
+            time.sleep(0.8)
+            ExhibitSlave(cfg).run()
     except KeyboardInterrupt:
         return 0
     return 0
