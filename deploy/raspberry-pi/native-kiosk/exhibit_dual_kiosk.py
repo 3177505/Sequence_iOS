@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import random
+import subprocess
 import sys
 import threading
 import tempfile
@@ -25,7 +26,7 @@ SLOT_SPIN_MS = 7000
 SLOT_SETTLE_ANIM_MS = 3000
 SLOT_SPIN_GAP_START_MS = 420
 SLOT_SPIN_GAP_END_MS = 38
-SLOT_SPIN_WIPE_MS = 42
+SLOT_SPIN_WIPE_MS = 90
 WIPE_MS_BASELINE = 320
 
 BASELINE_MUTE_ALPHA = 120
@@ -100,6 +101,59 @@ def initial_window_size(cfg, pane):
     if pane == "left":
         return cfg.w_left, cfg.h
     return cfg.w_right, cfg.h
+
+
+def hide_desktop_panel():
+    if env_int("SEQUENCE_HIDE_DESKTOP_PANEL", 1) != 1:
+        return
+    script = os.environ.get(
+        "SEQUENCE_HIDE_DESKTOP_PANEL_SCRIPT",
+        "/usr/local/bin/sequence-hide-desktop-panel.sh",
+    )
+    if os.path.isfile(script):
+        subprocess.run(["bash", script], check=False)
+
+
+def show_desktop_panel():
+    export = os.environ.get("DISPLAY", ":0")
+    os.environ["DISPLAY"] = export
+    for cmd in (["wf-panel-pi"], ["lxqt-panel"], ["lxpanel"]):
+        try:
+            subprocess.run(["pgrep", "-x", cmd[0]], check=True, stdout=subprocess.DEVNULL)
+        except subprocess.CalledProcessError:
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def exhibit_mode_from_env():
+    return not windowed_mode()
+
+
+def chrome_window_size(cfg, pane, exhibit):
+    if exhibit:
+        if pane == "left":
+            return cfg.w_left, cfg.h
+        return cfg.w_right, cfg.h
+    w = env_int("SEQUENCE_PYGAME_WINDOWED_WIDTH", cfg.w_left if pane == "left" else cfg.w_right)
+    h = env_int("SEQUENCE_PYGAME_WINDOWED_HEIGHT", cfg.h)
+    return max(320, w), max(240, h)
+
+
+def apply_exhibit_chrome(app, cfg, pane, exhibit):
+    os.environ["SEQUENCE_PYGAME_WINDOWED"] = "0" if exhibit else "1"
+    os.environ["SEQUENCE_PYGAME_BORDERLESS"] = "1" if exhibit else "0"
+    w, h = chrome_window_size(cfg, pane, exhibit)
+    app.screen = pygame.display.set_mode((w, h), display_flags())
+    app.rect = pygame.Rect(0, 0, w, h)
+    pygame.display.set_caption(window_caption(pane))
+    if pane == "left":
+        app.left.resize_to(w, h)
+        app.right.resize_to(cfg.w_right, h)
+    else:
+        app.pane.resize_to(w, h)
+    if exhibit:
+        hide_desktop_panel()
+    else:
+        show_desktop_panel()
 
 
 def sync_path():
@@ -329,6 +383,8 @@ def pane_to_sync(pane):
         "path": str(pane.show_path) if pane.show_path else "",
         "mode": pane.mode,
         "lower_bias": pane.lower_bias,
+        "w": pane.rect.w,
+        "h": pane.rect.h,
         "anim": None,
     }
     if pane.wipe:
@@ -411,6 +467,10 @@ class Pane:
         self.wipe = None
 
     def apply_sync(self, data):
+        pw = int(data.get("w") or 0)
+        ph = int(data.get("h") or 0)
+        if pw > 0 and ph > 0 and (pw, ph) != self._size():
+            self.resize_to(pw, ph)
         path = data.get("path") or None
         if path:
             path = Path(path)
@@ -418,7 +478,7 @@ class Pane:
         lower_bias = float(data.get("lower_bias") or TRIGGER_LOWER_BIAS)
         anim = data.get("anim")
         if not anim:
-            if path and (path != self.show_path or mode != self.mode):
+            if path:
                 self.set_instant(path, mode, lower_bias)
             return
         kind = anim.get("kind")
@@ -428,8 +488,14 @@ class Pane:
         dur = int(anim.get("dur") or 1)
         if kind == "wipe":
             new_surf = self.cache.get(new_path, self._size(), mode, lower_bias)
-            old_surf = self.cache.get(Path(old_path), self._size(), self.mode, self.lower_bias) if old_path else self.show_surf
+            old_surf = self.show_surf
+            if old_path:
+                loaded = self.cache.get(Path(old_path), self._size(), self.mode, self.lower_bias)
+                if loaded is not None:
+                    old_surf = loaded
             if new_surf is None:
+                if path:
+                    self.set_instant(path, mode, lower_bias)
                 return
             self.mode = mode
             self.lower_bias = lower_bias
@@ -475,7 +541,10 @@ class Pane:
             if s["old"] is not None and t < 0.22:
                 old_y = int(t / 0.22 * self.rect.h * 1.1)
                 self._blit_surf(screen, s["old"], old_y)
-            self._blit_surf(screen, s["new"], y_ratio)
+            if s["new"] is not None:
+                self._blit_surf(screen, s["new"], y_ratio)
+            elif s["old"] is not None:
+                self._blit_surf(screen, s["old"], 0.0)
             return
         if self.wipe:
             w = self.wipe
@@ -489,7 +558,10 @@ class Pane:
             eased = 1 - (1 - min(1.0, t)) ** 2
             if w["old"] is not None:
                 self._blit_surf(screen, w["old"], eased)
-            self._blit_surf(screen, w["new"], -1.0 + eased)
+            if w["new"] is not None:
+                self._blit_surf(screen, w["new"], -1.0 + eased)
+            elif w["old"] is None and self.show_surf is not None:
+                self._blit_surf(screen, self.show_surf, 0.0)
             return
         if self.show_surf is None and self.show_path:
             self.show_surf = self.cache.get(self.show_path, self._size(), self.mode, self.lower_bias)
@@ -565,7 +637,9 @@ class ExhibitMaster:
         self.rect = pygame.Rect(0, 0, ww, wh)
         self.cache = ImageCache(max_edge=cfg.image_max_edge)
         self.left = Pane(self.rect, self.cache)
-        self.right = Pane(pygame.Rect(0, 0, cfg.w_right, cfg.h), ImageCache(max_edge=cfg.image_max_edge))
+        self.right = Pane(pygame.Rect(0, 0, cfg.w_right, wh), ImageCache(max_edge=cfg.image_max_edge))
+
+        self.exhibit_mode = exhibit_mode_from_env()
 
         self.mode = "baseline"
         self.folder_idx = 0
@@ -594,10 +668,11 @@ class ExhibitMaster:
 
     def _preload_folder(self, key):
         left_urls, right_urls = self._folder_urls(key)
-        size_l = (self.cfg.w_left, self.cfg.h)
-        size_r = (self.cfg.w_right, self.cfg.h)
+        size_l = (self.left.rect.w, self.left.rect.h)
+        size_r = (self.right.rect.w, self.right.rect.h)
         self.cache.preload(left_urls[:3], size_l, "baseline", TRIGGER_LOWER_BIAS)
         self.right.cache.preload(right_urls[:3], size_r, "baseline", TRIGGER_LOWER_BIAS)
+        self.right.cache.preload(right_urls[:3], size_r, "trigger", TRIGGER_LOWER_BIAS)
 
     def _start_baseline_folder(self, now):
         self.mode = "baseline"
@@ -716,7 +791,17 @@ class ExhibitMaster:
                 self.sensor_high = False
 
     def _publish_sync(self, now):
-        write_sync({"tick": now, "right": pane_to_sync(self.right)})
+        write_sync(
+            {
+                "tick": now,
+                "exhibit": 1 if self.exhibit_mode else 0,
+                "right": pane_to_sync(self.right),
+            }
+        )
+
+    def _toggle_exhibit_chrome(self):
+        self.exhibit_mode = not self.exhibit_mode
+        apply_exhibit_chrome(self, self.cfg, "left", self.exhibit_mode)
 
     def run(self):
         self.serial_thread.start()
@@ -734,6 +819,8 @@ class ExhibitMaster:
                 elif ev.type == pygame.KEYDOWN:
                     if ev.key == pygame.K_ESCAPE:
                         running = False
+                    elif ev.key == pygame.K_f and (ev.mod & pygame.KMOD_ALT):
+                        self._toggle_exhibit_chrome()
                     elif ev.key == pygame.K_SPACE and self.mode == "baseline":
                         self._start_slot(now)
             self._poll_sensor()
@@ -764,6 +851,7 @@ class ExhibitSlave:
         self.cache = ImageCache(max_edge=cfg.image_max_edge)
         self.pane = Pane(self.rect, self.cache)
         self.last_anim_key = None
+        self.exhibit_mode = exhibit_mode_from_env()
 
     def _sync_key(self, right):
         anim = right.get("anim")
@@ -774,12 +862,27 @@ class ExhibitSlave:
                 anim.get("dur"),
                 anim.get("new_path"),
                 anim.get("old_path"),
+                right.get("w"),
+                right.get("h"),
             )
-        return ("still", right.get("path"), right.get("mode"), right.get("lower_bias"))
+        return (
+            "still",
+            right.get("path"),
+            right.get("mode"),
+            right.get("lower_bias"),
+            right.get("w"),
+            right.get("h"),
+        )
 
     def _apply_remote(self, data):
         if not data:
             return
+        exhibit = data.get("exhibit")
+        if exhibit is not None:
+            want = bool(int(exhibit))
+            if want != self.exhibit_mode:
+                self.exhibit_mode = want
+                apply_exhibit_chrome(self, self.cfg, "right", self.exhibit_mode)
         right = data.get("right") or {}
         key = self._sync_key(right)
         if key == self.last_anim_key:

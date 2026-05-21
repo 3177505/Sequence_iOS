@@ -22,3 +22,5 @@ SEQUENCE_IMAGE_MAX_EDGE=800
 SEQUENCE_IMAGE_FIT=contain
 
 SEQUENCE_SERIAL_DEVICE=/dev/ttyUSB0
+
+# Alt+F on left window toggles exhibit mode (borderless + hide bar) vs drag mode (title bar + move)
