@@ -52,6 +52,33 @@ def env_int(key, default):
         return default
 
 
+def apply_window_pos(pane, cfg):
+    setup = env_int("SEQUENCE_PYGAME_SETUP", 0)
+    if setup:
+        key = "SEQUENCE_PYGAME_SETUP_LEFT_POS" if pane == "left" else "SEQUENCE_PYGAME_SETUP_RIGHT_POS"
+        default = "80,80" if pane == "left" else "140,140"
+        os.environ["SDL_VIDEO_WINDOW_POS"] = os.environ.get(key, default)
+        return
+    swap = env_int("SEQUENCE_MONITOR_SWAP", 0)
+    if pane == "left":
+        x = cfg.x_right if swap else cfg.x_left
+    else:
+        x = cfg.x_left if swap else cfg.x_right
+    y = env_int("SEQUENCE_PYGAME_WINDOW_Y", 0)
+    os.environ["SDL_VIDEO_WINDOW_POS"] = f"{x},{y}"
+
+
+def display_flags():
+    if env_int("SEQUENCE_PYGAME_SETUP", 0):
+        return pygame.DOUBLEBUF
+    flags = pygame.DOUBLEBUF
+    if env_int("SEQUENCE_PYGAME_FULLSCREEN", 0):
+        flags |= pygame.FULLSCREEN
+    elif env_int("SEQUENCE_PYGAME_BORDERLESS", 1):
+        flags |= pygame.NOFRAME
+    return flags
+
+
 def sync_path():
     run = os.environ.get("XDG_RUNTIME_DIR") or "/tmp"
     return os.path.join(run, "sequence-exhibit-sync.json")
@@ -180,19 +207,44 @@ def settle_offset_ratio(t):
     return 0.0
 
 
-def load_image_raw(path, max_edge):
+def image_fit_mode():
+    mode = os.environ.get("SEQUENCE_IMAGE_FIT", "contain").strip().lower()
+    if mode in ("stretch", "fill", "exact"):
+        return "stretch"
+    if mode in ("cover", "crop"):
+        return "cover"
+    return "contain"
+
+
+def fit_dimensions(iw, ih, w, h):
+    if iw < 1 or ih < 1 or w < 1 or h < 1:
+        return 1, 1
+    fit = image_fit_mode()
+    if fit == "stretch":
+        return w, h
+    if fit == "cover":
+        scale = max(w / iw, h / ih)
+    else:
+        scale = min(w / iw, h / ih)
+    return max(1, int(iw * scale)), max(1, int(ih * scale))
+
+
+def load_image_raw(path, target_w, target_h, max_edge):
     try:
         raw = pygame.image.load(str(path)).convert()
     except pygame.error:
         return None
     iw, ih = raw.get_size()
-    if max_edge > 0 and max(iw, ih) > max_edge:
+    limit = max(target_w, target_h)
+    if max_edge > 0:
+        limit = max_edge
+    if max(iw, ih) > limit:
         if iw >= ih:
-            nw = max_edge
-            nh = max(1, int(ih * max_edge / iw))
+            nw = limit
+            nh = max(1, int(ih * limit / iw))
         else:
-            nh = max_edge
-            nw = max(1, int(iw * max_edge / ih))
+            nh = limit
+            nw = max(1, int(iw * limit / ih))
         raw = pygame.transform.scale(raw, (nw, nh))
     return raw
 
@@ -204,19 +256,20 @@ def resize_image(raw, sw, sh):
 
 
 class ImageCache:
-    def __init__(self, max_edge=960):
+    def __init__(self, max_edge=1920):
         self._cache = {}
         self.max_edge = max_edge
 
     def get(self, path, size, mode, lower_bias):
-        key = (str(path), size, mode, round(lower_bias, 3))
+        key = (str(path), size, mode, round(lower_bias, 3), image_fit_mode())
         if key in self._cache:
             return self._cache[key]
-        raw = load_image_raw(path, self.max_edge)
+        tw, th = size[0], size[1]
+        raw = load_image_raw(path, tw, th, self.max_edge)
         if raw is None:
             self._cache[key] = None
             return None
-        surf = render_image(raw, size[0], size[1], mode, lower_bias=lower_bias)
+        surf = render_image(raw, tw, th, mode, lower_bias=lower_bias)
         if len(self._cache) > 64:
             self._cache.clear()
         self._cache[key] = surf
@@ -231,11 +284,12 @@ def render_image(raw, w, h, mode, lower_bias=0.5, y_offset_ratio=0.0):
     iw, ih = raw.get_size()
     if iw < 1 or ih < 1:
         return None
+    sw, sh = fit_dimensions(iw, ih, w, h)
+    scaled = resize_image(raw, sw, sh)
+    if scaled is None:
+        return None
     out = pygame.Surface((w, h))
     out.fill((20, 22, 26))
-    scale = min(w / iw, h / ih)
-    sw, sh = max(1, int(iw * scale)), max(1, int(ih * scale))
-    scaled = resize_image(raw, sw, sh)
     x = (w - sw) // 2
     y = (h - sh) // 2 + int(y_offset_ratio * h)
     out.blit(scaled, (x, y))
@@ -413,6 +467,8 @@ class Pane:
                 self._blit_surf(screen, w["old"], eased)
             self._blit_surf(screen, w["new"], -1.0 + eased)
             return
+        if self.show_surf is None and self.show_path:
+            self.show_surf = self.cache.get(self.show_path, self._size(), self.mode, self.lower_bias)
         self._blit_surf(screen, self.show_surf, 0.0)
 
     def _blit_surf(self, screen, surf, y_offset_ratio):
@@ -444,7 +500,7 @@ class ExhibitConfig:
         self.x_left = env_int("SEQUENCE_MONITOR_LEFT_X", 0)
         self.x_right = env_int("SEQUENCE_MONITOR_RIGHT_X", self.w_left)
         self.ms_per_long = env_int("SEQUENCE_MS_PER_LONG_IMAGE", MS_PER_LONG)
-        self.image_max_edge = env_int("SEQUENCE_IMAGE_MAX_EDGE", 960)
+        self.image_max_edge = env_int("SEQUENCE_IMAGE_MAX_EDGE", 1920)
         self.left_map = collect_folder_map(self.left_root)
         self.right_map = collect_folder_map(self.right_root)
         self.folder_keys = paired_folder_keys(self.left_map, self.right_map)
@@ -455,11 +511,9 @@ class ExhibitConfig:
 class ExhibitMaster:
     def __init__(self, cfg):
         self.cfg = cfg
-        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{cfg.x_left},0"
+        apply_window_pos("left", cfg)
         pygame.init()
-        borderless = env_int("SEQUENCE_PYGAME_BORDERLESS", 1)
-        flags = pygame.DOUBLEBUF | (pygame.NOFRAME if borderless else 0)
-        self.screen = pygame.display.set_mode((cfg.w_left, cfg.h), flags)
+        self.screen = pygame.display.set_mode((cfg.w_left, cfg.h), display_flags())
         pygame.display.set_caption("" if borderless else "Sequence left")
         self.rect = pygame.Rect(0, 0, cfg.w_left, cfg.h)
         self.cache = ImageCache(max_edge=cfg.image_max_edge)
@@ -540,21 +594,24 @@ class ExhibitMaster:
         self.slot_urls_right = right_urls
         self.slot_final_left = random.choice(left_urls)
         self.slot_final_right = random.choice(right_urls)
+        pick_l = random.choice(left_urls)
+        pick_r = random.choice(right_urls)
+        self.left.set_instant(pick_l, "trigger", TRIGGER_LOWER_BIAS)
+        self.right.set_instant(pick_r, "trigger", TRIGGER_LOWER_BIAS)
         self.slot_started_at = now
-        self.slot_spin_next_at = now + slot_spin_gap_ms(0)
-        self.left.start_wipe(random.choice(left_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
-        self.right.start_wipe(random.choice(right_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
+        self.slot_spin_next_at = now + slot_spin_gap_ms(0) + SLOT_SPIN_WIPE_MS
 
     def _advance_slot(self, now):
         elapsed = now - self.slot_started_at
         if elapsed >= SLOT_MS:
             self._start_baseline_folder(now)
             return
+        if self.mode == "slot_settle":
+            return
         if elapsed >= SLOT_SPIN_MS:
-            if self.mode == "slot":
-                self.mode = "slot_settle"
-                self.left.start_settle(self.slot_final_left, "trigger", SETTLE_LOWER_BIAS)
-                self.right.start_settle(self.slot_final_right, "trigger", SETTLE_LOWER_BIAS)
+            self.mode = "slot_settle"
+            self.left.start_settle(self.slot_final_left, "trigger", SETTLE_LOWER_BIAS)
+            self.right.start_settle(self.slot_final_right, "trigger", SETTLE_LOWER_BIAS)
             return
         if now >= self.slot_spin_next_at:
             self.left.start_wipe(random.choice(self.slot_urls_left), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
@@ -649,11 +706,9 @@ class ExhibitMaster:
 class ExhibitSlave:
     def __init__(self, cfg):
         self.cfg = cfg
-        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{cfg.x_right},0"
+        apply_window_pos("right", cfg)
         pygame.init()
-        borderless = env_int("SEQUENCE_PYGAME_BORDERLESS", 1)
-        flags = pygame.DOUBLEBUF | (pygame.NOFRAME if borderless else 0)
-        self.screen = pygame.display.set_mode((cfg.w_right, cfg.h), flags)
+        self.screen = pygame.display.set_mode((cfg.w_right, cfg.h), display_flags())
         pygame.display.set_caption("" if borderless else "Sequence right")
         self.rect = pygame.Rect(0, 0, cfg.w_right, cfg.h)
         self.cache = ImageCache(max_edge=cfg.image_max_edge)

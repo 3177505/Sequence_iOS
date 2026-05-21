@@ -21,7 +21,16 @@ SEQUENCE_DUAL_IMAGE_START_DELAY=12
 # --- display / kiosk chrome (recommended) ---
 SEQUENCE_HIDE_DESKTOP_PANEL=1
 SEQUENCE_PYGAME_BORDERLESS=1
-SEQUENCE_IMAGE_MAX_EDGE=960
+SEQUENCE_IMAGE_MAX_EDGE=1920
+SEQUENCE_IMAGE_FIT=contain
+
+# --- SETUP MODE: two draggable windows (title bar), drag to each HDMI, then turn off ---
+# SEQUENCE_PYGAME_SETUP=1
+# SEQUENCE_HIDE_DESKTOP_PANEL=0
+# SEQUENCE_PYGAME_BORDERLESS=0
+
+# --- if only right screen shows content, try swapping which process goes to which HDMI ---
+# SEQUENCE_MONITOR_SWAP=1
 
 # --- layout auto-detect: 0 = use numbers above (recommended if dual screen already works) ---
 SEQUENCE_AUTO_DETECT_DISPLAY=0
