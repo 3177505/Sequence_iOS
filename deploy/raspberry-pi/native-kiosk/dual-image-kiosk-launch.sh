@@ -1,13 +1,33 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+#!/usr/bin/env bash
+set -euo pipefail
+
 CFG=/etc/sequence/kiosk.conf
-if [[ -f "$CFG" ]]; then
-  set -a
-  # shellcheck source=/dev/null
-  . "$CFG"
-  set +a
-fi
+load_kiosk_conf() {
+  [[ -f "$CFG" ]] || return 0
+  local line key val
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%%#*}"
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "$line" ]] && continue
+    if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      key="${BASH_REMATCH[1]}"
+      val="${BASH_REMATCH[2]}"
+      val="${val#"${val%%[![:space:]]*}"}"
+      val="${val%"${val##*[![:space:]]}"}"
+      if [[ "$val" == \"*\" && "$val" == *\" ]]; then
+        val="${val:1:${#val}-2}"
+      elif [[ "$val" == \'*\' && "$val" == *\' ]]; then
+        val="${val:1:${#val}-2}"
+      fi
+      export "$key=$val"
+    fi
+  done < "$CFG"
+}
+load_kiosk_conf
 
 REP="${SEQUENCE_SITE_DIR:-$HOME/Sequence_IOS}"
 LEFT="${SEQUENCE_DUAL_IMAGE_DIR_LEFT:-$REP/public/exhibit-left}"
@@ -57,7 +77,15 @@ restore_desktop_panel() {
 }
 
 (
-  flock -n 205 || exit 0
+  if [[ "${SEQUENCE_FORCE_LAUNCH:-0}" != 1 ]]; then
+    if ! flock -n 205; then
+      echo "[sequence] dual-image kiosk already running (or still starting). Stop it first:" >&2
+      echo "  pkill -f exhibit_dual_kiosk.py; pkill -f dual-image-kiosk-launch.sh" >&2
+      echo "  rm -f \"${LCK}\"" >&2
+      echo "  Or: SEQUENCE_FORCE_LAUNCH=1 DISPLAY=:0 SEQUENCE_DUAL_IMAGE_START_DELAY=0 $0" >&2
+      exit 0
+    fi
+  fi
 
   sleep "${SEQUENCE_DUAL_IMAGE_START_DELAY:-${SEQUENCE_KIOSK_START_DELAY:-12}}"
 
@@ -94,12 +122,14 @@ restore_desktop_panel() {
 
   rm -f "$RUNDIR/sequence-exhibit-sync.json"
 
+  echo "[sequence] starting left (master) + right (slave) pygame windows..." >&2
   python3 "$PY" --pane left &
   LPID=$!
   sleep 0.5
   python3 "$PY" --pane right &
   RPID=$!
   wait "$LPID" "$RPID" || true
+  echo "[sequence] exhibit stopped." >&2
 
   restore_desktop_panel
 ) 205>"$LCK"
