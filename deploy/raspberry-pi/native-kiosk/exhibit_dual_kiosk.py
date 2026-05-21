@@ -181,6 +181,23 @@ def settle_offset_ratio(t):
     return 0.0
 
 
+def load_image_raw(path, max_edge):
+    try:
+        raw = pygame.image.load(str(path)).convert()
+    except pygame.error:
+        return None
+    iw, ih = raw.get_size()
+    if max_edge > 0 and max(iw, ih) > max_edge:
+        if iw >= ih:
+            nw = max_edge
+            nh = max(1, int(ih * max_edge / iw))
+        else:
+            nh = max_edge
+            nw = max(1, int(iw * max_edge / ih))
+        raw = pygame.transform.smoothscale(raw, (nw, nh))
+    return raw
+
+
 def resize_image(raw, sw, sh, fast=False):
     if sw < 1 or sh < 1:
         return None
@@ -190,20 +207,22 @@ def resize_image(raw, sw, sh, fast=False):
 
 
 class ImageCache:
-    def __init__(self, fast_spin=False):
+    def __init__(self, fast_spin=False, max_edge=1280):
         self._cache = {}
         self.fast_spin = fast_spin
+        self.max_edge = max_edge
 
     def get(self, path, size, mode, lower_bias, fast=False):
         key = (str(path), size, mode, round(lower_bias, 3), bool(fast))
         if key in self._cache:
             return self._cache[key]
-        try:
-            raw = pygame.image.load(str(path)).convert()
-        except pygame.error:
+        raw = load_image_raw(path, self.max_edge)
+        if raw is None:
             self._cache[key] = None
             return None
         surf = render_image(raw, size[0], size[1], mode, lower_bias=lower_bias, fast=fast or self.fast_spin)
+        if len(self._cache) > 96:
+            self._cache.clear()
         self._cache[key] = surf
         return surf
 
@@ -441,6 +460,7 @@ class ExhibitConfig:
         self.x_left = env_int("SEQUENCE_MONITOR_LEFT_X", 0)
         self.x_right = env_int("SEQUENCE_MONITOR_RIGHT_X", self.w_left)
         self.ms_per_long = env_int("SEQUENCE_MS_PER_LONG_IMAGE", MS_PER_LONG)
+        self.image_max_edge = env_int("SEQUENCE_IMAGE_MAX_EDGE", 1280)
         self.left_map = collect_folder_map(self.left_root)
         self.right_map = collect_folder_map(self.right_root)
         self.folder_keys = paired_folder_keys(self.left_map, self.right_map)
@@ -458,9 +478,9 @@ class ExhibitMaster:
         self.screen = pygame.display.set_mode((cfg.w_left, cfg.h), flags)
         pygame.display.set_caption("" if borderless else "Sequence left")
         self.rect = pygame.Rect(0, 0, cfg.w_left, cfg.h)
-        self.cache = ImageCache(fast_spin=False)
+        self.cache = ImageCache(fast_spin=False, max_edge=cfg.image_max_edge)
         self.left = Pane(self.rect, self.cache)
-        self.right = Pane(pygame.Rect(0, 0, cfg.w_right, cfg.h), ImageCache(fast_spin=True))
+        self.right = Pane(pygame.Rect(0, 0, cfg.w_right, cfg.h), ImageCache(fast_spin=True, max_edge=cfg.image_max_edge))
 
         self.mode = "baseline"
         self.folder_idx = 0
@@ -652,7 +672,7 @@ class ExhibitSlave:
         self.screen = pygame.display.set_mode((cfg.w_right, cfg.h), flags)
         pygame.display.set_caption("" if borderless else "Sequence right")
         self.rect = pygame.Rect(0, 0, cfg.w_right, cfg.h)
-        self.cache = ImageCache(fast_spin=True)
+        self.cache = ImageCache(fast_spin=True, max_edge=cfg.image_max_edge)
         self.pane = Pane(self.rect, self.cache)
         self.last_anim_key = None
 

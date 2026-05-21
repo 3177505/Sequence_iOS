@@ -42,6 +42,8 @@ SEQUENCE_HIDE_DESKTOP_PANEL=1
 SEQUENCE_PYGAME_BORDERLESS=1
 
 SEQUENCE_SERIAL_DEVICE=/dev/ttyUSB0
+
+SEQUENCE_IMAGE_MAX_EDGE=1280
 ```
 
 If left/right are swapped on the desk, swap **`SEQUENCE_MONITOR_LEFT_X`** and **`SEQUENCE_MONITOR_RIGHT_X`**, or swap HDMI cables in Screen Configuration.
