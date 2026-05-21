@@ -46,6 +46,10 @@ SETTLE_KEYFRAMES = [
 ]
 
 
+def wall_ms():
+    return int(time.time() * 1000)
+
+
 def env_int(key, default):
     try:
         return int(os.environ.get(key, str(default)))
@@ -438,7 +442,7 @@ class Pane:
         next_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias)
         if next_surf is None:
             return
-        now = pygame.time.get_ticks()
+        now = wall_ms()
         self.wipe = {
             "start": now,
             "dur": max(1, int(dur_ms)),
@@ -455,7 +459,7 @@ class Pane:
         next_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias)
         if next_surf is None:
             return
-        now = pygame.time.get_ticks()
+        now = wall_ms()
         self.settle = {
             "start": now,
             "dur": SLOT_SETTLE_ANIM_MS,
@@ -527,7 +531,7 @@ class Pane:
             self.wipe = None
 
     def tick(self, screen):
-        now = pygame.time.get_ticks()
+        now = wall_ms()
         if self.settle:
             s = self.settle
             t = (now - s["start"]) / max(1, s["dur"])
@@ -639,6 +643,7 @@ class ExhibitMaster:
         self.left = Pane(self.rect, self.cache)
         self.right = Pane(pygame.Rect(0, 0, cfg.w_right, wh), ImageCache(max_edge=cfg.image_max_edge))
 
+        self.sync_seq = 0
         self.exhibit_mode = exhibit_mode_from_env()
 
         self.mode = "baseline"
@@ -791,9 +796,11 @@ class ExhibitMaster:
                 self.sensor_high = False
 
     def _publish_sync(self, now):
+        self.sync_seq += 1
         write_sync(
             {
                 "tick": now,
+                "seq": self.sync_seq,
                 "exhibit": 1 if self.exhibit_mode else 0,
                 "right": pane_to_sync(self.right),
             }
@@ -851,6 +858,7 @@ class ExhibitSlave:
         self.cache = ImageCache(max_edge=cfg.image_max_edge)
         self.pane = Pane(self.rect, self.cache)
         self.last_anim_key = None
+        self.last_sync_seq = 0
         self.exhibit_mode = exhibit_mode_from_env()
 
     def _sync_key(self, right):
@@ -884,11 +892,15 @@ class ExhibitSlave:
                 self.exhibit_mode = want
                 apply_exhibit_chrome(self, self.cfg, "right", self.exhibit_mode)
         right = data.get("right") or {}
+        seq = int(data.get("seq") or 0)
+        if seq > self.last_sync_seq:
+            self.last_sync_seq = seq
         key = self._sync_key(right)
-        if key == self.last_anim_key:
-            return
-        self.last_anim_key = key
-        self.pane.apply_sync(right)
+        if key != self.last_anim_key:
+            self.last_anim_key = key
+            self.pane.apply_sync(right)
+        elif not self.pane.show_surf and right.get("path"):
+            self.pane.apply_sync(right)
 
     def run(self):
         clock = pygame.time.Clock()
