@@ -174,7 +174,7 @@ function refreshBaselineStatus() {
   setStatus(
     sensorBoost
       ? 'Sériový vstup: rychlý posuv (kanály 1–5; některý je 1).'
-      : `Základní režim: public/exhibit-${poolKey} (${label}); pořadí složky → soubor (1,2… pak A→Z); zrychlování stupňovitě.`,
+      : `Základní režim: public/exhibit-${poolKey} (${label}); řazení podle jména souborů; postupně rychlejší střídání.`,
   );
 }
 
@@ -426,7 +426,7 @@ async function init() {
 
   if (!pool.length) {
     setStatus(
-      `Žádné JPG/PNG v public/exhibit-${poolKey}/ (ani v podsložkách). npm run build vytvoří exhibit-images.json.`,
+      `Žádné JPG/PNG v kořeni public/exhibit-${poolKey}/. npm run build vytvoří exhibit-images.json.`,
     );
     if (triggerBtn) triggerBtn.disabled = true;
     return;

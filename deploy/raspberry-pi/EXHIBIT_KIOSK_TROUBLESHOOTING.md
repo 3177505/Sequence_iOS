@@ -68,39 +68,30 @@ Paste the chosen **`…/by-id/…`** or **`tty…`** device into **`SEQUENCE_NAT
 
 ---
 
-## Exhibit timing (sensor **`0→1`**)
+## Exhibit timing (pygame)
 
-Baseline: **`SEQUENCE_EXHIBIT_BASELINE_SLIDE_MS`** (**`1000`** default) pause per paired frame; **`SEQUENCE_EXHIBIT_BASELINE_WIPE_MS`** per wipe outside burst.
-
-Burst: a **`0→1`** serial edge starts **`SEQUENCE_BURST_TOTAL_MS`** (**`15000`** ms wall clock default). Slide/wipe move from **`SEQUENCE_BURST_*_START`** toward **`*_END`** via **`exp_span`** (**`deploy/raspberry-pi/native-kiosk/exhibit_dual_strip.py`**). **`exhibit_dual_strip.py`** does not start overlapping bursts; **`0`** then **`1`** again retriggers when no burst countdown is active.
+The **native** slideshow uses **two** **`image_window.py`** processes only. Interval between slides (**seconds**): **`SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS`** in **`kiosk.conf`** (**default `8`**).
 
 ---
 
-## Exhibit image pairing
+## Exhibit image folders
 
-**Dual-window `image_window`** (**`LEGACY_TWO_PROC=1`**, default when unset in launcher): numbered subfolders **`1`**, **`2`**, … **per side** behave like a **per-display** playlist (order of folders shuffled, then images inside each folder). **Loose files in the root** of **`exhibit-left` / **`exhibit-right`** are used only when **no** digit-named folder there contains images. Older **`image_window`** builds only scanned the **root**, so **`…/left/1/a.jpg`** made **that side appear black**.
-
-**`exhibit_dual_strip`** (**`LEGACY_TWO_PROC=0`**): For each **`N`** (**`1`**, **`2`**, …**) create **`~/Sequence_IOS/public/exhibit-left/N`** and **`~/Sequence_IOS/public/exhibit-right/N`** with paired images inside; kiosk shuffles folder IDs **then zips filenames by index**.
-
-Only loose files (**no mirrored numeric dirs**) ⇒ **`build_flat_timeline`**.
-
-**Analog readings:** **`SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD`**. **`kiosk.conf`** may set **`SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD=-1`** to disable analogue handling in **`serial_reader`** (same file).
+Put **loose** JPG/PNG/WebP/GIF (**and bmp**) in **`~/Sequence_IOS/public/exhibit-left`** and **`.../exhibit-right`**. **`image_window.py` only lists files in those roots** — **subdirectories are ignored.** The web build’s **`exhibit-images.json`** mirrors the same flat list for **`exhibit-left.html` / `exhibit-right.html`**.
 
 ---
 
-## Two pygame windows vs one strip; Chromium
+## Two pygame windows; Chromium
 
-- **Dual-image kiosk** (**`install-dual-image-kiosk.sh`**) autostarts **`dual-image-kiosk-launch.sh`** (Python). By default it **deletes** **`/etc/xdg/autostart/sequence-kiosk.desktop`** (**Chromium**). If the browser still opens, list **`ls /etc/xdg/autostart/`** and **`grep -R sequence /etc/xdg/autostart`** — remove or disable other **`chromium`/`chrome`** entries, or re-run the installer with **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=1`** (default).
-- **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC`** omitted or **`1`:** **two** **`image_window.py`** (**default**). **`0`:** **`exhibit_dual_strip.py`**. **[EXHIBIT_KIOSK_RUNBOOK.md](EXHIBIT_KIOSK_RUNBOOK.md)**.
+- **Dual-image kiosk** (**`install-dual-image-kiosk.sh`**) runs **`dual-image-kiosk-launch.sh`**. By default it removes **`/etc/xdg/autostart/sequence-kiosk.desktop`** (**Chromium**). If a browser still opens, inspect **`/etc/xdg/autostart/`**.
+- **One mode only:** **two** **`image_window.py`** windows (left + right). There is **no** **`exhibit_dual_strip.py`** in this tree anymore.
 
 ## Two HDMI — only one panel fills or missing right window
 
 Launcher sizes come from **`SEQUENCE_WINDOW_WIDTH`**, **`SEQUENCE_WINDOW_HEIGHT`**, **`SEQUENCE_MONITOR_LEFT_WIDTH`**. Missing → **`1600×480`**; right window can sit off-screen or tiny.
 
 - **Legacy two-window mode:** left window **`x=0`**, **`width=LEFT`**; right **`x=LEFT`**, **`width=WIDTH−LEFT`**. You still need a virtual desktop at least **`WIDTH`** px wide — **Screen Configuration → extended** in one row is usual (**mirror** duplicates the same coordinates on both outputs).
-- **Strip mode:** one pygame window **`WIDTH`×`HEIGHT`** at origin; same **`WIDTH`** requirement.
 
-Check **`grep SEQUENCE_WINDOW /etc/sequence/kiosk.conf`**. After edits: **`pkill -f 'exhibit_dual_strip|image_window'`** then **`DISPLAY=:0 SEQUENCE_DUAL_IMAGE_START_DELAY=0 /usr/local/bin/dual-image-kiosk-launch.sh`** (**or reboot**).
+Check **`grep SEQUENCE_WINDOW /etc/sequence/kiosk.conf`**. After edits: **`pkill -f image_window.py`** then **`DISPLAY=:0 SEQUENCE_DUAL_IMAGE_START_DELAY=0 /usr/local/bin/dual-image-kiosk-launch.sh`** (**or reboot**).
 
 Wayland quirks — **[PI_SIMPLE_SETUP.md](PI_SIMPLE_SETUP.md)** (**Two monitors**).
 
@@ -108,7 +99,7 @@ Wayland quirks — **[PI_SIMPLE_SETUP.md](PI_SIMPLE_SETUP.md)** (**Two monitors*
 
 ## Desktop top panel (Wayfire **`wf-panel-pi`** / LXDE **`lxpanel`**)
 
-During exhibit **`SEQUENCE_HIDE_DESKTOP_PANEL=1`** (**`kiosk.conf`**) runs **`sequence-hide-desktop-panel.sh`**, which **kills** the panel. **`dual-image-kiosk-launch.sh`** starts it again when **`exhibit_dual_strip`** (**or legacy windows**) exits. **`git pull`** **then** **`sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.sh`** updates **`/usr/local/bin/dual-image-kiosk-launch.sh`** so that **restore** behaviour is installed.
+During exhibit **`SEQUENCE_HIDE_DESKTOP_PANEL=1`** (**`kiosk.conf`**) runs **`sequence-hide-desktop-panel.sh`**, which **kills** the panel. **`dual-image-kiosk-launch.sh`** starts it again when both **`image_window`** processes exit. **`git pull`** **then** **`sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.sh`** updates **`/usr/local/bin/dual-image-kiosk-launch.sh`** so that **restore** behaviour is installed.
 
 Manual bring-back after killing exhibit (**`Wayfire`** typical):
 
@@ -157,7 +148,7 @@ Pi does **not** read TS/JS/SCSS from the repo root at runtime — **`sequence-si
   Wait until **`journalctl -u sequence-site.service -n 30 --no-pager`** shows a fresh **`npm run build`** finishing without errors.
 - **`public/api-public-tree/research-images.json`:** někdy v **`.gitignore`** jako ostatní stromy — po **`git pull`** spusťte **`npm run build`**, aby blend stránky (vč. **`research-blend-*.html`**) dostaly statický výpis obrázků.
 - **Starší Chromia / fullscreen:** používáme **`html.kiosk-fs-root`** (ne **`:has()`**), aby měl dokument výšku viewportu i na starších prohlížečích na Pi.
-- **Manifest non‑empty:** `exhibit-images.json` enumerates **`public/exhibit-left`** / **`exhibit-right`**, including **subfolders** — regenerated only **`npm run build`** ( **`generate-exhibit-images-json`** ). Check:
+- **Manifest non‑empty:** `exhibit-images.json` lists **image files in the roots** of **`public/exhibit-left`** / **`exhibit-right`** (not subfolders). Regenerated only **`npm run build`** ( **`generate-exhibit-images-json`** ). Check:
   ```bash
   curl -sS http://127.0.0.1:3000/public/exhibit-images.json | head -c 400
   ```

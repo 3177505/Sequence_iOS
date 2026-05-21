@@ -1,27 +1,18 @@
 # Exhibit kiosk — **short path**
 
-If something breaks, use **[EXHIBIT_KIOSK_TROUBLESHOOTING.md](EXHIBIT_KIOSK_TROUBLESHOOTING.md)** (Git, dual-screen sizing, Wayfire bar, optional Arduino / **`arduino-cli`** / serial).
+If something breaks, use **[EXHIBIT_KIOSK_TROUBLESHOOTING.md](EXHIBIT_KIOSK_TROUBLESHOOTING.md)** (Git, dual-screen sizing, Wayfire bar).
 
 ---
 
-**Minimal setup:** Raspberry Pi desktop, user **`raspi`**, checkout **`~/Sequence_IOS`**. The dual-image installer runs **Python** (**`/usr/local/bin/dual-image-kiosk-launch.sh`** → **`/opt/sequence/native-kiosk/*.py`**), **not** Chromium — it removes **`sequence-kiosk.desktop`** unless you installed with **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=0`**.
+**Minimal setup:** Raspberry Pi desktop, user **`raspi`**, checkout **`~/Sequence_IOS`**. The dual-image installer runs **`/usr/local/bin/dual-image-kiosk-launch.sh`**, which starts **two** Python processes (**`/opt/sequence/native-kiosk/image_window.py`**) side by side. **`exhibit_dual_strip.py`** has been removed from this repo; there is **no** single-window “strip” pairing mode anymore.
 
-If **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC`** is **missing** from **`kiosk.conf`**, the launcher defaults to **`1`** (**two pygame windows**). Set **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=0`** explicitly for **one-window** **`exhibit_dual_strip`**.
+Installer **drops `sequence-kiosk.desktop`** (**Chromium** autostart) unless you pass **`SEQUENCE_DISABLE_CHROMIUM_KIOSK=0`**.
 
-**Two ways to show left + right content:**
-
-| **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC`** | What runs |
-| --- | --- |
-| **`1`** (default when unset) | **Two separate pygame windows** (**`image_window.py`** each): left **`x=0`**, right **`x=SEQUENCE_MONITOR_LEFT_WIDTH`**. Each side walks **only that tree** (see §3). |
-| **`0`** | **One window** (**`exhibit_dual_strip.py`**): paired left/right **same frame**; timing **`SEQUENCE_EXHIBIT_BASELINE_*`** / **`SEQUENCE_BURST_*`**. |
-
-Placing the right window beside the left still needs a desktop wide enough (**`SEQUENCE_WINDOW_WIDTH`** = sum of outputs) — Raspberry Pi OS **Screen Configuration → extended** row is the usual way to get **`x = 0`** and **`x = 1920`** (etc.) on different HDMI heads. **Mirrored** duplicate shows both windows stacked on the same logical area.
-
-**Arduino + IR sensor** — optional (see **[Optional](#optional--arduino-serial-sensor)** + **Appendix**): serial **`0→1`** shortens transitions where the Python reader supports it.
+Images must live directly in **`public/exhibit-left/`** and **`public/exhibit-right/`** (**no numbered subfolders** for the pygame kiosk; subfolders are ignored).
 
 ---
 
-### 1 — Kiosk installers (once per fresh Pi)
+### 1 — Installer (once per fresh Pi)
 
 ```bash
 cd ~/Sequence_IOS
@@ -32,14 +23,12 @@ sudo reboot
 
 ---
 
-### 2 — Environment (**`kiosk.conf`**) — **dual images, no Arduino**
+### 2 — **`kiosk.conf`** (**geometry + timing`)
 
 ```bash
 sudo install -dm755 /etc/sequence
 sudo nano /etc/sequence/kiosk.conf
 ```
-
-Overwrite with values that match **your** geometry. **Single window, paired wipes** → set **`SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=0`**. Omit **`LEGACY`** or **`=1`** for **two pygame windows** (**default** in launcher).
 
 ```bash
 SEQUENCE_SITE_DIR=$HOME/Sequence_IOS
@@ -48,70 +37,26 @@ SEQUENCE_WINDOW_WIDTH=3840
 SEQUENCE_WINDOW_HEIGHT=1080
 SEQUENCE_MONITOR_LEFT_WIDTH=1920
 
-SEQUENCE_EXHIBIT_LEGACY_TWO_PROC=1
+SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS=8
 
-SEQUENCE_EXHIBIT_SLIDE_MS=1000
-SEQUENCE_EXHIBIT_WIPE_MS_BASELINE=380
-SEQUENCE_EXHIBIT_WIPE_MS_TRIGGER=55
-SEQUENCE_EXHIBIT_TRIGGER_SLIDE_MS=70
-
-SEQUENCE_EXHIBIT_BASELINE_SLIDE_MS=1000
-SEQUENCE_EXHIBIT_BASELINE_WIPE_MS=380
-SEQUENCE_BURST_TOTAL_MS=15000
-SEQUENCE_BURST_SLIDE_START_MS=140
-SEQUENCE_BURST_SLIDE_END_MS=5200
-SEQUENCE_BURST_WIPE_START_MS=55
-SEQUENCE_BURST_WIPE_END_MS=950
-
-SEQUENCE_EXHIBIT_RNG_SEED=
-SEQUENCE_EXHIBIT_RESHUFFLE_EACH_CYCLE=1
+SEQUENCE_DUAL_IMAGE_START_DELAY=12
+SEQUENCE_KIOSK_START_DELAY=12
 
 SEQUENCE_HIDE_DESKTOP_PANEL=1
-SEQUENCE_HIDE_DESKTOP_PANEL_ROUNDS=30
-SEQUENCE_HIDE_DESKTOP_PANEL_INTERVAL=0.2
-SEQUENCE_PYGAME_OVERFLOW_TOP_PIXELS=44
 SEQUENCE_PYGAME_BORDERLESS=1
 ```
 
-**Geometry:** **`SEQUENCE_WINDOW_WIDTH`** should be **left + right** widths (virtual desktop spanning both outputs). **`SEQUENCE_MONITOR_LEFT_WIDTH`** is the left window width **and** the **X** position of the right window (**right width** = **`WIDTH − LEFT`**). Replace **`3840`**, **`1920`**, **`1080`** with **Screen Configuration** numbers. Missing values → **`1600×480`** fallback (**`install-dual-image-kiosk.sh`** hint).
+**Geometry:** **`SEQUENCE_WINDOW_WIDTH`** = logical desktop width (**left + right**). **`SEQUENCE_MONITOR_LEFT_WIDTH`** = width of **left** window and **x** offset of **right**. Right width = **`WIDTH − LEFT`**. Raspberry Pi OS **Screen Configuration → extended desktop** gives separate HDMI positions.
 
-**Strip-only timing:** **`SEQUENCE_EXHIBIT_BASELINE_*`** and **`SEQUENCE_BURST_*`** apply when **`LEGACY_TWO_PROC=0`** (**`exhibit_dual_strip`**). **`SEQUENCE_EXHIBIT_SLIDE_MS`** and **`SEQUENCE_EXHIBIT_WIPE_MS_*`** apply when **`LEGACY_TWO_PROC=1`** (**`image_window`**). Optional fixed interval (legacy): **`SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS=8`**.
+Missing values → **`1600×480`** split in half.
 
-Chromium / multi-URL setup (different path): **[PI_SIMPLE_SETUP.md](PI_SIMPLE_SETUP.md)**.
+Optional delay before pygame starts **`SEQUENCE_DUAL_IMAGE_START_DELAY`** (fallback **`SEQUENCE_KIOSK_START_DELAY`**).
 
----
-
-### 3 — Image folders
-
-- **`LEGACY_TWO_PROC=1`** (**`image_window` ×2:** if **`exhibit-left`** (or **`right`**) has **any non-empty digit-named subfolder** **`1`**, **`2`**, …, that side uses **numbered mode**: random order of folders, then random order of images inside each folder (images must sit **inside** those subfolders, **not** loose in the root). If there are **no** such subfolders with images, loose image files in **`exhibit-left`** / **`exhibit-right`** roots are used (**flat** shuffle). **Folders on left and right do not have to match by number** — each display is independent.
-- **`LEGACY_TWO_PROC=0`** (**`exhibit_dual_strip`**): **paired** sets — use the **same numbered folder names on both sides**, or both roots **flat** only (see troubleshooting).
+Chromium / **`SEQUENCE_START_URL`** path: **[PI_SIMPLE_SETUP.md](PI_SIMPLE_SETUP.md)**.
 
 ---
 
-### Optional — Arduino / serial sensor
-
-When you eventually wire **Nano USB + sketch** (**`/dev/ttyUSB0`** etc.), add **`dialout`**, **`SEQUENCE_NATIVE_SERIAL_*`**, and **`arduino-cli`** + upload (**Appendix** at end of this file). **`FQBN`** / bootloader / **`by-id`** paths → **[EXHIBIT_KIOSK_TROUBLESHOOTING.md](EXHIBIT_KIOSK_TROUBLESHOOTING.md)**.
-
-**`dialout`** (only needed for Arduino upload or reading **`/dev/ttyUSB*`**):
-
-```bash
-sudo usermod -aG dialout raspi
-```
-
-Log out (or **`sudo reboot`**) after **`usermod`**.
-
-Minimal **`kiosk.conf`** additions when hardware exists:
-
-```bash
-SEQUENCE_NATIVE_SERIAL_DEVICE=/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
-SEQUENCE_NATIVE_SERIAL_BAUD=115200
-SEQUENCE_NATIVE_SERIAL_ANALOG_THRESHOLD=250
-SEQUENCE_NATIVE_SERIAL_LINE_IDLE_MS=0.05
-```
-
----
-
-### 4 — After **`git pull`**
+### 3 — **`git pull`** (refresh launcher + scripts)
 
 ```bash
 cd ~/Sequence_IOS
@@ -124,15 +69,15 @@ sudo reboot
 
 ---
 
-### 5 — Quick checks (**no Arduino required**)
+### 4 — Quick checks
 
 ```bash
 ls -la "$HOME/Sequence_IOS/public/exhibit-left" "$HOME/Sequence_IOS/public/exhibit-right"
 head -20 /etc/sequence/kiosk.conf
-test -x /usr/local/bin/dual-image-kiosk-launch.sh && echo "launcher installed"
+test -x /usr/local/bin/dual-image-kiosk-launch.sh && echo launcher ok
 ```
 
-**Manual foreground test** (**Escape** quits both): source **`kiosk.conf`**, then either match autostart **`LEGACY`** or run one mode by hand.
+**Manual foreground test** (**Escape** quits that window):
 
 ```bash
 cd ~/Sequence_IOS
@@ -146,23 +91,17 @@ H="${SEQUENCE_WINDOW_HEIGHT:-480}"
 LW="${SEQUENCE_MONITOR_LEFT_WIDTH:-$((W / 2))}"
 RW=$((W - LW))
 export DISPLAY="${DISPLAY:-:0}"
-if [[ "${SEQUENCE_EXHIBIT_LEGACY_TWO_PROC:-1}" == "1" ]]; then
-  python3 /opt/sequence/native-kiosk/image_window.py --dir "$REP/public/exhibit-left" --width "$LW" --height "$H" --x 0 --y 0 &
-  python3 /opt/sequence/native-kiosk/image_window.py --dir "$REP/public/exhibit-right" --width "$RW" --height "$H" --x "$LW" --y 0 &
-  wait
-else
-  python3 /opt/sequence/native-kiosk/exhibit_dual_strip.py \
-    --left-root "$REP/public/exhibit-left" \
-    --right-root "$REP/public/exhibit-right" \
-    --width "$W" --height "$H" --left-width "$LW" --x 0 --y 0
-fi
+INT="${SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS:-8}"
+python3 /opt/sequence/native-kiosk/image_window.py --dir "$REP/public/exhibit-left" --width "$LW" --height "$H" --x 0 --y 0 --interval "$INT" &
+python3 /opt/sequence/native-kiosk/image_window.py --dir "$REP/public/exhibit-right" --width "$RW" --height "$H" --x "$LW" --y 0 --interval "$INT" &
+wait
 ```
 
 ---
 
-### Appendix — **`arduino-cli` + Nano upload**
+### Appendix — **`arduino-cli` + Nano**
 
-Pause or quit the dual-image kiosk if it holds the Nano’s USB serial device. Sketch: **`deploy/raspberry-pi/arduino/exhibit_sensor/`** (**`digitalRead(2)`**, **`115200`**).
+Only needed if you work with **standalone** uploads to the sensor sketch; the **pygame kiosk launcher here does not read serial** anymore. **[EXHIBIT_KIOSK_TROUBLESHOOTING.md](EXHIBIT_KIOSK_TROUBLESHOOTING.md)** still has **`arduino-cli`**, **`FQBN`**, and **`PATH`** hints.
 
 ```bash
 cd ~/Sequence_IOS

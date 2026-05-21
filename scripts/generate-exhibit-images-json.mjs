@@ -9,7 +9,8 @@ function webPathSegmentFromFs(fsName) {
   return encodeURIComponent(fsName);
 }
 
-async function walkCollectImages(absDir, relSegments, relDirWebSeg) {
+async function listImagesFlat(relDirUnderPublic) {
+  const absDir = path.join(root, 'public', relDirUnderPublic);
   const out = [];
   let dirents = [];
   try {
@@ -18,34 +19,19 @@ async function walkCollectImages(absDir, relSegments, relDirWebSeg) {
     return out;
   }
   dirents.sort((a, b) => a.name.localeCompare(b.name));
+  const basePrefix = `/public/${relDirUnderPublic.replace(/\\/g, '/')}`;
   for (const ent of dirents) {
-    const name = ent.name;
-    const nextAbs = path.join(absDir, name);
-    const segsNext = [...relSegments, name];
-    if (ent.isDirectory()) {
-      out.push(...(await walkCollectImages(nextAbs, segsNext, relDirWebSeg)));
-    } else if (ent.isFile()) {
-      const ext = path.extname(name).toLowerCase();
-      if (!exts.has(ext)) continue;
-      const url =
-        '/public/' +
-        relDirWebSeg +
-        '/' +
-        segsNext.map((seg) => webPathSegmentFromFs(seg)).join('/');
-      out.push(url);
-    }
+    if (!ent.isFile()) continue;
+    const ext = path.extname(ent.name).toLowerCase();
+    if (!exts.has(ext)) continue;
+    out.push(`${basePrefix}/${webPathSegmentFromFs(ent.name)}`);
   }
   return out;
 }
 
-async function listImagesRecursive(relDirUnderPublic) {
-  const absDir = path.join(root, 'public', relDirUnderPublic);
-  return walkCollectImages(absDir, [], relDirUnderPublic.replace(/\\/g, '/'));
-}
-
 async function main() {
-  const left = await listImagesRecursive('exhibit-left');
-  const right = await listImagesRecursive('exhibit-right');
+  const left = await listImagesFlat('exhibit-left');
+  const right = await listImagesFlat('exhibit-right');
   const outPath = path.join(root, 'public', 'exhibit-images.json');
   await fsp.mkdir(path.dirname(outPath), { recursive: true });
   await fsp.writeFile(outPath, `${JSON.stringify({ left, right })}\n`, 'utf8');
