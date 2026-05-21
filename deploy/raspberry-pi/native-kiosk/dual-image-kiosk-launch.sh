@@ -63,6 +63,22 @@ restore_desktop_panel() {
 
   mkdir -p "$LEFT" "$RIGHT"
 
+  DETECT="${SEQUENCE_DETECT_DISPLAY_SCRIPT:-/usr/local/bin/sequence-detect-dual-display.sh}"
+  if [[ "${SEQUENCE_AUTO_DETECT_DISPLAY:-1}" == 1 && -x "$DETECT" ]]; then
+    if detected="$("$DETECT" --export 2>/dev/null)"; then
+      eval "$detected"
+      W="${SEQUENCE_WINDOW_WIDTH:-$W}"
+      H="${SEQUENCE_WINDOW_HEIGHT:-$H}"
+      W_LEFT="${SEQUENCE_MONITOR_LEFT_WIDTH:-$W_LEFT}"
+      X_LEFT="${SEQUENCE_MONITOR_LEFT_X:-$X_LEFT}"
+      X_RIGHT="${SEQUENCE_MONITOR_RIGHT_X:-$X_RIGHT}"
+      W_RIGHT=$(( W - W_LEFT ))
+      [[ "$W_RIGHT" -lt 1 ]] && W_RIGHT=1
+    fi
+  fi
+
+  export SDL_VIDEODRIVER="${SDL_VIDEODRIVER:-x11}"
+
   hide_desktop_panel
 
   export SEQUENCE_WINDOW_WIDTH="$W"

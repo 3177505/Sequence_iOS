@@ -28,6 +28,7 @@ install -Dm644 "$ROOT/deploy/raspberry-pi/native-kiosk/image_window.py" /opt/seq
 rm -f /opt/sequence/native-kiosk/exhibit_dual_strip.py
 install -Dm755 "$ROOT/deploy/raspberry-pi/native-kiosk/dual-image-kiosk-launch.sh" /usr/local/bin/dual-image-kiosk-launch.sh
 install -Dm755 "$ROOT/deploy/raspberry-pi/native-kiosk/sequence-hide-desktop-panel.sh" /usr/local/bin/sequence-hide-desktop-panel.sh
+install -Dm755 "$ROOT/deploy/raspberry-pi/native-kiosk/sequence-detect-dual-display.sh" /usr/local/bin/sequence-detect-dual-display.sh
 
 mkdir -p "$ROOT/public/exhibit-left" "$ROOT/public/exhibit-right"
 
@@ -52,7 +53,7 @@ fi
 
 echo "[sequence] Dual-image kiosk installed."
 echo "  • Images in $ROOT/public/exhibit-left/N and .../exhibit-right/N (paired folders 1, 2, …)."
-echo "  • One wide pygame window (left + right panes), folder sync ~1 s/image on longer side."
+echo "  • Two pygame windows (left + right HDMI), auto-detect layout when SEQUENCE_AUTO_DETECT_DISPLAY=1."
 echo "  • PIR / serial: 1 = 10 s slot (7 s spin + 3 s settle), 0 = baseline."
 echo "  • Optional /etc/sequence/kiosk.conf: SEQUENCE_SERIAL_DEVICE=/dev/ttyUSB0"
 echo "  • Reboot or log out."
