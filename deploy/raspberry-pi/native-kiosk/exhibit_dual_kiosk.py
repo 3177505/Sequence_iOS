@@ -52,11 +52,18 @@ def env_int(key, default):
         return default
 
 
+def windowed_mode():
+    if env_int("SEQUENCE_PYGAME_WINDOWED", 0):
+        return True
+    if env_int("SEQUENCE_PYGAME_SETUP", 0):
+        return True
+    return env_int("SEQUENCE_PYGAME_BORDERLESS", 1) == 0
+
+
 def apply_window_pos(pane, cfg):
-    setup = env_int("SEQUENCE_PYGAME_SETUP", 0)
-    if setup:
+    if windowed_mode():
         key = "SEQUENCE_PYGAME_SETUP_LEFT_POS" if pane == "left" else "SEQUENCE_PYGAME_SETUP_RIGHT_POS"
-        default = "80,80" if pane == "left" else "140,140"
+        default = "40,40" if pane == "left" else "80,80"
         os.environ["SDL_VIDEO_WINDOW_POS"] = os.environ.get(key, default)
         return
     swap = env_int("SEQUENCE_MONITOR_SWAP", 0)
@@ -69,14 +76,30 @@ def apply_window_pos(pane, cfg):
 
 
 def display_flags():
-    if env_int("SEQUENCE_PYGAME_SETUP", 0):
-        return pygame.DOUBLEBUF
     flags = pygame.DOUBLEBUF
+    if windowed_mode():
+        return flags | pygame.RESIZABLE
     if env_int("SEQUENCE_PYGAME_FULLSCREEN", 0):
         flags |= pygame.FULLSCREEN
     elif env_int("SEQUENCE_PYGAME_BORDERLESS", 1):
         flags |= pygame.NOFRAME
     return flags
+
+
+def window_caption(pane):
+    if windowed_mode():
+        return "Sequence left" if pane == "left" else "Sequence right"
+    return ""
+
+
+def initial_window_size(cfg, pane):
+    if windowed_mode():
+        w = env_int("SEQUENCE_PYGAME_WINDOWED_WIDTH", cfg.w_left if pane == "left" else cfg.w_right)
+        h = env_int("SEQUENCE_PYGAME_WINDOWED_HEIGHT", cfg.h)
+        return max(320, w), max(240, h)
+    if pane == "left":
+        return cfg.w_left, cfg.h
+    return cfg.w_right, cfg.h
 
 
 def sync_path():
@@ -235,16 +258,17 @@ def load_image_raw(path, target_w, target_h, max_edge):
     except pygame.error:
         return None
     iw, ih = raw.get_size()
-    limit = max(target_w, target_h)
+    need = max(target_w, target_h, 1)
+    cap = need
     if max_edge > 0:
-        limit = max_edge
-    if max(iw, ih) > limit:
+        cap = max(need, max_edge)
+    if max(iw, ih) > cap:
         if iw >= ih:
-            nw = limit
-            nh = max(1, int(ih * limit / iw))
+            nw = cap
+            nh = max(1, int(ih * cap / iw))
         else:
-            nh = limit
-            nw = max(1, int(iw * limit / ih))
+            nh = cap
+            nw = max(1, int(iw * cap / ih))
         raw = pygame.transform.scale(raw, (nw, nh))
     return raw
 
@@ -481,6 +505,28 @@ class Pane:
         y = self.rect.y + int(y_offset_ratio * self.rect.h)
         screen.blit(surf, (self.rect.x, y))
 
+    def resize_to(self, w, h):
+        self.rect = pygame.Rect(0, 0, w, h)
+        self.cache._cache.clear()
+        path = self.show_path
+        mode = self.mode
+        bias = self.lower_bias
+        self.wipe = None
+        self.settle = None
+        if path:
+            self.set_instant(path, mode, bias)
+
+
+def resize_app_screen(app, pane_attr, w, h):
+    app.screen = pygame.display.set_mode((w, h), display_flags())
+    app.rect = pygame.Rect(0, 0, w, h)
+    pane = getattr(app, pane_attr)
+    pane.resize_to(w, h)
+
+
+def handle_resize_event(app, pane_attr, ev):
+    resize_app_screen(app, pane_attr, max(320, ev.w), max(240, ev.h))
+
 
 class ExhibitConfig:
     def __init__(self):
@@ -513,10 +559,10 @@ class ExhibitMaster:
         self.cfg = cfg
         apply_window_pos("left", cfg)
         pygame.init()
-        self.screen = pygame.display.set_mode((cfg.w_left, cfg.h), display_flags())
-        borderless = env_int("SEQUENCE_PYGAME_BORDERLESS", 1) and not env_int("SEQUENCE_PYGAME_SETUP", 0)
-        pygame.display.set_caption("" if borderless else "Sequence left")
-        self.rect = pygame.Rect(0, 0, cfg.w_left, cfg.h)
+        ww, wh = initial_window_size(cfg, "left")
+        self.screen = pygame.display.set_mode((ww, wh), display_flags())
+        pygame.display.set_caption(window_caption("left"))
+        self.rect = pygame.Rect(0, 0, ww, wh)
         self.cache = ImageCache(max_edge=cfg.image_max_edge)
         self.left = Pane(self.rect, self.cache)
         self.right = Pane(pygame.Rect(0, 0, cfg.w_right, cfg.h), ImageCache(max_edge=cfg.image_max_edge))
@@ -683,6 +729,8 @@ class ExhibitMaster:
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
                     running = False
+                elif ev.type == pygame.VIDEORESIZE:
+                    handle_resize_event(self, "left", ev)
                 elif ev.type == pygame.KEYDOWN:
                     if ev.key == pygame.K_ESCAPE:
                         running = False
@@ -709,10 +757,10 @@ class ExhibitSlave:
         self.cfg = cfg
         apply_window_pos("right", cfg)
         pygame.init()
-        self.screen = pygame.display.set_mode((cfg.w_right, cfg.h), display_flags())
-        borderless = env_int("SEQUENCE_PYGAME_BORDERLESS", 1) and not env_int("SEQUENCE_PYGAME_SETUP", 0)
-        pygame.display.set_caption("" if borderless else "Sequence right")
-        self.rect = pygame.Rect(0, 0, cfg.w_right, cfg.h)
+        ww, wh = initial_window_size(cfg, "right")
+        self.screen = pygame.display.set_mode((ww, wh), display_flags())
+        pygame.display.set_caption(window_caption("right"))
+        self.rect = pygame.Rect(0, 0, ww, wh)
         self.cache = ImageCache(max_edge=cfg.image_max_edge)
         self.pane = Pane(self.rect, self.cache)
         self.last_anim_key = None
@@ -746,6 +794,8 @@ class ExhibitSlave:
             for ev in pygame.event.get():
                 if ev.type == pygame.QUIT:
                     running = False
+                elif ev.type == pygame.VIDEORESIZE:
+                    handle_resize_event(self, "pane", ev)
                 elif ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
                     running = False
             self._apply_remote(read_sync())

@@ -9,6 +9,9 @@
 
 **Images:** paired subfolders `public/exhibit-left/1/` … `4/` and `public/exhibit-right/1/` … `4/`.
 
+**This Pi (raspi):** two **Acer G50 800×480** HDMI side by side → desktop **1600×480**.  
+Example configs in repo: **`kiosk.conf.800x480-draggable.example`** (move windows) and **`kiosk.conf.800x480-fixed.example`** (exhibit full screen).
+
 ---
 
 ## Final setup (do in order)

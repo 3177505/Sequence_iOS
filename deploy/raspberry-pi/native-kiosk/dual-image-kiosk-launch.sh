@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-#!/usr/bin/env bash
-set -euo pipefail
-
 CFG=/etc/sequence/kiosk.conf
 load_kiosk_conf() {
   [[ -f "$CFG" ]] || return 0
@@ -52,6 +49,9 @@ PY=/opt/sequence/native-kiosk/exhibit_dual_kiosk.py
 HID="${SEQUENCE_HIDE_DESKTOP_PANEL_SCRIPT:-/usr/local/bin/sequence-hide-desktop-panel.sh}"
 
 hide_desktop_panel() {
+  [[ "${SEQUENCE_PYGAME_WINDOWED:-0}" == 1 ]] && return 0
+  [[ "${SEQUENCE_PYGAME_SETUP:-0}" == 1 ]] && return 0
+  [[ "${SEQUENCE_PYGAME_BORDERLESS:-1}" == 0 ]] && return 0
   [[ "${SEQUENCE_HIDE_DESKTOP_PANEL:-1}" != 1 ]] && return 0
   if [[ -x "$HID" ]]; then
     bash "$HID"
