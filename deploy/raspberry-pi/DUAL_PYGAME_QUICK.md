@@ -43,7 +43,7 @@ SEQUENCE_PYGAME_BORDERLESS=1
 
 SEQUENCE_SERIAL_DEVICE=/dev/ttyUSB0
 
-SEQUENCE_IMAGE_MAX_EDGE=1280
+SEQUENCE_IMAGE_MAX_EDGE=960
 ```
 
 If left/right are swapped on the desk, swap **`SEQUENCE_MONITOR_LEFT_X`** and **`SEQUENCE_MONITOR_RIGHT_X`**, or swap HDMI cables in Screen Configuration.
@@ -75,3 +75,7 @@ sudo reboot
 **Dev test without sensor:** **Space** on keyboard (left window).
 
 **Re-install after code changes:** run step 1 again, then reboot.
+
+Images use **fit-to-screen** (whole image visible, letterboxed). If still slow, try `SEQUENCE_IMAGE_MAX_EDGE=800` in `kiosk.conf`.
+
+**Pygame vs web:** Pygame is usually **lighter on the Pi** than Chromium (less RAM, no browser). For a 24/7 exhibit, use **mains power** — either path is heavy on a battery pack.

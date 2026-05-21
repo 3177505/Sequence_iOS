@@ -26,14 +26,13 @@ SLOT_SETTLE_ANIM_MS = 3000
 SLOT_SPIN_GAP_START_MS = 420
 SLOT_SPIN_GAP_END_MS = 38
 SLOT_SPIN_WIPE_MS = 42
-WIPE_MS_BASELINE = 420
+WIPE_MS_BASELINE = 320
 
-BASELINE_COVER_SCALE = 1.0
-BASELINE_MUTE_ALPHA = 140
-TRIGGER_LOWER_BIAS = 0.58
-SETTLE_LOWER_BIAS = 0.66
-FPS_BASELINE = 30
-FPS_SLOT = 50
+BASELINE_MUTE_ALPHA = 120
+TRIGGER_LOWER_BIAS = 0.5
+SETTLE_LOWER_BIAS = 0.58
+FPS_BASELINE = 20
+FPS_SLOT = 30
 
 SETTLE_KEYFRAMES = [
     (0.0, -1.32),
@@ -194,34 +193,31 @@ def load_image_raw(path, max_edge):
         else:
             nh = max_edge
             nw = max(1, int(iw * max_edge / ih))
-        raw = pygame.transform.smoothscale(raw, (nw, nh))
+        raw = pygame.transform.scale(raw, (nw, nh))
     return raw
 
 
-def resize_image(raw, sw, sh, fast=False):
+def resize_image(raw, sw, sh):
     if sw < 1 or sh < 1:
         return None
-    if fast:
-        return pygame.transform.scale(raw, (sw, sh))
-    return pygame.transform.smoothscale(raw, (sw, sh))
+    return pygame.transform.scale(raw, (sw, sh))
 
 
 class ImageCache:
-    def __init__(self, fast_spin=False, max_edge=1280):
+    def __init__(self, max_edge=960):
         self._cache = {}
-        self.fast_spin = fast_spin
         self.max_edge = max_edge
 
-    def get(self, path, size, mode, lower_bias, fast=False):
-        key = (str(path), size, mode, round(lower_bias, 3), bool(fast))
+    def get(self, path, size, mode, lower_bias):
+        key = (str(path), size, mode, round(lower_bias, 3))
         if key in self._cache:
             return self._cache[key]
         raw = load_image_raw(path, self.max_edge)
         if raw is None:
             self._cache[key] = None
             return None
-        surf = render_image(raw, size[0], size[1], mode, lower_bias=lower_bias, fast=fast or self.fast_spin)
-        if len(self._cache) > 96:
+        surf = render_image(raw, size[0], size[1], mode, lower_bias=lower_bias)
+        if len(self._cache) > 64:
             self._cache.clear()
         self._cache[key] = surf
         return surf
@@ -231,34 +227,22 @@ class ImageCache:
             self.get(p, size, mode, lower_bias)
 
 
-def render_image(raw, w, h, mode, lower_bias=0.5, y_offset_ratio=0.0, fast=False):
+def render_image(raw, w, h, mode, lower_bias=0.5, y_offset_ratio=0.0):
     iw, ih = raw.get_size()
     if iw < 1 or ih < 1:
         return None
     out = pygame.Surface((w, h))
     out.fill((20, 22, 26))
+    scale = min(w / iw, h / ih)
+    sw, sh = max(1, int(iw * scale)), max(1, int(ih * scale))
+    scaled = resize_image(raw, sw, sh)
+    x = (w - sw) // 2
+    y = (h - sh) // 2 + int(y_offset_ratio * h)
+    out.blit(scaled, (x, y))
     if mode == "baseline":
-        scale = max(w / iw, h / ih) * BASELINE_COVER_SCALE
-        sw, sh = max(1, int(iw * scale)), max(1, int(ih * scale))
-        scaled = resize_image(raw, sw, sh, fast=fast)
-        x = (w - sw) // 2
-        y = (h - sh) // 2 + int(y_offset_ratio * h)
-        out.blit(scaled, (x, y))
         mute = pygame.Surface((w, h), pygame.SRCALPHA)
         mute.fill((40, 42, 48, BASELINE_MUTE_ALPHA))
         out.blit(mute, (0, 0))
-        return out
-    scale = min(w / iw, h / ih)
-    sw, sh = max(1, int(iw * scale)), max(1, int(ih * scale))
-    scaled = resize_image(raw, sw, sh, fast=fast)
-    x = (w - sw) // 2
-    if sh <= h:
-        y = (h - sh) // 2 + int(y_offset_ratio * h)
-        out.blit(scaled, (x, y))
-    else:
-        src_y = int((sh - h) * lower_bias)
-        y = int(y_offset_ratio * h)
-        out.blit(scaled, (x, y), (0, src_y, sw, h))
     return out
 
 
@@ -302,7 +286,7 @@ class Pane:
     def _size(self):
         return self.rect.w, self.rect.h
 
-    def set_instant(self, path, mode=None, lower_bias=None, fast=False):
+    def set_instant(self, path, mode=None, lower_bias=None):
         if mode is not None:
             self.mode = mode
         if lower_bias is not None:
@@ -310,14 +294,14 @@ class Pane:
         self.wipe = None
         self.settle = None
         self.show_path = path
-        self.show_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias, fast=fast)
+        self.show_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias)
 
-    def start_wipe(self, path, dur_ms, mode=None, lower_bias=None, fast=False):
+    def start_wipe(self, path, dur_ms, mode=None, lower_bias=None):
         if mode is not None:
             self.mode = mode
         if lower_bias is not None:
             self.lower_bias = lower_bias
-        next_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias, fast=fast)
+        next_surf = self.cache.get(path, self._size(), self.mode, self.lower_bias)
         if next_surf is None:
             return
         now = pygame.time.get_ticks()
@@ -365,7 +349,7 @@ class Pane:
         start = int(anim.get("start") or 0)
         dur = int(anim.get("dur") or 1)
         if kind == "wipe":
-            new_surf = self.cache.get(new_path, self._size(), mode, lower_bias, fast=True)
+            new_surf = self.cache.get(new_path, self._size(), mode, lower_bias)
             old_surf = self.cache.get(Path(old_path), self._size(), self.mode, self.lower_bias) if old_path else self.show_surf
             if new_surf is None:
                 return
@@ -460,7 +444,7 @@ class ExhibitConfig:
         self.x_left = env_int("SEQUENCE_MONITOR_LEFT_X", 0)
         self.x_right = env_int("SEQUENCE_MONITOR_RIGHT_X", self.w_left)
         self.ms_per_long = env_int("SEQUENCE_MS_PER_LONG_IMAGE", MS_PER_LONG)
-        self.image_max_edge = env_int("SEQUENCE_IMAGE_MAX_EDGE", 1280)
+        self.image_max_edge = env_int("SEQUENCE_IMAGE_MAX_EDGE", 960)
         self.left_map = collect_folder_map(self.left_root)
         self.right_map = collect_folder_map(self.right_root)
         self.folder_keys = paired_folder_keys(self.left_map, self.right_map)
@@ -478,9 +462,9 @@ class ExhibitMaster:
         self.screen = pygame.display.set_mode((cfg.w_left, cfg.h), flags)
         pygame.display.set_caption("" if borderless else "Sequence left")
         self.rect = pygame.Rect(0, 0, cfg.w_left, cfg.h)
-        self.cache = ImageCache(fast_spin=False, max_edge=cfg.image_max_edge)
+        self.cache = ImageCache(max_edge=cfg.image_max_edge)
         self.left = Pane(self.rect, self.cache)
-        self.right = Pane(pygame.Rect(0, 0, cfg.w_right, cfg.h), ImageCache(fast_spin=True, max_edge=cfg.image_max_edge))
+        self.right = Pane(pygame.Rect(0, 0, cfg.w_right, cfg.h), ImageCache(max_edge=cfg.image_max_edge))
 
         self.mode = "baseline"
         self.folder_idx = 0
@@ -558,8 +542,8 @@ class ExhibitMaster:
         self.slot_final_right = random.choice(right_urls)
         self.slot_started_at = now
         self.slot_spin_next_at = now + slot_spin_gap_ms(0)
-        self.left.start_wipe(random.choice(left_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS, fast=True)
-        self.right.start_wipe(random.choice(right_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS, fast=True)
+        self.left.start_wipe(random.choice(left_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
+        self.right.start_wipe(random.choice(right_urls), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
 
     def _advance_slot(self, now):
         elapsed = now - self.slot_started_at
@@ -573,8 +557,8 @@ class ExhibitMaster:
                 self.right.start_settle(self.slot_final_right, "trigger", SETTLE_LOWER_BIAS)
             return
         if now >= self.slot_spin_next_at:
-            self.left.start_wipe(random.choice(self.slot_urls_left), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS, fast=True)
-            self.right.start_wipe(random.choice(self.slot_urls_right), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS, fast=True)
+            self.left.start_wipe(random.choice(self.slot_urls_left), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
+            self.right.start_wipe(random.choice(self.slot_urls_right), SLOT_SPIN_WIPE_MS, "trigger", TRIGGER_LOWER_BIAS)
             self.slot_spin_next_at = now + slot_spin_gap_ms(elapsed)
 
     def _serial_loop(self):
@@ -672,7 +656,7 @@ class ExhibitSlave:
         self.screen = pygame.display.set_mode((cfg.w_right, cfg.h), flags)
         pygame.display.set_caption("" if borderless else "Sequence right")
         self.rect = pygame.Rect(0, 0, cfg.w_right, cfg.h)
-        self.cache = ImageCache(fast_spin=True, max_edge=cfg.image_max_edge)
+        self.cache = ImageCache(max_edge=cfg.image_max_edge)
         self.pane = Pane(self.rect, self.cache)
         self.last_anim_key = None
 
