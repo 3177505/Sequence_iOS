@@ -60,6 +60,7 @@
 .app--trigger .pane--reddit video.pane__media {
   transform: scale(1);
   object-fit: contain;
+  object-position: center 58%;
 }
 
 .app--baseline .pane--reddit img.pane__media {
@@ -70,6 +71,12 @@
 .app--trigger .pane--reddit img.pane__media {
   transform: scale(1);
   object-fit: contain;
+  object-position: center 58%;
+}
+
+.app--slot-settle .pane--reddit img.pane__media,
+.app--slot-settle .pane--reddit video.pane__media {
+  object-position: center 66%;
 }
 
 .app--baseline .pane--reddit iframe.pane__media {

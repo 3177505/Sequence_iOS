@@ -13,14 +13,10 @@ REP="${SEQUENCE_SITE_DIR:-$HOME/Sequence_IOS}"
 LEFT="${SEQUENCE_DUAL_IMAGE_DIR_LEFT:-$REP/public/exhibit-left}"
 RIGHT="${SEQUENCE_DUAL_IMAGE_DIR_RIGHT:-$REP/public/exhibit-right}"
 
-W="${SEQUENCE_WINDOW_WIDTH:-1600}"
-H="${SEQUENCE_WINDOW_HEIGHT:-480}"
+W="${SEQUENCE_WINDOW_WIDTH:-3840}"
+H="${SEQUENCE_WINDOW_HEIGHT:-1080}"
 W_LEFT="${SEQUENCE_MONITOR_LEFT_WIDTH:-$(( W / 2 ))}"
-W_RIGHT=$(( W - W_LEFT ))
-[[ "$W_RIGHT" -lt 1 ]] && W_RIGHT=1
-[[ "$W_LEFT" -lt 1 ]] && W_LEFT=1
-
-INT="${SEQUENCE_DUAL_IMAGE_INTERVAL_SECONDS:-8}"
+[[ "$(( W_LEFT + 1 ))" -lt "$W" ]] || W_LEFT=$(( W / 2 ))
 
 export DISPLAY="${DISPLAY:-:0}"
 
@@ -28,7 +24,7 @@ RUNDIR="${XDG_RUNTIME_DIR:-/tmp}"
 LCK="$RUNDIR/sequence-dual-image-kiosk.lock"
 mkdir -p "$RUNDIR"
 
-PY=/opt/sequence/native-kiosk/image_window.py
+PY=/opt/sequence/native-kiosk/exhibit_dual_kiosk.py
 HID="${SEQUENCE_HIDE_DESKTOP_PANEL_SCRIPT:-/usr/local/bin/sequence-hide-desktop-panel.sh}"
 
 hide_desktop_panel() {
@@ -65,9 +61,14 @@ restore_desktop_panel() {
 
   hide_desktop_panel
 
-  python3 "$PY" --dir "$LEFT" --width "$W_LEFT" --height "$H" --x 0 --y 0 --interval "$INT" &
-  python3 "$PY" --dir "$RIGHT" --width "$W_RIGHT" --height "$H" --x "$W_LEFT" --y 0 --interval "$INT" &
-  wait
+  export SEQUENCE_WINDOW_WIDTH="$W"
+  export SEQUENCE_WINDOW_HEIGHT="$H"
+  export SEQUENCE_MONITOR_LEFT_WIDTH="$W_LEFT"
+  export SEQUENCE_DUAL_IMAGE_DIR_LEFT="$LEFT"
+  export SEQUENCE_DUAL_IMAGE_DIR_RIGHT="$RIGHT"
+  export SEQUENCE_SITE_DIR="$REP"
+
+  python3 "$PY"
 
   restore_desktop_panel
 ) 205>"$LCK"
