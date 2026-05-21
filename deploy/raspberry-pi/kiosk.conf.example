@@ -1,0 +1,42 @@
+# /etc/sequence/kiosk.conf — dual pygame exhibit (Pi 4, two HDMI)
+# Copy: sudo cp deploy/raspberry-pi/kiosk.conf.example /etc/sequence/kiosk.conf
+# Edit paths if your home folder is not /home/raspi
+
+# --- repo & images (required) ---
+SEQUENCE_SITE_DIR=/home/raspi/Sequence_IOS
+SEQUENCE_DUAL_IMAGE_DIR_LEFT=/home/raspi/Sequence_IOS/public/exhibit-left
+SEQUENCE_DUAL_IMAGE_DIR_RIGHT=/home/raspi/Sequence_IOS/public/exhibit-right
+
+# --- two screens side by side: 1920+1920 = 3840 (required) ---
+SEQUENCE_WINDOW_WIDTH=3840
+SEQUENCE_WINDOW_HEIGHT=1080
+SEQUENCE_MONITOR_LEFT_WIDTH=1920
+SEQUENCE_MONITOR_LEFT_X=0
+SEQUENCE_MONITOR_RIGHT_X=1920
+
+# --- timing (recommended) ---
+SEQUENCE_MS_PER_LONG_IMAGE=1000
+SEQUENCE_DUAL_IMAGE_START_DELAY=12
+
+# --- display / kiosk chrome (recommended) ---
+SEQUENCE_HIDE_DESKTOP_PANEL=1
+SEQUENCE_PYGAME_BORDERLESS=1
+SEQUENCE_IMAGE_MAX_EDGE=960
+
+# --- layout auto-detect: 0 = use numbers above (recommended if dual screen already works) ---
+SEQUENCE_AUTO_DETECT_DISPLAY=0
+
+# --- Arduino Nano + PIR (required for sensor slot) ---
+SEQUENCE_SERIAL_DEVICE=/dev/ttyUSB0
+
+# --- optional: only if both windows land on one HDMI after reboot ---
+# SEQUENCE_SDL_VIDEODRIVER=x11
+
+# --- optional: only if you change monitors or swap HDMI cables ---
+# SEQUENCE_AUTO_DETECT_DISPLAY=1
+
+# --- optional: if still choppy, lower image size ---
+# SEQUENCE_IMAGE_MAX_EDGE=800
+
+# --- optional: keep menu bar during exhibit ---
+# SEQUENCE_HIDE_DESKTOP_PANEL=0

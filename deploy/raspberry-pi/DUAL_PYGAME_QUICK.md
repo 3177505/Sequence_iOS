@@ -1,59 +1,67 @@
-# Dual pygame kiosk — two HDMI (`~/Sequence_IOS`)
+# Dual pygame kiosk — final setup (`~/Sequence_IOS`)
 
-**Pictures:** `public/exhibit-left/1/` … `public/exhibit-right/4/` (paired numbered subfolders).  
-**Runs:** **two pygame windows** (left HDMI + right HDMI), synced. **No Chromium.**
+**Architecture:** launcher starts **two Python processes** from `exhibit_dual_kiosk.py`:
+
+| Process | Flag | Screen | Role |
+|---------|------|--------|------|
+| **Master** | `--pane left` | Left HDMI | Left images, **PIR serial**, folder timing, slot mode |
+| **Slave** | `--pane right` | Right HDMI | Right images, follows master via sync file |
+
+**Images:** paired subfolders `public/exhibit-left/1/` … `4/` and `public/exhibit-right/1/` … `4/`.
 
 ---
 
-### 1) Install once (on Pi, after `git pull`)
+## Final setup (do in order)
+
+### A) Mac — push latest code
+
+Commit & push from your Mac (or skip if Pi already has latest).
+
+### B) Pi — install
 
 ```bash
 cd ~/Sequence_IOS
-chmod +x deploy/raspberry-pi/install-dual-image-kiosk.sh
+git pull
 sudo SEQUENCE_SITE_DIR="$(pwd)" ./deploy/raspberry-pi/install-dual-image-kiosk.sh
 ```
 
-### 2) Screen layout (extended desktop — two monitors in a row)
-
-**Configure screens before the kiosk runs.** The top menu bar only appears on the **primary** monitor — if it is on the right, the left screen looks “empty” and Screen Configuration is awkward to drag.
+### C) Pi — check images & folders
 
 ```bash
-sudo mv /etc/xdg/autostart/sequence-dual-image.desktop /etc/xdg/autostart/sequence-dual-image.desktop.off
-sudo reboot
+ls ~/Sequence_IOS/public/exhibit-left/
+ls ~/Sequence_IOS/public/exhibit-right/
+ls ~/Sequence_IOS/public/exhibit-left/1/ | head
+ls ~/Sequence_IOS/public/exhibit-right/1/ | head
 ```
 
-After reboot:
+You need matching numbered folders (**1**, **2**, **3**, **4**) on **both** sides, each with image files inside.
 
-1. Menu → **Preferences → Screen Configuration**
-2. **Extended** (not mirror) — both HDMI outputs must show as connected
-3. **Right-click the physical left monitor → Make primary** (menu bar moves there)
-4. Drag monitors into one row: **left HDMI on the left**, **right HDMI on the right**
-5. **Apply**, then reboot once more
-
-Check what the Pi actually uses (copy into `kiosk.conf` if needed):
+### D) Pi — check Arduino serial
 
 ```bash
-/usr/local/bin/sequence-detect-dual-display.sh
+ls -l /dev/ttyUSB0
+sudo stty -F /dev/ttyUSB0 115200 raw -echo
+sudo timeout 5 cat /dev/ttyUSB0
 ```
 
-Re-enable kiosk autostart when layout is correct:
+Wave at PIR → lines of **`0`** and **`1`**. Ctrl+C if needed.
 
-```bash
-sudo mv /etc/xdg/autostart/sequence-dual-image.desktop.off /etc/xdg/autostart/sequence-dual-image.desktop
-```
+### E) Pi — create `kiosk.conf`
 
 ```bash
 sudo mkdir -p /etc/sequence
+sudo cp ~/Sequence_IOS/deploy/raspberry-pi/kiosk.conf.example /etc/sequence/kiosk.conf
 sudo nano /etc/sequence/kiosk.conf
 ```
 
-Two **1920×1080** side by side (or paste values from the detect script above):
+Change **`/home/raspi`** if your username is different (`echo $HOME`).
+
+**Full config (all recommended values):**
 
 ```ini
-SEQUENCE_SITE_DIR=$HOME/Sequence_IOS
-
-SEQUENCE_DUAL_IMAGE_DIR_LEFT=$SEQUENCE_SITE_DIR/public/exhibit-left
-SEQUENCE_DUAL_IMAGE_DIR_RIGHT=$SEQUENCE_SITE_DIR/public/exhibit-right
+SEQUENCE_SITE_DIR=/home/raspi/Sequence_IOS
+SEQUENCE_DUAL_IMAGE_DIR_LEFT=/home/raspi/Sequence_IOS/public/exhibit-left
+SEQUENCE_DUAL_IMAGE_DIR_RIGHT=/home/raspi/Sequence_IOS/public/exhibit-right
 
 SEQUENCE_WINDOW_WIDTH=3840
 SEQUENCE_WINDOW_HEIGHT=1080
@@ -61,56 +69,104 @@ SEQUENCE_MONITOR_LEFT_WIDTH=1920
 SEQUENCE_MONITOR_LEFT_X=0
 SEQUENCE_MONITOR_RIGHT_X=1920
 
-SEQUENCE_AUTO_DETECT_DISPLAY=1
-
+SEQUENCE_MS_PER_LONG_IMAGE=1000
 SEQUENCE_DUAL_IMAGE_START_DELAY=12
+
 SEQUENCE_HIDE_DESKTOP_PANEL=1
 SEQUENCE_PYGAME_BORDERLESS=1
+SEQUENCE_IMAGE_MAX_EDGE=960
+
+SEQUENCE_AUTO_DETECT_DISPLAY=0
 
 SEQUENCE_SERIAL_DEVICE=/dev/ttyUSB0
-
-SEQUENCE_IMAGE_MAX_EDGE=960
 ```
 
-`SEQUENCE_AUTO_DETECT_DISPLAY=1` reads **live** positions from `wlr-randr` / `xrandr` on each boot (helps when Screen Configuration and manual numbers disagree).
+| Variable | Value | Purpose |
+|----------|-------|---------|
+| `SEQUENCE_SITE_DIR` | repo path | Root of checkout |
+| `SEQUENCE_DUAL_IMAGE_DIR_LEFT` | `.../exhibit-left` | Left image tree |
+| `SEQUENCE_DUAL_IMAGE_DIR_RIGHT` | `.../exhibit-right` | Right image tree |
+| `SEQUENCE_WINDOW_WIDTH` | **3840** | Total desktop width (both screens) |
+| `SEQUENCE_WINDOW_HEIGHT` | **1080** | Screen height |
+| `SEQUENCE_MONITOR_LEFT_WIDTH` | **1920** | Left window width |
+| `SEQUENCE_MONITOR_LEFT_X` | **0** | Left window X position |
+| `SEQUENCE_MONITOR_RIGHT_X` | **1920** | Right window X position |
+| `SEQUENCE_MS_PER_LONG_IMAGE` | **1000** | ~1 s per image on longer side |
+| `SEQUENCE_DUAL_IMAGE_START_DELAY` | **12** | Seconds after login before exhibit |
+| `SEQUENCE_HIDE_DESKTOP_PANEL` | **1** | Hide top menu bar during exhibit |
+| `SEQUENCE_PYGAME_BORDERLESS` | **1** | No window frame |
+| `SEQUENCE_IMAGE_MAX_EDGE` | **960** | Max pixels (performance) |
+| `SEQUENCE_AUTO_DETECT_DISPLAY` | **0** | Use manual geometry above |
+| `SEQUENCE_SERIAL_DEVICE` | `/dev/ttyUSB0` | Arduino Nano port |
 
-If left/right are swapped on the desk, swap **`SEQUENCE_MONITOR_LEFT_X`** and **`SEQUENCE_MONITOR_RIGHT_X`**, or swap HDMI cables in Screen Configuration.
+**Only if needed (leave commented out at first):**
 
-Manual check:
+| Variable | When |
+|----------|------|
+| `SEQUENCE_SDL_VIDEODRIVER=x11` | Both windows on one screen |
+| `SEQUENCE_AUTO_DETECT_DISPLAY=1` | After swapping HDMI cables |
+| `SEQUENCE_IMAGE_MAX_EDGE=800` | Still slow / stutter |
+| `SEQUENCE_HIDE_DESKTOP_PANEL=0` | Keep menu bar visible |
+
+If left/right are **swapped on the desk**, swap `SEQUENCE_MONITOR_LEFT_X` and `SEQUENCE_MONITOR_RIGHT_X` (e.g. `1920` and `0`).
+
+### F) Pi — test before reboot
 
 ```bash
-wlr-randr 2>/dev/null | grep -E '^(HDMI|DSI|DP)|Position'
-xrandr | grep connected
+pkill -f exhibit_dual_kiosk.py 2>/dev/null || true
+DISPLAY=:0 SEQUENCE_DUAL_IMAGE_START_DELAY=0 /usr/local/bin/dual-image-kiosk-launch.sh
 ```
 
-If your monitors are **not** 1920×1080, set **`SEQUENCE_WINDOW_HEIGHT`** and each half width to match (e.g. 1280×720 → `WIDTH=2560`, `LEFT_WIDTH=1280`).
+Checklist:
 
-### Only one screen shows the exhibit?
+- [ ] Left HDMI = left folder images  
+- [ ] Right HDMI = right folder images  
+- [ ] Images **fit** screen (not cropped)  
+- [ ] **Space** on keyboard = 10 s slot test  
+- [ ] PIR **`1`** = slot, **`0`** = baseline after slot ends  
 
-- Right window is at **`SEQUENCE_MONITOR_RIGHT_X`** — if the desktop is still **1920 px wide** (mirror or one output disabled), it draws **off-screen**.
-- Run **`sequence-detect-dual-display.sh`** — total width should be **left + right** (e.g. **3840**).
-- If the menu bar is missing after a crash: **`wf-panel-pi &`** (Wayfire) or reboot.
+Stop test: **Escape** on keyboard, or:
 
-### 3) Reboot
+```bash
+pkill -f exhibit_dual_kiosk.py
+```
+
+### G) Pi — go live
 
 ```bash
 sudo reboot
 ```
 
+After ~12 s both screens should start automatically.
+
 ---
 
-**Behaviour (same as web):**
+## Behaviour
 
 | Mode | What happens |
 |------|----------------|
-| **Baseline** | Folders **1→2→3→4**, left/right finish each folder together (~**1 s** per image on the longer side) |
+| **Baseline** | Folders **1→2→3→4**, both sides finish each folder together (~**1 s** per image on the longer side) |
 | **Sensor `1`** | **10 s slot**: **7 s** fast spin → **3 s** settle bounce |
 | **Sensor `0`** | Back to baseline after slot finishes |
 
-**Dev test without sensor:** **Space** on keyboard (left window).
+---
 
-**Re-install after code changes:** run step 1 again, then reboot.
+## Two screens already show different content?
 
-Images use **fit-to-screen** (whole image visible, letterboxed). If still slow, try `SEQUENCE_IMAGE_MAX_EDGE=800` in `kiosk.conf`.
+Good — you do **not** need an “Extended” button. Keep `SEQUENCE_AUTO_DETECT_DISPLAY=0` and the **3840 / 1920 / 0 / 1920** values above.
 
-**Pygame vs web:** Pygame is usually **lighter on the Pi** than Chromium (less RAM, no browser). For a 24/7 exhibit, use **mains power** — either path is heavy on a battery pack.
+**180° rotation** on one monitor: set in **Preferences → Screen Configuration** — does not block the exhibit.
+
+---
+
+## Troubleshooting
+
+```bash
+grep SEQUENCE /etc/sequence/kiosk.conf
+pgrep -af exhibit_dual_kiosk
+wlr-randr 2>/dev/null | grep -E '^(HDMI|DSI|DP)|Position'
+```
+
+Missing menu bar after crash: `wf-panel-pi &` or reboot.
+
+**Re-install after code changes:** step B, then reboot.
