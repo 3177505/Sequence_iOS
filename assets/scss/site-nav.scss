@@ -1,19 +1,14 @@
 @use 'vars' as *;
 
 #site-nav-host {
-  margin: 0;
-  height: 0;
-}
-
-body:has(#site-nav-host:not([data-nav-overlay])) {
-  padding-top: 48px;
+  margin: 0 0 $nav-content-gap;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .site-nav {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
   z-index: 1000;
   box-sizing: border-box;
   max-width: 50vw;
@@ -40,8 +35,4 @@ body:has(#site-nav-host:not([data-nav-overlay])) {
 .site-nav a.is-active,
 .site-nav a[aria-current='page'] {
   color: $text-ui;
-}
-
-body.site--kiosk:has(#site-nav-host:not([data-nav-overlay])) {
-  padding-top: 0;
 }

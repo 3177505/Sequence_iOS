@@ -31,12 +31,30 @@ function paneDims() {
 
 const BC = () => window.BlendCore;
 
-const ui = { trigger: null, serial: null, status: null };
+const ui = { trigger: null, serial: null, status: null, loading: null };
+let initialLoad = true;
 
 function captureUi() {
   ui.trigger = document.getElementById('trigger');
   ui.serial = document.getElementById('serial-connect');
   ui.status = document.getElementById('status');
+  ui.loading = document.getElementById('blend-loading');
+}
+
+function setStatus(text) {
+  if (ui.status) ui.status.textContent = text;
+}
+
+function setLoading(text) {
+  if (ui.loading) {
+    ui.loading.hidden = false;
+    ui.loading.textContent = text;
+  }
+  setStatus(text);
+}
+
+function clearLoading() {
+  if (ui.loading) ui.loading.hidden = true;
 }
 
 let poolBaselineL = [];
@@ -356,7 +374,7 @@ async function generateNextPair() {
     }
     return { outL, outR };
   } catch (e) {
-    if (ui.status) ui.status.textContent = String(e?.message || e);
+    setStatus(String(e?.message || e));
     return null;
   } finally {
     busy = false;
@@ -437,14 +455,31 @@ function advanceIfReady() {
   fillQueue();
 }
 
+function finishInitialLoad(ok) {
+  if (!initialLoad) return;
+  initialLoad = false;
+  clearLoading();
+  if (ui.trigger) ui.trigger.disabled = !ok;
+}
+
 function primePlayback() {
   queue = [];
   shownL = null;
   shownR = null;
+  if (initialLoad) setLoading('Skládám první blend…');
   fillQueue().then(() => {
-    if (!queue.length) return;
+    if (!queue.length) {
+      finishInitialLoad(false);
+      return;
+    }
     const first = queue.shift();
     showInstant(first);
+    finishInitialLoad(true);
+    if (!inTrigger) {
+      setStatus(
+        'Základní režim — public/research (libovolné podsložky) nebo public/4_Research. Běží npm run dev.',
+      );
+    }
     fillQueue();
   });
 }
@@ -483,17 +518,26 @@ function startBaseline() {
   slideMs = SLIDE_MS;
   useLeft = shuffle(poolBaselineL);
   useRight = shuffle(poolBaselineR);
-  if (ui.trigger) ui.trigger.disabled = !poolsReady();
-  if (ui.status)
-    ui.status.textContent = poolsReady()
-      ? 'Základní režim — public/research (libovolné podsložky) nebo public/4_Research. Běží npm run dev.'
-      : 'Potřebujete ≥3 obrázky (jpg/png/webp/gif) kdekoliv pod public/research, v public/4_Research, nebo v baseline-left a baseline-right. Spusťte npm run dev (serve nemá /api).';
-  tickId = poolsReady() ? window.setInterval(advanceIfReady, slideMs) : null;
-  if (poolsReady()) primePlayback();
+  if (!poolsReady()) {
+    finishInitialLoad(false);
+    if (ui.trigger) ui.trigger.disabled = true;
+    setStatus(
+      'Potřebujete ≥3 obrázky (jpg/png/webp/gif) kdekoliv pod public/research, v public/4_Research, nebo v baseline-left a baseline-right. Spusťte npm run dev (serve nemá /api).',
+    );
+    return;
+  }
+  if (ui.trigger) ui.trigger.disabled = initialLoad;
+  if (!initialLoad) {
+    setStatus(
+      'Základní režim — public/research (libovolné podsložky) nebo public/4_Research. Běží npm run dev.',
+    );
+  }
+  tickId = window.setInterval(advanceIfReady, slideMs);
+  primePlayback();
 }
 
 function updateTriggerStatus(remainingSec) {
-  if (ui.status) ui.status.textContent = `Spouštěč (zbývá ${remainingSec} s) — fondy pro spouštěč nebo 4_Research.`;
+  setStatus(`Spouštěč (zbývá ${remainingSec} s) — fondy pro spouštěč nebo 4_Research.`);
 }
 
 function startTrigger() {
@@ -555,21 +599,21 @@ function bindUiHandlers() {
   });
   ui.serial?.addEventListener('click', async () => {
     if (!('serial' in navigator)) {
-      if (ui.status) ui.status.textContent = 'Web Serial vyžaduje Chromium. Použijte http://localhost nebo HTTPS.';
+      setStatus('Web Serial vyžaduje Chromium. Použijte http://localhost nebo HTTPS.');
       return;
     }
     if (serialPort) {
-      if (ui.status) ui.status.textContent = 'Sériový port je otevřený — obnovte stránku pro znovupřipojení.';
+      setStatus('Sériový port je otevřený — obnovte stránku pro znovupřipojení.');
       return;
     }
     try {
       serialPort = await navigator.serial.requestPort();
       await serialPort.open({ baudRate: SERIAL_BAUD });
-      if (ui.status) ui.status.textContent = 'Sériový port otevřen — spusťte sekvenci z Arduina Nano.';
+      setStatus('Sériový port otevřen — spusťte sekvenci z Arduina Nano.');
       readSerialLines(serialPort);
     } catch (e) {
       serialPort = null;
-      if (e?.name !== 'NotFoundError' && ui.status) ui.status.textContent = String(e.message || e);
+      if (e?.name !== 'NotFoundError') setStatus(String(e.message || e));
     }
   });
 }
@@ -579,6 +623,8 @@ async function init() {
   bindUiHandlers();
   mountDisplayCanvas();
   ensureVerticalBlurFilters();
+  setLoading('Načítám — skenuji výzkumné obrázky…');
+  if (ui.trigger) ui.trigger.disabled = true;
   try {
     const json = await loadResearchPayload();
     poolBaselineL = Array.isArray(json?.baseline?.left) ? json.baseline.left : [];
@@ -587,7 +633,8 @@ async function init() {
     poolTriggerR = Array.isArray(json?.trigger?.right) ? json.trigger.right : [];
     startBaseline();
   } catch (e) {
-    if (ui.status) ui.status.textContent = String(e?.message || e);
+    finishInitialLoad(false);
+    setStatus(String(e?.message || e));
     if (ui.trigger) ui.trigger.disabled = true;
   }
 }
