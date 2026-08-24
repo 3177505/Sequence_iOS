@@ -6,18 +6,25 @@ import * as sass from 'sass';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
+const PUBLIC_EXCLUDE = new Set(['11_Anotace', '10_Vitek', 'finance']);
 
 function run(cmd, opts = {}) {
   execSync(cmd, { cwd: root, stdio: 'inherit', ...opts });
 }
 
-async function safeCp(src, dest) {
+async function safeCp(src, dest, filter) {
   try {
     await fsp.stat(src);
   } catch {
     return;
   }
-  await fsp.cp(src, dest, { recursive: true });
+  await fsp.cp(src, dest, { recursive: true, ...(filter ? { filter } : {}) });
+}
+
+function publicCopyFilter(srcPath) {
+  const rel = path.relative(path.join(root, 'public'), srcPath);
+  if (!rel || rel === '.') return true;
+  return !PUBLIC_EXCLUDE.has(rel.split(path.sep)[0]);
 }
 
 async function main() {
@@ -53,7 +60,7 @@ async function main() {
   await safeCp(path.join(root, 'assets', 'data'), path.join(dist, 'assets', 'data'));
   await safeCp(path.join(root, 'templates'), path.join(dist, 'templates'));
   await safeCp(path.join(root, 'partials'), path.join(dist, 'partials'));
-  await safeCp(path.join(root, 'public'), path.join(dist, 'public'));
+  await safeCp(path.join(root, 'public'), path.join(dist, 'public'), publicCopyFilter);
 
   const rootFiles = await fsp.readdir(root);
   for (const name of rootFiles) {

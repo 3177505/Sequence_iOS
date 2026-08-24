@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: sequence
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /api/research-gallery
+        destination: /public/api-public-tree/research-gallery.json
+      - type: rewrite
+        source: /api/research-images
+        destination: /public/api-public-tree/research-images.json
+      - type: rewrite
+        source: /api/data-videos
+        destination: /public/api-public-tree/data-videos.json
+      - type: rewrite
+        source: /api/concept
+        destination: /public/api-public-tree/concept.json
+      - type: rewrite
+        source: /api/glossary
+        destination: /public/api-public-tree/glossary.json
+      - type: rewrite
+        source: /api/reddit-videos
+        destination: /assets/data/reddit-videos.json
+      - type: rewrite
+        source: /api/public-tree/inspiration
+        destination: /public/api-public-tree/inspiration.json
+      - type: rewrite
+        source: /api/public-tree/research
+        destination: /public/api-public-tree/research.json
+      - type: rewrite
+        source: /api/public-tree/material
+        destination: /public/api-public-tree/material.json
