@@ -3,9 +3,13 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/api/research-gallery", "destination": "/public/api-public-tree/research-gallery.json" },
+    { "source": "/api/research-images", "destination": "/public/api-public-tree/research-images.json" },
+    { "source": "/api/data-videos", "destination": "/public/api-public-tree/data-videos.json" },
+    { "source": "/api/concept", "destination": "/public/api-public-tree/concept.json" },
+    { "source": "/api/glossary", "destination": "/public/api-public-tree/glossary.json" },
+    { "source": "/api/reddit-videos", "destination": "/assets/data/reddit-videos.json" },
     { "source": "/api/public-tree/inspiration", "destination": "/public/api-public-tree/inspiration.json" },
     { "source": "/api/public-tree/research", "destination": "/public/api-public-tree/research.json" },
-    { "source": "/api/public-tree/material", "destination": "/public/api-public-tree/material.json" },
-    { "source": "/api/glossary", "destination": "/public/api-public-tree/glossary.json" }
+    { "source": "/api/public-tree/material", "destination": "/public/api-public-tree/material.json" }
   ]
 }

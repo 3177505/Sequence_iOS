@@ -27,6 +27,22 @@ function publicCopyFilter(srcPath) {
   return !PUBLIC_EXCLUDE.has(rel.split(path.sep)[0]);
 }
 
+async function writePageHtml(srcDir, destDir) {
+  let names;
+  try {
+    names = await fsp.readdir(srcDir);
+  } catch {
+    return;
+  }
+  await fsp.mkdir(destDir, { recursive: true });
+  for (const name of names) {
+    if (!name.endsWith('.html')) continue;
+    let html = await fsp.readFile(path.join(srcDir, name), 'utf8');
+    html = html.replace(/href="assets\/scss\/([^"]+)\.scss"/g, 'href="assets/css/$1.css"');
+    await fsp.writeFile(path.join(destDir, name), html, 'utf8');
+  }
+}
+
 async function main() {
   run('node scripts/generate-public-tree-json.mjs');
   run('node scripts/generate-api-static-json.mjs');
@@ -61,14 +77,8 @@ async function main() {
   await safeCp(path.join(root, 'templates'), path.join(dist, 'templates'));
   await safeCp(path.join(root, 'partials'), path.join(dist, 'partials'));
   await safeCp(path.join(root, 'public'), path.join(dist, 'public'), publicCopyFilter);
-
-  const rootFiles = await fsp.readdir(root);
-  for (const name of rootFiles) {
-    if (!name.endsWith('.html')) continue;
-    let html = await fsp.readFile(path.join(root, name), 'utf8');
-    html = html.replace(/href="assets\/scss\/([^"]+)\.scss"/g, 'href="assets/css/$1.css"');
-    await fsp.writeFile(path.join(dist, name), html, 'utf8');
-  }
+  await writePageHtml(path.join(root, 'pages'), dist);
+  await safeCp(path.join(root, 'serve.json'), path.join(dist, 'serve.json'));
 
   console.log('build-static →', dist);
 }

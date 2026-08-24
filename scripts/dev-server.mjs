@@ -386,10 +386,19 @@ async function handle(req, res) {
   const lastHasDot = lastSeg.includes('.');
 
   const attempts = [];
+  const addAttempt = (p) => {
+    const fp = urlToFsPath(p);
+    if (fp) attempts.push(fp);
+  };
   if (lastSeg && !lastHasDot) {
-    attempts.push(urlToFsPath(`${pathTrim}.html`));
+    addAttempt(`${pathTrim}.html`);
   }
-  attempts.push(urlToFsPath(pathTrim));
+  addAttempt(pathTrim);
+  if (segments.length === 1) {
+    const name = segments[0];
+    if (!lastHasDot) addAttempt(`/pages/${name}.html`);
+    addAttempt(`/pages/${name}`);
+  }
 
   for (const fp of attempts) {
     if (!fp) continue;
@@ -461,6 +470,18 @@ try {
   });
 } catch (e) {
   console.warn('SCSS watch disabled:', e.message || e);
+}
+
+try {
+  const pagesDir = path.join(root, 'pages');
+  if (fs.existsSync(pagesDir)) {
+    const pagesWatch = fs.watch(pagesDir, { recursive: true }, () => notifyReload());
+    pagesWatch.on('error', (err) => {
+      console.warn('pages/ watch:', err.message || err);
+    });
+  }
+} catch (e) {
+  console.warn('pages/ watch disabled:', e.message || e);
 }
 
 try {
