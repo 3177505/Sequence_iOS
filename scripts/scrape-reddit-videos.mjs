@@ -1,13 +1,13 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { fetchRedditVideosPayload, REDDIT_VIDEO_WRAPPERS } from './lib/reddit-videos-fetch.mjs';
+import { loadRedditVideosPayload, REDDIT_VIDEO_WRAPPERS } from './lib/reddit-videos-fetch.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
 async function main() {
-  const payload = await fetchRedditVideosPayload();
+  const payload = await loadRedditVideosPayload(ROOT);
   for (const { key } of REDDIT_VIDEO_WRAPPERS) {
     console.log(`${key}: ${payload[key]?.length ?? 0} posts with video`);
   }

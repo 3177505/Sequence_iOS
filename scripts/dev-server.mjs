@@ -4,7 +4,7 @@ import fsp from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as sass from 'sass';
-import { fetchRedditVideosPayload } from './lib/reddit-videos-fetch.mjs';
+import { loadRedditVideosPayload } from './lib/reddit-videos-fetch.mjs';
 import { buildPublicFolderTree } from './lib/public-tree.mjs';
 import { buildResearchImagesPayload, buildDataVideosPayload } from './lib/api-payloads.mjs';
 import { buildResearchGalleryPayload } from './lib/research-gallery.mjs';
@@ -44,7 +44,7 @@ async function getRedditVideosCached() {
     } catch (_) {}
   }
   redditVideosCache.inflight = (async () => {
-    const payload = await fetchRedditVideosPayload();
+    const payload = await loadRedditVideosPayload(rootResolved);
     redditVideosCache.payload = payload;
     redditVideosCache.at = Date.now();
     return payload;

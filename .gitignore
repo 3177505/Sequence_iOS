@@ -20,5 +20,4 @@ pnpm-debug.log*
 
 public/api-public-tree/*.json
 !public/api-public-tree/concept.json
-assets/data/reddit-videos.json
 public/exhibit-images.json

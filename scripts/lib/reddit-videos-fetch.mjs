@@ -1,3 +1,6 @@
+import fsp from 'fs/promises';
+import path from 'path';
+
 const USER_AGENT = 'Sequence/1.0 (private research scraper)';
 const PAGE_SIZE = 100;
 const WANT_PER_SUB = 10;
@@ -151,4 +154,34 @@ export async function fetchRedditVideosPayload() {
   }
 
   return payload;
+}
+
+export function redditVideosJsonPath(rootResolved) {
+  return path.join(rootResolved, 'assets', 'data', 'reddit-videos.json');
+}
+
+export async function readRedditVideosSnapshot(rootResolved) {
+  try {
+    const json = JSON.parse(await fsp.readFile(redditVideosJsonPath(rootResolved), 'utf8'));
+    return json && typeof json === 'object' ? json : null;
+  } catch {
+    return null;
+  }
+}
+
+export function mergeRedditVideosPayload(live, snapshot) {
+  if (!snapshot) return live;
+  const out = { ...live };
+  for (const { key } of REDDIT_VIDEO_WRAPPERS) {
+    const liveList = Array.isArray(out[key]) ? out[key] : [];
+    const snapList = Array.isArray(snapshot[key]) ? snapshot[key] : [];
+    if (liveList.length === 0 && snapList.length > 0) out[key] = snapList;
+  }
+  return out;
+}
+
+export async function loadRedditVideosPayload(rootResolved) {
+  const live = await fetchRedditVideosPayload();
+  const snapshot = await readRedditVideosSnapshot(rootResolved);
+  return mergeRedditVideosPayload(live, snapshot);
 }
